@@ -1,0 +1,23 @@
+# Render Blueprint for the Grimorio backend.
+# https://render.com/docs/blueprint-spec
+#
+# Deploy: connect this repo on Render and it will detect this file, or run
+# `render blueprint launch`. Set DATABASE_URL and SESSION_SECRET as real
+# secrets in the Render dashboard after the first deploy (see README).
+services:
+  - type: web
+    name: grimorio-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: PORT
+        value: 3000
