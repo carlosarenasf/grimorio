@@ -34,6 +34,11 @@ module.exports = {
   },
   ignorePatterns: ['node_modules/', 'dist/', 'build/', 'coverage/', '*.cjs'],
   rules: {
+    // Allow intentionally-unused args/vars prefixed with `_` (e.g. fake Rng(_min,_max)).
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+    ],
     'import/no-restricted-paths': [
       'error',
       {

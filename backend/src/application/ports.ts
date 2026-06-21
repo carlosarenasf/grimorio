@@ -17,19 +17,13 @@ import type {
 } from '../domain/types.js';
 import type { CampaignId, CharacterId, LiveTableId, UserId } from '../domain/ids.js';
 
+// ---------- Domain-owned primitives (re-exported for application/infra) ----------
+
+// `Rng` and `Clock` are defined in the domain (it depends on them) and re-exported
+// here so application handlers and infra adapters import them from one place.
+export type { Clock, Rng } from '../domain/ports.js';
+
 // ---------- Infrastructure primitives ----------
-
-/** Wall clock, injected so handlers/domain stay deterministic in tests. */
-export interface Clock {
-  /** ISO-8601 timestamp of "now". */
-  now(): string;
-}
-
-/** Server-authoritative randomness for dice (SPEC §7). Never use Math.random in domain. */
-export interface Rng {
-  /** Inclusive integer in [min, max]. */
-  int(min: number, max: number): number;
-}
 
 /** Password hashing port (argon2id/bcrypt adapter). Domain never sees plaintext. */
 export interface PasswordHasher {
