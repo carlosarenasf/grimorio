@@ -1,0 +1,394 @@
+/**
+ * HTTP transport integration tests — drive the Fastify app end-to-end with
+ * `app.inject`, wiring in-memory repos + fakes through `registerHttpRoutes`.
+ * These tests exercise the wire contract (status codes, cookies, JSON
+ * shapes), not the application logic itself (covered by its own unit tests).
+ */
+import Fastify, { type FastifyInstance } from 'fastify';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { registerHttpRoutes } from './index.js';
+import type { HttpDeps } from './index.js';
+import { verifySession } from '../auth/session.js';
+import { makeInMemoryRepos, FakeClock, FakeHasher, SeededRng } from '../../testing/index.js';
+import { StaticSrdProvider } from '../../domain/srd/index.js';
+import type { Config } from '../../config.js';
+
+function makeConfig(overrides: Partial<Config> = {}): Config {
+  return {
+    port: 3000,
+    databaseUrl: undefined,
+    sessionSecret: 'test-secret',
+    cookieName: 'grimorio_session',
+    corsOrigin: '*',
+    ...overrides,
+  };
+}
+
+function buildApp(config: Config = makeConfig()): { app: FastifyInstance; deps: HttpDeps } {
+  const app = Fastify();
+  const repos = makeInMemoryRepos();
+  const deps: HttpDeps = {
+    users: repos.users,
+    campaigns: repos.campaigns,
+    characters: repos.characters,
+    tables: repos.liveTables,
+    hasher: new FakeHasher(),
+    clock: new FakeClock(),
+    rng: new SeededRng(1),
+    srd: new StaticSrdProvider(),
+    config,
+  };
+  registerHttpRoutes(app, deps);
+  return { app, deps };
+}
+
+function cookieFromResponse(res: { cookies: Array<{ name: string; value: string }> }, name: string) {
+  return res.cookies.find((c) => c.name === name)?.value;
+}
+
+describe('HTTP transport', () => {
+  let app: FastifyInstance;
+  let config: Config;
+
+  beforeEach(() => {
+    config = makeConfig();
+    ({ app } = buildApp(config));
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
+
+  describe('auth', () => {
+    it('register then login sets a session cookie that verifies to the right user', async () => {
+      const registerRes = await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: {
+          type: 'Register',
+          email: 'lyra@example.com',
+          password: 'password123',
+          displayName: 'Lyra',
+        },
+      });
+      expect(registerRes.statusCode).toBe(200);
+      const registerBody = registerRes.json();
+      expect(registerBody).toMatchObject({ displayName: 'Lyra' });
+      expect(typeof registerBody.userId).toBe('string');
+
+      const loginRes = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        payload: {
+          type: 'Login',
+          email: 'lyra@example.com',
+          password: 'password123',
+        },
+      });
+      expect(loginRes.statusCode).toBe(200);
+      const loginBody = loginRes.json();
+      expect(loginBody).toEqual({ userId: registerBody.userId, displayName: 'Lyra' });
+
+      const cookie = cookieFromResponse(loginRes, config.cookieName);
+      expect(cookie).toBeDefined();
+      const principal = verifySession(cookie, config.sessionSecret);
+      expect(principal).toEqual({ userId: registerBody.userId, displayName: 'Lyra' });
+    });
+
+    it('rejects a bad register body (missing email) with 400', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: {
+          type: 'Register',
+          password: 'password123',
+          displayName: 'Lyra',
+        },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('login with wrong password returns 401', async () => {
+      await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: {
+          type: 'Register',
+          email: 'lyra@example.com',
+          password: 'password123',
+          displayName: 'Lyra',
+        },
+      });
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        payload: { type: 'Login', email: 'lyra@example.com', password: 'wrong-password' },
+      });
+      expect(res.statusCode).toBe(401);
+    });
+
+    it('registering the same email twice returns 409', async () => {
+      const payload = {
+        type: 'Register',
+        email: 'dup@example.com',
+        password: 'password123',
+        displayName: 'Dup',
+      };
+      const first = await app.inject({ method: 'POST', url: '/auth/register', payload });
+      expect(first.statusCode).toBe(200);
+
+      const second = await app.inject({ method: 'POST', url: '/auth/register', payload });
+      expect(second.statusCode).toBe(409);
+    });
+
+    it('logout clears the cookie and returns 204', async () => {
+      const res = await app.inject({ method: 'POST', url: '/auth/logout' });
+      expect(res.statusCode).toBe(204);
+    });
+  });
+
+  describe('session guard', () => {
+    it('an authed request without the cookie returns 401', async () => {
+      const res = await app.inject({ method: 'GET', url: '/campaigns' });
+      expect(res.statusCode).toBe(401);
+    });
+  });
+
+  describe('campaigns', () => {
+    async function registerAndCookie(app: FastifyInstance, email: string, displayName: string) {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: { type: 'Register', email, password: 'password123', displayName },
+      });
+      const body = res.json();
+      const cookie = cookieFromResponse(res, config.cookieName)!;
+      return { userId: body.userId as string, cookie };
+    }
+
+    it('POST /campaigns creates a campaign; GET /campaigns returns it for that user only', async () => {
+      const dm = await registerAndCookie(app, 'dm@example.com', 'DM');
+      const other = await registerAndCookie(app, 'other@example.com', 'Other');
+
+      const createRes = await app.inject({
+        method: 'POST',
+        url: '/campaigns',
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { type: 'CreateCampaign', name: 'La Mazmorra', tagline: 'Una aventura' },
+      });
+      expect(createRes.statusCode).toBe(200);
+      const campaign = createRes.json();
+      expect(campaign.name).toBe('La Mazmorra');
+      expect(campaign.ownerId).toBe(dm.userId);
+
+      const listRes = await app.inject({
+        method: 'GET',
+        url: '/campaigns',
+        cookies: { [config.cookieName]: dm.cookie },
+      });
+      expect(listRes.statusCode).toBe(200);
+      const list = listRes.json();
+      expect(list).toHaveLength(1);
+      expect(list[0].id).toBe(campaign.id);
+
+      const otherListRes = await app.inject({
+        method: 'GET',
+        url: '/campaigns',
+        cookies: { [config.cookieName]: other.cookie },
+      });
+      expect(otherListRes.statusCode).toBe(200);
+      expect(otherListRes.json()).toHaveLength(0);
+    });
+
+    it('invite then join adds the joining user as a player member', async () => {
+      const dm = await registerAndCookie(app, 'dm2@example.com', 'DM2');
+      const player = await registerAndCookie(app, 'player2@example.com', 'Player2');
+
+      const createRes = await app.inject({
+        method: 'POST',
+        url: '/campaigns',
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { type: 'CreateCampaign', name: 'Cripta', tagline: '' },
+      });
+      const campaign = createRes.json();
+
+      const inviteRes = await app.inject({
+        method: 'POST',
+        url: `/campaigns/${campaign.id}/invite`,
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { type: 'InviteToCampaign', campaignId: campaign.id },
+      });
+      expect(inviteRes.statusCode).toBe(200);
+      const invited = inviteRes.json();
+      expect(typeof invited.joinCode).toBe('string');
+
+      const joinRes = await app.inject({
+        method: 'POST',
+        url: `/join/${invited.joinCode}`,
+        cookies: { [config.cookieName]: player.cookie },
+        payload: { type: 'JoinCampaign', joinCode: invited.joinCode },
+      });
+      expect(joinRes.statusCode).toBe(200);
+      const joined = joinRes.json();
+      expect(joined.members.some((m: { userId: string }) => m.userId === player.userId)).toBe(
+        true,
+      );
+    });
+
+    it('join with an unknown code returns 404', async () => {
+      const player = await registerAndCookie(app, 'player3@example.com', 'Player3');
+      const res = await app.inject({
+        method: 'POST',
+        url: '/join/NOPE-00',
+        cookies: { [config.cookieName]: player.cookie },
+        payload: { type: 'JoinCampaign', joinCode: 'NOPE-00' },
+      });
+      expect(res.statusCode).toBe(404);
+    });
+  });
+
+  describe('characters', () => {
+    async function registerAndCookie(app: FastifyInstance, email: string, displayName: string) {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: { type: 'Register', email, password: 'password123', displayName },
+      });
+      const body = res.json();
+      const cookie = cookieFromResponse(res, config.cookieName)!;
+      return { userId: body.userId as string, cookie };
+    }
+
+    it('creates and patches a character for a campaign member', async () => {
+      const dm = await registerAndCookie(app, 'dm3@example.com', 'DM3');
+
+      const createCampaignRes = await app.inject({
+        method: 'POST',
+        url: '/campaigns',
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { type: 'CreateCampaign', name: 'Bosque', tagline: '' },
+      });
+      const campaign = createCampaignRes.json();
+
+      const createCharRes = await app.inject({
+        method: 'POST',
+        url: '/characters',
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: {
+          type: 'CreateCharacter',
+          campaignId: campaign.id,
+          name: 'Lyra',
+          species: 'Elfo',
+          className: 'Explorador',
+          background: 'Forastero',
+          level: 1,
+          method: 'roll',
+          scores: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+        },
+      });
+      expect(createCharRes.statusCode).toBe(200);
+      const character = createCharRes.json();
+      expect(character.name).toBe('Lyra');
+
+      const patchRes = await app.inject({
+        method: 'PATCH',
+        url: `/characters/${character.id}`,
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { type: 'UpdateCharacter', characterId: character.id, patch: { name: 'Lyra Stormbringer' } },
+      });
+      expect(patchRes.statusCode).toBe(200);
+      expect(patchRes.json().name).toBe('Lyra Stormbringer');
+    });
+
+    it('rejects a bad CreateCharacter body with 400', async () => {
+      const dm = await registerAndCookie(app, 'dm4@example.com', 'DM4');
+      const res = await app.inject({
+        method: 'POST',
+        url: '/characters',
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { type: 'CreateCharacter', name: 'Sin Campaign' },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+  describe('live table snapshot', () => {
+    async function registerAndCookie(app: FastifyInstance, email: string, displayName: string) {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: { type: 'Register', email, password: 'password123', displayName },
+      });
+      const body = res.json();
+      const cookie = cookieFromResponse(res, config.cookieName)!;
+      return { userId: body.userId as string, cookie };
+    }
+
+    it('returns a dm-role projection for the owner and 403 for a non-member', async () => {
+      const dm = await registerAndCookie(app, 'dm5@example.com', 'DM5');
+      const stranger = await registerAndCookie(app, 'stranger@example.com', 'Stranger');
+
+      const createCampaignRes = await app.inject({
+        method: 'POST',
+        url: '/campaigns',
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { type: 'CreateCampaign', name: 'Torre', tagline: '' },
+      });
+      const campaign = createCampaignRes.json();
+
+      const snapshotRes = await app.inject({
+        method: 'GET',
+        url: `/tables/${campaign.id}/snapshot`,
+        cookies: { [config.cookieName]: dm.cookie },
+      });
+      expect(snapshotRes.statusCode).toBe(200);
+      const snapshot = snapshotRes.json();
+      expect(snapshot.viewerRole).toBe('dm');
+      expect(snapshot.campaignId).toBe(campaign.id);
+
+      const forbiddenRes = await app.inject({
+        method: 'GET',
+        url: `/tables/${campaign.id}/snapshot`,
+        cookies: { [config.cookieName]: stranger.cookie },
+      });
+      expect(forbiddenRes.statusCode).toBe(403);
+    });
+
+    it('returns a player-role projection for a joined player', async () => {
+      const dm = await registerAndCookie(app, 'dm6@example.com', 'DM6');
+      const player = await registerAndCookie(app, 'player6@example.com', 'Player6');
+
+      const createCampaignRes = await app.inject({
+        method: 'POST',
+        url: '/campaigns',
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { type: 'CreateCampaign', name: 'Costa', tagline: '' },
+      });
+      const campaign = createCampaignRes.json();
+
+      const inviteRes = await app.inject({
+        method: 'POST',
+        url: `/campaigns/${campaign.id}/invite`,
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { type: 'InviteToCampaign', campaignId: campaign.id },
+      });
+      const { joinCode } = inviteRes.json();
+
+      await app.inject({
+        method: 'POST',
+        url: `/join/${joinCode}`,
+        cookies: { [config.cookieName]: player.cookie },
+        payload: { type: 'JoinCampaign', joinCode },
+      });
+
+      const snapshotRes = await app.inject({
+        method: 'GET',
+        url: `/tables/${campaign.id}/snapshot`,
+        cookies: { [config.cookieName]: player.cookie },
+      });
+      expect(snapshotRes.statusCode).toBe(200);
+      expect(snapshotRes.json().viewerRole).toBe('player');
+    });
+  });
+});

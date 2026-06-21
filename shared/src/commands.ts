@@ -95,7 +95,9 @@ export const CreateCharacterSchema = z.object({
   className: z.string().min(1),
   background: z.string().min(1),
   level: z.number().int().min(1).max(20),
-  scores: AbilityScores,
+  // Optional so method 'roll' (server rolls 4d6) is valid. The "buy requires
+  // scores" rule is enforced server-side: the domain throws → IllegalPointBuy.
+  scores: AbilityScores.optional(),
   method: z.enum(['buy', 'roll']),
 });
 
