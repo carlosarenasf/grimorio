@@ -7,13 +7,7 @@
  * spell save DC, etc.) are NOT stored here — the server computes them on the fly
  * (SPEC §7); the persisted truth is only what appears below.
  */
-import type {
-  CampaignId,
-  CharacterId,
-  CombatantId,
-  LiveTableId,
-  UserId,
-} from './ids.js';
+import type { CampaignId, CharacterId, CombatantId, LiveTableId, UserId } from './ids.js';
 
 // ---------- Visibility & roles ----------
 export type Visibility = 'public' | 'dm_only' | 'owner';
