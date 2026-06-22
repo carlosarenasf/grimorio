@@ -1,0 +1,402 @@
+/*
+ * Vista Jugador styles (DESIGN_SPEC.md §5): a cleaner, more open layout than
+ * the master view. Mobile-first — the player view matters most on a phone
+ * (§5 Responsive, §8 quality floor) — desktop widens into a two-column
+ * mesa + ficha layout. Tokens-only, scoped to this screen.
+ */
+
+.vj-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--void);
+  color: var(--parchment);
+  padding-bottom: var(--space-16);
+}
+
+/* ---------- Turn banner ---------- */
+
+.vj-turn-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface);
+}
+
+.vj-turn-banner__status {
+  font-size: 18px;
+  color: var(--muted);
+}
+
+.vj-turn-banner--yours {
+  border-bottom-color: var(--arcane);
+  box-shadow: inset 0 -1px 0 var(--arcane);
+}
+
+.vj-turn-banner--yours .vj-turn-banner__status {
+  color: var(--arcane);
+}
+
+.vj-turn-banner__round {
+  color: var(--muted);
+}
+
+/* ---------- Body layout ---------- */
+
+.vj-screen__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6);
+}
+
+.vj-screen__main,
+.vj-screen__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+@media (min-width: 900px) {
+  .vj-screen__body {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .vj-screen__main {
+    flex: 2;
+    min-width: 0;
+  }
+
+  .vj-screen__side {
+    flex: 1;
+    min-width: 280px;
+  }
+}
+
+/* ---------- Sheet panel ---------- */
+
+.vj-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.vj-sheet__hp {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.vj-sheet__hp-current {
+  font-size: 28px;
+}
+
+.vj-sheet__hp-max {
+  color: var(--muted);
+}
+
+.vj-sheet__hp-bar {
+  flex-basis: 100%;
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--raised);
+  overflow: hidden;
+}
+
+.vj-sheet__hp-bar-fill {
+  height: 100%;
+  background: var(--sage);
+  transition: width var(--transition-fast);
+}
+
+.vj-sheet__hp-bar-fill--damage {
+  background: var(--ember);
+}
+
+.vj-sheet__mods {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vj-sheet__mod {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.vj-sheet__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.vj-sheet__stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+}
+
+.vj-sheet__stat dt {
+  margin: 0;
+}
+
+.vj-sheet__stat dd {
+  margin: 0;
+}
+
+/* ---------- Action economy ---------- */
+
+.vj-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.vj-actions__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+@media (min-width: 480px) {
+  .vj-actions__grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.vj-actions__detail {
+  padding: var(--space-3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--raised);
+}
+
+.vj-actions__attacks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.vj-actions__attack {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.vj-actions__attack-stats {
+  color: var(--muted);
+}
+
+.vj-actions__simple {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.vj-actions__description {
+  margin: 0;
+  color: var(--parchment);
+}
+
+/* ---------- Inventory ---------- */
+
+.vj-inventory {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.vj-inventory__section-title {
+  margin: 0 0 var(--space-2);
+}
+
+.vj-inventory__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.vj-inventory__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+}
+
+.vj-inventory__info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.vj-inventory__note {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.vj-inventory__qty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.vj-inventory__step {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--hairline-strong);
+  background: var(--raised);
+  color: var(--parchment);
+  cursor: pointer;
+}
+
+.vj-inventory__qty-value {
+  min-width: 1.5em;
+  text-align: center;
+}
+
+.vj-inventory__gold {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.vj-inventory__gold-input {
+  width: 6em;
+}
+
+/* ---------- Rules ---------- */
+
+.vj-rules {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.vj-rules__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.vj-rules__item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.vj-rules__remove {
+  background: none;
+  border: none;
+  color: var(--ember);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.vj-rules__add-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.vj-rules__add-input {
+  flex: 1;
+}
+
+/* ---------- Dice ---------- */
+
+.vj-dice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.vj-dice__quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.vj-dice__custom {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+/* ---------- Public log ---------- */
+
+.vj-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.vj-log__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.vj-log__who {
+  color: var(--muted);
+}
+
+/* ---------- Action bar ---------- */
+
+.vj-action-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--hairline);
+  background: var(--surface);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- Shared empty state ---------- */
+
+.vj-empty {
+  margin: 0;
+  color: var(--muted);
+}

@@ -1,0 +1,310 @@
+/* Vista Máster — DM dashboard layout (DESIGN_SPEC.md §5).
+   Tokens come from design/tokens.css; this file only does layout + local bits. */
+
+.vm-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--ink-void);
+  color: var(--parchment);
+}
+
+/* ---- Session bar ---- */
+.vm-session-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--ink-surface);
+  border-bottom: 1px solid var(--hairline, rgba(232, 226, 208, 0.12));
+}
+.vm-session-bar__room-name {
+  font-size: 1.1rem;
+  margin: 0;
+}
+.vm-session-bar__turn {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.vm-session-bar__round {
+  color: var(--arcane);
+  font-weight: 600;
+}
+.vm-session-bar__active-turn {
+  font-size: 1rem;
+}
+.vm-session-bar__badge {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--frost);
+  border: 1px solid var(--frost);
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+/* ---- 3-column grid ---- */
+.vm-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(360px, 2fr) minmax(240px, 1fr);
+  gap: 16px;
+  padding: 16px;
+  flex: 1;
+  align-items: start;
+}
+.vm-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.vm-rail {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 1024px) {
+  .vm-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .vm-col--center {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+}
+@media (max-width: 680px) {
+  .vm-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Combatants ---- */
+.vm-combatants,
+.vm-bestiary__list,
+.vm-history,
+.vm-qref__chips,
+.vm-qref__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.vm-combatants__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.vm-combatants__row:hover {
+  background: var(--ink-raised);
+}
+.vm-combatants__row--selected {
+  border-color: var(--arcane);
+}
+.vm-combatants__hp-max,
+.vm-combatants__status {
+  color: rgba(232, 226, 208, 0.6);
+}
+
+/* ---- Bestiary ---- */
+.vm-bestiary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.vm-bestiary__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+}
+.vm-bestiary__info {
+  display: flex;
+  flex-direction: column;
+}
+.vm-bestiary__meta {
+  color: rgba(232, 226, 208, 0.55);
+}
+
+/* ---- Quick reference / tabs ---- */
+.vm-qref__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.vm-qref__tab {
+  background: transparent;
+  border: 1px solid var(--hairline, rgba(232, 226, 208, 0.12));
+  color: inherit;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.vm-qref__tab--active {
+  border-color: var(--arcane);
+  color: var(--arcane);
+}
+.vm-qref__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.vm-qref__chip {
+  border: 1px solid var(--hairline, rgba(232, 226, 208, 0.12));
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+}
+.vm-qref__list li {
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+}
+.vm-qref__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.vm-qref__table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--hairline, rgba(232, 226, 208, 0.08));
+}
+.vm-qref__table td:last-child {
+  text-align: right;
+  color: var(--arcane);
+}
+
+/* ---- Active turn ---- */
+.vm-active {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.vm-active__hp {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.vm-active__hp-current {
+  font-size: 2.6rem;
+  font-weight: 700;
+}
+.vm-active__hp-max,
+.vm-active__status {
+  font-size: 1rem;
+  color: rgba(232, 226, 208, 0.6);
+}
+.vm-active__adjust {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.vm-active__amount {
+  width: 100px;
+}
+.vm-active__adjust-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---- Dice ---- */
+.vm-dice {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.vm-dice__quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.vm-dice__custom {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vm-dice__custom-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.vm-dice__hidden {
+  border: 1px dashed var(--frost);
+  background: transparent;
+  color: var(--frost);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font: inherit;
+}
+
+/* ---- History ---- */
+.vm-history__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--hairline, rgba(232, 226, 208, 0.08));
+  font-size: 0.85rem;
+}
+.vm-history__breakdown {
+  color: rgba(232, 226, 208, 0.55);
+}
+.vm-history__row--private {
+  color: var(--frost);
+}
+.vm-history__private {
+  font-size: 0.72rem;
+  color: var(--frost);
+}
+.vm-history__event {
+  padding: 6px 0 6px 10px;
+  border-left: 3px solid var(--arcane);
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+}
+
+/* ---- DM notes ---- */
+.vm-notes__label {
+  display: block;
+  margin-bottom: 6px;
+}
+.vm-notes__textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* ---- Action bar ---- */
+.vm-action-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--ink-surface);
+  border-top: 1px solid var(--hairline, rgba(232, 226, 208, 0.12));
+}
+.vm-action-bar__group {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---- Empty states ---- */
+.vm-empty {
+  color: rgba(232, 226, 208, 0.55);
+  font-size: 0.85rem;
+}
