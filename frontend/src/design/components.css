@@ -1,0 +1,273 @@
+/*
+ * Component styles for the Grimorio design system. Tokens-only (no magic
+ * values) — every color/spacing/radius here references a custom property
+ * from tokens.css. Screens import this once (e.g. via the design barrel).
+ */
+
+/* ---------- Panel (§5) ---------- */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.panel--dm-only {
+  background: linear-gradient(180deg, rgba(94, 132, 166, 0.08), transparent 60%),
+    var(--surface);
+  border-color: rgba(94, 132, 166, 0.35);
+}
+
+.panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.panel__heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.panel__lock {
+  color: var(--frost);
+  font-size: 14px;
+}
+
+.panel__title {
+  margin: 0;
+  font-size: 18px;
+  color: var(--parchment);
+}
+
+.panel__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.panel__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5);
+}
+
+/* ---------- Button ---------- */
+
+.button {
+  font-family: var(--font-body);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+    border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.button--sm {
+  padding: var(--space-1) var(--space-3);
+  font-size: 13px;
+}
+
+.button--md {
+  padding: var(--space-2) var(--space-4);
+  font-size: 14px;
+}
+
+.button--lg {
+  padding: var(--space-3) var(--space-6);
+  font-size: 16px;
+}
+
+.button--primary {
+  background: var(--arcane);
+  color: var(--void);
+  border-color: var(--arcane);
+}
+
+.button--primary:not(:disabled):hover {
+  background: #ddb53a;
+}
+
+.button--secondary {
+  background: var(--raised);
+  color: var(--parchment);
+  border-color: var(--hairline-strong);
+}
+
+.button--secondary:not(:disabled):hover {
+  background: #352f4f;
+}
+
+.button--ghost {
+  background: transparent;
+  color: var(--parchment);
+  border-color: transparent;
+}
+
+.button--ghost:not(:disabled):hover {
+  background: var(--raised);
+}
+
+/* ---------- Field ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.field__label {
+  display: block;
+}
+
+.field__control {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--parchment);
+  background: var(--void);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.field__control:focus-visible {
+  outline: none;
+  border-color: var(--arcane);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.25);
+}
+
+.field__control--error {
+  border-color: var(--ember);
+}
+
+.field__error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ember);
+}
+
+.field__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* ---------- StatNumber ---------- */
+
+.stat-number {
+  font-size: 1em;
+  color: var(--parchment);
+}
+
+.stat-number--active {
+  color: var(--arcane);
+}
+
+.stat-number--dm_only {
+  color: var(--frost);
+}
+
+.stat-number--damage {
+  color: var(--ember);
+}
+
+.stat-number--heal {
+  color: var(--sage);
+}
+
+/* ---------- InitiativeRail (§4, signature component) ---------- */
+
+.initiative-rail {
+  display: flex;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: var(--space-2);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+}
+
+.initiative-rail__token {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 96px;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  transition: box-shadow var(--transition-glow), border-color var(--transition-glow);
+}
+
+.initiative-rail__token--active {
+  border-color: var(--arcane);
+  box-shadow: 0 0 0 1px var(--arcane), 0 0 16px 2px rgba(201, 162, 39, 0.45);
+  animation: initiative-glow-pulse 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .initiative-rail__token--active {
+    animation: none;
+  }
+}
+
+@keyframes initiative-glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px var(--arcane), 0 0 14px 2px rgba(201, 162, 39, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 1px var(--arcane), 0 0 22px 4px rgba(201, 162, 39, 0.6);
+  }
+}
+
+.initiative-rail__initiative {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.initiative-rail__name {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+  text-align: center;
+}
+
+.initiative-rail__status {
+  font-size: 12px;
+  color: var(--frost);
+}
+
+.initiative-rail__conditions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  justify-content: center;
+}
+
+.condition-chip {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--chip-color, var(--ember)) 25%, var(--surface));
+  color: var(--parchment);
+  border: 1px solid color-mix(in srgb, var(--chip-color, var(--ember)) 60%, transparent);
+}

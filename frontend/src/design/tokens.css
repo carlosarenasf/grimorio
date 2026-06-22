@@ -1,0 +1,120 @@
+/*
+ * Grimorio design tokens — DESIGN_SPEC.md §3.
+ * Base oscura "grimorio moderno": colores, tipografía, espaciado, radios,
+ * reduced-motion y la clase utilitaria de cifras tabulares.
+ */
+
+:root {
+  /* Color — paleta base (§3) */
+  --void: #14121c;
+  --surface: #1e1b2a;
+  --raised: #2a2640;
+  --parchment: #e8e2d0;
+  --arcane: #c9a227;
+  --ember: #b4452e;
+
+  /* Acentos de apoyo (derivados, no abusar) */
+  --sage: #7c9a82;
+  --frost: #5e84a6;
+
+  /* Hairlines / texto secundario, derivados de la paleta base */
+  --hairline: rgba(232, 226, 208, 0.12);
+  --hairline-strong: rgba(232, 226, 208, 0.2);
+  --muted: rgba(232, 226, 208, 0.64);
+  --faint: rgba(232, 226, 208, 0.4);
+
+  /* Tipografía — 3 roles (§3) */
+  --font-display: 'Spectral', Georgia, serif;
+  --font-body: 'Source Sans 3', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+
+  /* Espaciado — múltiplos de 4 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radios — moderados en cartas/paneles, 0 en divisores/tablas */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-none: 0;
+
+  /* Transiciones (honoran prefers-reduced-motion más abajo) */
+  --transition-fast: 120ms ease-out;
+  --transition-glow: 320ms ease-in-out;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--void);
+  color: var(--parchment);
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+code,
+kbd,
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Cifras tabulares — HP, iniciativa, modificadores; nunca deben "saltar" (§8) */
+.tabular-nums {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Foco de teclado visible en todo control interactivo (§6/§8) */
+:focus-visible {
+  outline: 2px solid var(--arcane);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
