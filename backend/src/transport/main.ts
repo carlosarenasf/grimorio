@@ -2,12 +2,13 @@
  * Process entrypoint: load config, wire adapters, build the Fastify app, and
  * listen. Run via `tsx src/transport/main.ts` (see package.json `dev`/`start`).
  */
-import { loadConfig } from '../config.js';
+import { loadConfig, assertSafeForProduction } from '../config.js';
 import { buildDeps } from './wiring.js';
 import { buildServer } from './buildServer.js';
 
 async function main(): Promise<void> {
   const config = loadConfig();
+  assertSafeForProduction(config);
   const { http, ws } = await buildDeps(config);
   const app = buildServer({ http, ws, config, logger: true });
 

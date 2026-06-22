@@ -53,6 +53,10 @@ describe('hpStatusLabel', () => {
     expect(hpStatusLabel(0, 20)).toBe('Caído');
   });
 
+  it('returns Caído (not Intacto) when maxHp is 0', () => {
+    expect(hpStatusLabel(0, 0)).toBe('Caído');
+  });
+
   it('returns Intacto just above the 0.66 boundary', () => {
     expect(hpStatusLabel(14, 20)).toBe('Intacto'); // 0.70
   });
