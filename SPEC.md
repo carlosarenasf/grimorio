@@ -51,7 +51,7 @@ construye desde el día uno.
 
 **Patrón "etiqueta de estado pública derivada":** cuando un dato es `dm_only`
 pero debe tener una representación pública (p. ej. el HP real del dragón es
-`dm_only`, pero los jugadores deben ver *algo*), el servidor deriva una etiqueta
+`dm_only`, pero los jugadores deben ver _algo_), el servidor deriva una etiqueta
 pública (`«Intacto» / «Herido» / «Malherido» / «Caído»`) a partir del ratio de
 HP y proyecta SOLO la etiqueta al jugador. El número real nunca sale del
 servidor hacia el cliente del jugador.
@@ -141,28 +141,28 @@ type CampaignStatus = 'planning' | 'active' | 'paused';
 interface User {
   id: string;
   email: string;
-  passwordHash: string;       // argon2id/bcrypt; nunca se proyecta
-  displayName: string;        // "cómo te verán en la mesa"
+  passwordHash: string; // argon2id/bcrypt; nunca se proyecta
+  displayName: string; // "cómo te verán en la mesa"
   createdAt: string;
 }
 
 // ---------- Campaña (persistente) ----------
 interface CampaignMember {
   userId: string;
-  role: Role;                 // 1 'dm' + N 'player'
+  role: Role; // 1 'dm' + N 'player'
   joinedAt: string;
 }
 
 interface Campaign {
   id: string;
-  ownerId: string;            // el DM creador
+  ownerId: string; // el DM creador
   name: string;
-  tagline: string;            // sinopsis corta (opcional)
+  tagline: string; // sinopsis corta (opcional)
   status: CampaignStatus;
-  joinCode: string;           // p. ej. "RAVEN-77"; base del enlace /unirse/CODE
+  joinCode: string; // p. ej. "RAVEN-77"; base del enlace /unirse/CODE
   members: CampaignMember[];
-  characterIds: string[];     // fichas vinculadas a esta campaña
-  sessionCount: number;       // contador mostrado en la tarjeta
+  characterIds: string[]; // fichas vinculadas a esta campaña
+  sessionCount: number; // contador mostrado en la tarjeta
   createdAt: string;
 }
 
@@ -174,89 +174,90 @@ interface Attack {
   id: string;
   name: string;
   kind: AttackKind;
-  bonus: number | null;       // bonus al ataque (null para conjuros de salvación)
-  damage: string | null;      // notación: "1d8+4"
-  damageType: string;         // "perforante", "fuego"…
+  bonus: number | null; // bonus al ataque (null para conjuros de salvación)
+  damage: string | null; // notación: "1d8+4"
+  damageType: string; // "perforante", "fuego"…
 }
 
 interface InventoryItem {
   id: string;
   name: string;
-  note: string;               // "2d4+2 PV", "15 m"…
+  note: string; // "2d4+2 PV", "15 m"…
   qty: number;
-  equipped: boolean;          // etiqueta visual; NO afecta cálculos (seguimiento)
+  equipped: boolean; // etiqueta visual; NO afecta cálculos (seguimiento)
 }
 
 interface CharacterSheet {
   id: string;
   campaignId: string;
-  ownerId: string;            // user id del jugador dueño
+  ownerId: string; // user id del jugador dueño
   name: string;
-  species: string;            // "Elfo" (UI puede decir "Especie" o "Raza", ver DESIGN_SPEC)
-  className: string;          // "Explorador"
-  background: string;         // "Forastero"
-  level: number;              // 1–20
-  scores: Record<AbilityKey, number>;  // 3–20
+  species: string; // "Elfo" (UI puede decir "Especie" o "Raza", ver DESIGN_SPEC)
+  className: string; // "Explorador"
+  background: string; // "Forastero"
+  level: number; // 1–20
+  scores: Record<AbilityKey, number>; // 3–20
   // Derivados los CALCULA el servidor (no se persisten como verdad):
   //   mod(score) = floor((score-10)/2); profBonus = ceil(level/4)+1; etc.
   maxHp: number;
   currentHp: number;
   armorClass: number;
-  speed: number;              // metros (10.5 ≈ 35 ft)
+  speed: number; // metros (10.5 ≈ 35 ft)
   proficientSkills: string[]; // keys de las 18 competencias
   attacks: Attack[];
   inventory: InventoryItem[];
   gold: number;
-  notes: string;              // rasgos, personalidad, vínculos…
-  visibility: Visibility;     // típicamente 'owner' (HP se proyecta público en combate)
+  notes: string; // rasgos, personalidad, vínculos…
+  visibility: Visibility; // típicamente 'owner' (HP se proyecta público en combate)
 }
 
 // ---------- Combate / sesión en vivo ----------
 type CombatantType = 'pc' | 'monster';
 
 interface Condition {
-  key: string;                // "poisoned", "marked", "blessed"…
+  key: string; // "poisoned", "marked", "blessed"…
   label: string;
-  color: string;              // token de color (chip/punto)
+  color: string; // token de color (chip/punto)
 }
 
 interface Combatant {
   id: string;
-  refId: string | null;       // ficha (pc) o entrada de bestiario (monster)
+  refId: string | null; // ficha (pc) o entrada de bestiario (monster)
   type: CombatantType;
   name: string;
   initiative: number;
   maxHp: number;
   currentHp: number;
   conditions: Condition[];
-  hpVisibility: Visibility;   // 'public' para PJ, 'dm_only' para monstruos ocultos
+  hpVisibility: Visibility; // 'public' para PJ, 'dm_only' para monstruos ocultos
   // Si hpVisibility === 'dm_only', el servidor proyecta a los jugadores SOLO
   // una etiqueta derivada (statusLabel), no el HP real.
 }
 
 interface CombatState {
   active: boolean;
-  round: number;              // contador de rondas mostrado en la barra
-  order: string[];            // ids de Combatant, ordenados desc por initiative
+  round: number; // contador de rondas mostrado en la barra
+  order: string[]; // ids de Combatant, ordenados desc por initiative
   currentTurnIndex: number;
 }
 
 interface DiceRoll {
   id: string;
   byUserId: string;
-  byLabel: string;            // "Lyra", "Máster"
-  notation: string;          // "2d6+3", "1d20" o nombre de ataque
-  results: number[];          // tiradas individuales
-  breakdown: string;          // "20 + 8"
+  byLabel: string; // "Lyra", "Máster"
+  notation: string; // "2d6+3", "1d20" o nombre de ataque
+  results: number[]; // tiradas individuales
+  breakdown: string; // "20 + 8"
   total: number;
   tone: 'normal' | 'crit' | 'fumble';
-  visibility: Visibility;     // 'public' abierta, 'dm_only' oculta
-  at: string;                 // ISO timestamp
+  visibility: Visibility; // 'public' abierta, 'dm_only' oculta
+  at: string; // ISO timestamp
 }
 
-interface CombatEvent {       // log de eventos (separado del de tiradas)
+interface CombatEvent {
+  // log de eventos (separado del de tiradas)
   id: string;
-  text: string;               // "Brom queda envenenado", "Empieza la ronda 3"
+  text: string; // "Brom queda envenenado", "Empieza la ronda 3"
   color: string;
   visibility: Visibility;
   at: string;
@@ -269,8 +270,8 @@ interface LiveTable {
   combat: CombatState;
   rollLog: DiceRoll[];
   eventLog: CombatEvent[];
-  dmNotes: string;            // visibility implícita 'dm_only'
-  version: number;            // optimistic concurrency / orden de eventos
+  dmNotes: string; // visibility implícita 'dm_only'
+  version: number; // optimistic concurrency / orden de eventos
 }
 ```
 
@@ -278,35 +279,35 @@ interface LiveTable {
 
 ### Cuentas y campañas (HTTP)
 
-| Comando | Quién | Efecto / Evento |
-|---|---|---|
-| `Register` | anónimo | crea `User` → `UserRegistered` |
-| `Login` | anónimo | abre sesión → `SessionStarted` |
-| `CreateCampaign` | usuario | crea campaña + joinCode → `CampaignCreated` |
-| `UpdateCampaign` | DM dueño | edita nombre/sinopsis/status → `CampaignUpdated` |
-| `InviteToCampaign` | DM dueño | (re)genera enlace/código → `InviteIssued` |
-| `JoinCampaign` | usuario | se une por código → `MemberJoined` |
-| `CreateCharacter` | jugador | crea ficha 5e → `CharacterCreated` |
-| `UpdateCharacter` | dueño o DM | edita ficha → `CharacterUpdated` |
+| Comando            | Quién      | Efecto / Evento                                  |
+| ------------------ | ---------- | ------------------------------------------------ |
+| `Register`         | anónimo    | crea `User` → `UserRegistered`                   |
+| `Login`            | anónimo    | abre sesión → `SessionStarted`                   |
+| `CreateCampaign`   | usuario    | crea campaña + joinCode → `CampaignCreated`      |
+| `UpdateCampaign`   | DM dueño   | edita nombre/sinopsis/status → `CampaignUpdated` |
+| `InviteToCampaign` | DM dueño   | (re)genera enlace/código → `InviteIssued`        |
+| `JoinCampaign`     | usuario    | se une por código → `MemberJoined`               |
+| `CreateCharacter`  | jugador    | crea ficha 5e → `CharacterCreated`               |
+| `UpdateCharacter`  | dueño o DM | edita ficha → `CharacterUpdated`                 |
 
 ### Sesión en vivo (WS)
 
-| Comando | Quién | Efecto / Evento |
-|---|---|---|
-| `StartCombat` | DM | inicia tracker (ronda 1) → `CombatStarted` |
-| `AddCombatantFromBestiary` | DM | añade monstruo SRD al combate → `CombatantAdded` |
-| `AddManualCombatant` | DM | añade combatiente a mano → `CombatantAdded` |
-| `SetInitiative` | DM | fija/ordena iniciativa → `InitiativeSet` |
-| `ReorderInitiative` | DM | reordena la rail → `InitiativeReordered` |
-| `NextTurn` / `PrevTurn` | DM | avanza/retrocede turno → `TurnAdvanced` |
-| `EndMyTurn` | jugador activo | termina su propio turno → `TurnAdvanced` |
-| `SetCondition` / `ClearCondition` | DM | chips sobre tokens → `ConditionChanged` |
-| `ApplyDamage` / `ApplyHealing` | DM | modifica HP → `HpChanged` (+ posible `CombatEvent`) |
-| `RollDice` | cualquiera | servidor resuelve notación → `DiceRolled` |
-| `RollAttack` | cualquiera | to-hit + daño, crítico/pifia → `DiceRolled` |
-| `RollHidden` | DM | tirada oculta (`dm_only`) → `DiceRolled` (privado) |
-| `AppendDmNote` | DM | edita notas privadas → `DmNotesUpdated` (privado) |
-| `EndCombat` | DM | cierra tracker → `CombatEnded` |
+| Comando                           | Quién          | Efecto / Evento                                     |
+| --------------------------------- | -------------- | --------------------------------------------------- |
+| `StartCombat`                     | DM             | inicia tracker (ronda 1) → `CombatStarted`          |
+| `AddCombatantFromBestiary`        | DM             | añade monstruo SRD al combate → `CombatantAdded`    |
+| `AddManualCombatant`              | DM             | añade combatiente a mano → `CombatantAdded`         |
+| `SetInitiative`                   | DM             | fija/ordena iniciativa → `InitiativeSet`            |
+| `ReorderInitiative`               | DM             | reordena la rail → `InitiativeReordered`            |
+| `NextTurn` / `PrevTurn`           | DM             | avanza/retrocede turno → `TurnAdvanced`             |
+| `EndMyTurn`                       | jugador activo | termina su propio turno → `TurnAdvanced`            |
+| `SetCondition` / `ClearCondition` | DM             | chips sobre tokens → `ConditionChanged`             |
+| `ApplyDamage` / `ApplyHealing`    | DM             | modifica HP → `HpChanged` (+ posible `CombatEvent`) |
+| `RollDice`                        | cualquiera     | servidor resuelve notación → `DiceRolled`           |
+| `RollAttack`                      | cualquiera     | to-hit + daño, crítico/pifia → `DiceRolled`         |
+| `RollHidden`                      | DM             | tirada oculta (`dm_only`) → `DiceRolled` (privado)  |
+| `AppendDmNote`                    | DM             | edita notas privadas → `DmNotesUpdated` (privado)   |
+| `EndCombat`                       | DM             | cierra tracker → `CombatEnded`                      |
 
 **Autorización:** cada handler valida el rol y la propiedad antes de mutar. Un
 jugador no puede editar la ficha de otro, avanzar el turno de otro, ni recibir
@@ -364,6 +365,7 @@ SRD 5.2 completo (todo el bestiario y conjuros) queda como fase 2.
 ## 10. Alcance de la v1 — y lo que queda FUERA
 
 **Dentro (las 5 pantallas):**
+
 1. **Registro / login** con cuentas reales (email + contraseña, sin email
    transaccional).
 2. **Campañas:** crear, listar, estados, invitar por enlace/código, unirse.
@@ -381,6 +383,7 @@ SRD 5.2 completo (todo el bestiario y conjuros) queda como fase 2.
 7. **Reconexión + rehidratación** desde Postgres.
 
 **Fuera (extensiones futuras, NO implementar en v1):**
+
 - Verificación de email / recuperación de contraseña (necesita proveedor de
   correo) — fase 2.
 - SRD 5.2 completo (bestiario y conjuros enteros) — fase 2.

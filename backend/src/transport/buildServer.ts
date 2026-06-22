@@ -29,7 +29,13 @@ export function buildServer(deps: ServerDeps): FastifyInstance {
   // quiet; `main.ts` is the one real caller that wants boot/request logs.
   const app = Fastify({ logger: deps.logger ?? false });
 
-  app.register(cors, { origin: deps.config.corsOrigin, credentials: true });
+  // Cookies are credentialed, so the browser rejects a wildcard
+  // `Access-Control-Allow-Origin`. When `corsOrigin` is the dev default '*',
+  // reflect the request's Origin instead (`origin: true` echoes a concrete
+  // origin, compatible with credentials). In production `assertSafeForProduction`
+  // requires an explicit origin, so this reflection only ever applies in dev.
+  const corsOrigin = deps.config.corsOrigin === '*' ? true : deps.config.corsOrigin;
+  app.register(cors, { origin: corsOrigin, credentials: true });
   app.register(websocket);
 
   registerHealth(app);
