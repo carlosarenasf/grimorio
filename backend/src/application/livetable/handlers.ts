@@ -59,7 +59,7 @@ function authorLabel(table: LiveTable, principal: Principal): string {
   if (principal.role === 'dm') return 'Máster';
   // A player's label is the name of the PC combatant they control, if present.
   const own = table.combatants.find(
-    (c) => c.type === 'pc' && c.refId === principal.userId,
+    (c) => c.type === 'pc' && c.controllerUserId === principal.userId,
   );
   return own?.name ?? 'Jugador';
 }

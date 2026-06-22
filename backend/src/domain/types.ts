@@ -99,7 +99,11 @@ export interface Condition {
 
 export interface Combatant {
   id: CombatantId;
-  refId: string | null; // sheet (pc) or bestiary entry (monster)
+  refId: string | null; // PC: the CharacterId; monster: the bestiary entry id; else null
+  // For a PC combatant, the user who controls it (the character's owner). Used by
+  // canEndOwnTurn and authorLabel, and to derive a player's ownCharacterId in the
+  // visibility projection. Absent/null for monsters / unowned combatants.
+  controllerUserId?: UserId | null;
   type: CombatantType;
   name: string;
   initiative: number;

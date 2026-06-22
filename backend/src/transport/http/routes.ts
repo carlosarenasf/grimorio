@@ -20,7 +20,11 @@ import {
   joinByCode,
   listCampaignsForUser,
 } from '../../application/campaign/index.js';
-import { createCharacter, updateCharacter } from '../../application/character/index.js';
+import {
+  createCharacter,
+  updateCharacter,
+  getCharacter,
+} from '../../application/character/index.js';
 import { getOrCreateLiveTable } from '../../application/livetable/index.js';
 import { projectLiveTable } from '../../domain/visibility/index.js';
 import type { CampaignId, CharacterId, UserId } from '../../domain/ids.js';
@@ -201,6 +205,23 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
             actorId: req.principal!.userId as UserId,
             patch: cmd.patch,
           },
+          deps,
+        );
+        reply.send(character);
+      } catch (err) {
+        handleError(err, reply);
+      }
+    },
+  );
+
+  app.get(
+    '/characters/:id',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { id } = req.params as { id: string };
+      try {
+        const character = await getCharacter(
+          { characterId: id as CharacterId, actorId: req.principal!.userId as UserId },
           deps,
         );
         reply.send(character);

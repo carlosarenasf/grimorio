@@ -3,8 +3,8 @@ import { FakeClock, SeededRng, makeInMemoryRepos } from '../../testing/index.js'
 import { StaticSrdProvider } from '../../domain/srd/index.js';
 import type { Deps as LiveDeps, Principal } from '../../application/livetable/index.js';
 import { getOrCreateLiveTable } from '../../application/livetable/index.js';
-import type { Campaign, Combatant, LiveTable } from '../../domain/types.js';
-import type { CampaignId, UserId } from '../../domain/ids.js';
+import type { Campaign, CharacterSheet, Combatant, LiveTable } from '../../domain/types.js';
+import { newCharacterId, type CampaignId, type CharacterId, type UserId } from '../../domain/ids.js';
 import type { PlayerSnapshot, MasterSnapshot } from '@grimorio/shared/wire';
 import { RoomManager } from './room.js';
 import { handleMessage, sendInitialSnapshot, type OutboundMessage } from './connection.js';
@@ -275,5 +275,77 @@ describe('reconnect', () => {
     const snap = (msgs[0] as { snapshot: PlayerSnapshot }).snapshot;
     expect(snap.viewerRole).toBe('player');
     expect(snap.campaignId).toBe(CAMPAIGN_ID);
+  });
+});
+
+// ---------- auto-seat the connecting player's character ----------
+
+function ownedSheet(id: CharacterId): CharacterSheet {
+  return {
+    id,
+    campaignId: CAMPAIGN_ID,
+    ownerId: PLAYER_ID,
+    name: 'Lyra',
+    species: 'Elfo',
+    className: 'Explorador',
+    background: 'Forastero',
+    level: 5,
+    scores: { str: 12, dex: 18, con: 14, int: 10, wis: 16, cha: 11 },
+    maxHp: 38,
+    currentHp: 31,
+    armorClass: 16,
+    speed: 10.5,
+    proficientSkills: [],
+    attacks: [],
+    inventory: [],
+    gold: 0,
+    notes: '',
+    visibility: 'owner',
+  };
+}
+
+describe('auto-seat on player connect', () => {
+  it("seats the player's character and surfaces ownCharacterId", async () => {
+    const repos = makeInMemoryRepos();
+    await repos.campaigns.save(seededCampaign());
+    const charId = newCharacterId();
+    await repos.characters.save(ownedSheet(charId));
+    const deps: LiveDeps = {
+      tables: repos.liveTables,
+      srd: new StaticSrdProvider(),
+      rng: new SeededRng([1]),
+      clock: new FakeClock(),
+      characters: repos.characters,
+    };
+    const rooms = new RoomManager();
+    const playerSock = fakeSocket();
+    rooms.join(CAMPAIGN_ID, playerSock, player);
+
+    await sendInitialSnapshot({
+      roomId: CAMPAIGN_ID,
+      campaignId: CAMPAIGN_ID,
+      principal: player,
+      client: playerSock,
+      rooms,
+      deps,
+    });
+
+    const msgs = received(playerSock).filter((m) => m.kind === 'snapshot');
+    const snap = (msgs.at(-1) as { snapshot: PlayerSnapshot }).snapshot;
+    expect(snap.ownCharacterId).toBe(charId);
+    const mine = snap.combatants.find((c) => c.type === 'pc' && c.name === 'Lyra');
+    expect(mine).toBeDefined();
+
+    // idempotent: a reconnect does not add a second PC combatant
+    await sendInitialSnapshot({
+      roomId: CAMPAIGN_ID,
+      campaignId: CAMPAIGN_ID,
+      principal: player,
+      client: playerSock,
+      rooms,
+      deps,
+    });
+    const table = await repos.liveTables.findByCampaignId(CAMPAIGN_ID);
+    expect(table!.combatants.filter((c) => c.type === 'pc')).toHaveLength(1);
   });
 });

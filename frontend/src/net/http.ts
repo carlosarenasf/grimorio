@@ -44,6 +44,15 @@ export interface CharacterDTO {
   armorClass: number;
   speed: number;
   proficientSkills: string[];
+  attacks?: Array<{
+    id: string;
+    name: string;
+    kind: 'weapon' | 'spell' | 'save';
+    bonus: number | null;
+    damage: string | null;
+    damageType: string;
+  }>;
+  inventory?: Array<{ id: string; name: string; note: string; qty: number; equipped: boolean }>;
   gold: number;
   notes: string;
   [key: string]: unknown;
@@ -111,6 +120,7 @@ export interface ApiClient {
   joinByCode(joinCode: string): Promise<CampaignDTO>;
   createCharacter(payload: CreateCharacterPayload): Promise<CharacterDTO>;
   updateCharacter(characterId: string, patch: UpdateCharacterPayload): Promise<CharacterDTO>;
+  getCharacter(characterId: string): Promise<CharacterDTO>;
   getSnapshot(campaignId: string): Promise<Snapshot>;
 }
 
@@ -208,6 +218,9 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
     },
     updateCharacter(characterId, patch) {
       return request<CharacterDTO>('PATCH', `/characters/${characterId}`, patch);
+    },
+    getCharacter(characterId) {
+      return request<CharacterDTO>('GET', `/characters/${characterId}`);
     },
     getSnapshot(campaignId) {
       return request<Snapshot>('GET', `/tables/${campaignId}/snapshot`);

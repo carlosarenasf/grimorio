@@ -7,7 +7,7 @@ import { applyDamage, applyHealing } from './hp.js';
 import { setCondition, clearCondition } from './conditions.js';
 
 function pcOwnedBy(id: string, initiative: number, ownerId: string): Combatant {
-  return { ...pc(id, initiative), refId: ownerId };
+  return { ...pc(id, initiative), controllerUserId: ownerId as Combatant['controllerUserId'] };
 }
 
 function monster(id: string, initiative: number): Combatant {

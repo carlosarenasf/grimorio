@@ -8,7 +8,13 @@
  */
 import type { UserId } from '../../domain/ids.js';
 import type { LiveTable, Role } from '../../domain/types.js';
-import type { Clock, LiveTableRepository, Rng, SrdProvider } from '../ports.js';
+import type {
+  CharacterRepository,
+  Clock,
+  LiveTableRepository,
+  Rng,
+  SrdProvider,
+} from '../ports.js';
 import type { GameEvent } from '@grimorio/shared/events';
 
 export interface Principal {
@@ -21,6 +27,8 @@ export interface Deps {
   srd: SrdProvider;
   rng: Rng;
   clock: Clock;
+  /** Used by the WS gateway to auto-seat a connecting player's character. */
+  characters?: CharacterRepository;
 }
 
 /** Result of applying one command: the new table plus the events to broadcast. */

@@ -5,10 +5,9 @@
  * The live table connects a LiveConnection and renders the master or player
  * view based on the server-projected snapshot's `viewerRole`.
  *
- * Known follow-up: the PlayerSnapshot carries only public combat data + the
- * viewer's `ownCharacterId`, not the full owned sheet (scores/attacks/inventory).
- * Until the projection includes the owner's full sheet (or a GET /characters/:id
- * endpoint exists), the player view is seeded from the public combatant only.
+ * The player view loads its full owned sheet via GET /characters/:id (the
+ * snapshot carries only public combat data + the viewer's `ownCharacterId`),
+ * mapping it to the `YouCharacter` the screen needs.
  */
 import { useEffect, useMemo, useState } from 'react';
 import { createApiClient, createLiveConnection, createSessionStore } from './net/index.js';
@@ -20,7 +19,36 @@ import { CrearPersonajeScreen } from './screens/CrearPersonaje/index.js';
 import { VistaMasterScreen, makeSrdSource } from './screens/VistaMaster/index.js';
 import { VistaJugadorScreen } from './screens/VistaJugador/index.js';
 import type { YouCharacter } from './screens/VistaJugador/index.js';
+import type { CharacterDTO } from './net/http.js';
 import { Button } from './design/index.js';
+
+const abilityMod = (score: number) => Math.floor((score - 10) / 2);
+const profBonus = (level: number) => Math.ceil(level / 4) + 1;
+
+/** Map the server's character sheet to the player screen's YouCharacter. */
+function toYouCharacter(sheet: CharacterDTO, combatantId: string | null): YouCharacter {
+  return {
+    combatantId,
+    characterId: sheet.id,
+    name: sheet.name,
+    scores: sheet.scores,
+    maxHp: sheet.maxHp,
+    currentHp: sheet.currentHp,
+    armorClass: sheet.armorClass,
+    speed: sheet.speed,
+    proficiencyBonus: profBonus(sheet.level),
+    initiative: abilityMod(sheet.scores.dex),
+    attacks: (sheet.attacks ?? []).map((a) => ({
+      id: a.id,
+      name: a.name,
+      kind: a.kind,
+      bonus: a.bonus,
+      damage: a.damage,
+    })),
+    inventory: sheet.inventory ?? [],
+    gold: sheet.gold,
+  };
+}
 
 type Principal = { userId: string; displayName: string };
 type View =
@@ -87,8 +115,9 @@ function TableView(props: {
   campaignId: string;
   onLeave: () => void;
 }) {
-  const { campaignId, srd } = props;
+  const { api, campaignId, srd } = props;
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [you, setYou] = useState<YouCharacter | null>(null);
   const connection = useMemo(() => createLiveConnection({ campaignId }), [campaignId]);
 
   useEffect(() => {
@@ -99,6 +128,31 @@ function TableView(props: {
       connection.close();
     };
   }, [connection]);
+
+  // When playing, load the full owned sheet for the action economy / TU FICHA.
+  const ownCharacterId = snapshot?.viewerRole === 'player' ? snapshot.ownCharacterId : null;
+  useEffect(() => {
+    if (!ownCharacterId) {
+      setYou(null);
+      return;
+    }
+    let cancelled = false;
+    const combatantId =
+      snapshot && snapshot.viewerRole === 'player'
+        ? (snapshot.combatants.find((c) => c.type === 'pc')?.id ?? null)
+        : null;
+    api
+      .getCharacter(ownCharacterId)
+      .then((sheet) => {
+        if (!cancelled) setYou(toYouCharacter(sheet, combatantId));
+      })
+      .catch(() => {
+        /* leave `you` null; the player view shows a waiting state */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ownCharacterId, api, snapshot]);
 
   const send = (command: Command) => connection.send(command);
 
@@ -120,23 +174,15 @@ function TableView(props: {
     return <VistaMasterScreen snapshot={snapshot} send={send} srd={srd} />;
   }
 
-  // Player view: seed `you` from the public own-combatant. Full sheet data is a
-  // documented follow-up (see file header).
-  const own = snapshot.combatants.find((c) => c.id === snapshot.ownCharacterId);
-  const you: YouCharacter = {
-    combatantId: own?.id ?? snapshot.ownCharacterId ?? null,
-    characterId: snapshot.ownCharacterId ?? '',
-    name: own?.name ?? 'Tu personaje',
-    scores: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
-    maxHp: own?.maxHp ?? 0,
-    currentHp: own?.currentHp ?? 0,
-    armorClass: 10,
-    speed: 9,
-    proficiencyBonus: 2,
-    initiative: own?.initiative ?? 0,
-    attacks: [],
-    inventory: [],
-    gold: 0,
-  };
+  if (!you) {
+    return (
+      <main className="gx-loading" role="status" aria-live="polite">
+        <p>Cargando tu personaje…</p>
+        <Button variant="ghost" onClick={props.onLeave}>
+          ← Volver a campañas
+        </Button>
+      </main>
+    );
+  }
   return <VistaJugadorScreen snapshot={snapshot} you={you} send={send} />;
 }

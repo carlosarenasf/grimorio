@@ -57,6 +57,12 @@ export function projectLiveTable(
     return snapshot;
   }
 
+  // The player's own character id = the PC combatant they control (refId holds
+  // the CharacterId). Lets the client highlight their token and fetch their sheet.
+  const ownCombatant = table.combatants.find(
+    (c) => c.type === 'pc' && c.controllerUserId === viewer.userId,
+  );
+
   const snapshot: PlayerSnapshot = {
     liveTableId: table.id,
     campaignId: table.campaignId,
@@ -66,7 +72,7 @@ export function projectLiveTable(
     eventLog: table.eventLog.filter((event) => event.visibility !== 'dm_only'),
     version: table.version,
     viewerRole: 'player',
-    ownCharacterId: null,
+    ownCharacterId: ownCombatant?.refId ?? null,
   };
   return snapshot;
 }

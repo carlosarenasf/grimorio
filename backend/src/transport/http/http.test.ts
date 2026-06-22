@@ -311,6 +311,54 @@ describe('HTTP transport', () => {
       });
       expect(res.statusCode).toBe(400);
     });
+
+    it('GET /characters/:id returns the sheet for its owner and 403 for a stranger', async () => {
+      const dm = await registerAndCookie(app, 'dm-get@example.com', 'DMGet');
+      const stranger = await registerAndCookie(app, 'stranger-get@example.com', 'Stranger');
+
+      const campaign = (
+        await app.inject({
+          method: 'POST',
+          url: '/campaigns',
+          cookies: { [config.cookieName]: dm.cookie },
+          payload: { type: 'CreateCampaign', name: 'Ruinas', tagline: '' },
+        })
+      ).json();
+
+      const character = (
+        await app.inject({
+          method: 'POST',
+          url: '/characters',
+          cookies: { [config.cookieName]: dm.cookie },
+          payload: {
+            type: 'CreateCharacter',
+            campaignId: campaign.id,
+            name: 'Kael',
+            species: 'Humano',
+            className: 'Guerrero',
+            background: 'Soldado',
+            level: 1,
+            method: 'roll',
+            scores: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+          },
+        })
+      ).json();
+
+      const ownerRes = await app.inject({
+        method: 'GET',
+        url: `/characters/${character.id}`,
+        cookies: { [config.cookieName]: dm.cookie },
+      });
+      expect(ownerRes.statusCode).toBe(200);
+      expect(ownerRes.json().name).toBe('Kael');
+
+      const strangerRes = await app.inject({
+        method: 'GET',
+        url: `/characters/${character.id}`,
+        cookies: { [config.cookieName]: stranger.cookie },
+      });
+      expect(strangerRes.statusCode).toBe(403);
+    });
   });
 
   describe('live table snapshot', () => {

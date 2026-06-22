@@ -22,10 +22,11 @@ const otherPlayer: Principal = { userId: OTHER_PLAYER_ID, role: 'player' };
 const dmViewer = { userId: DM_ID, role: 'dm' as const };
 const playerViewer = { userId: PLAYER_ID, role: 'player' as const };
 
-/** PC combatant controlled by PLAYER_ID — refId holds the *user* id (Wave 1 contract). */
+/** PC combatant controlled by PLAYER_ID — refId holds the CharacterId, controllerUserId the owner. */
 const pc: Combatant = {
   id: 'cbt_pc' as Combatant['id'],
-  refId: PLAYER_ID, // controlling user id, NOT a character id
+  refId: 'char_lyra',
+  controllerUserId: PLAYER_ID,
   type: 'pc',
   name: 'Lyra',
   initiative: 18,

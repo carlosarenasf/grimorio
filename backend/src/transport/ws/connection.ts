@@ -20,7 +20,11 @@
  */
 import { CommandSchema } from '@grimorio/shared/commands';
 import type { Snapshot } from '@grimorio/shared/wire';
-import { dispatchLiveCommand, getOrCreateLiveTable } from '../../application/livetable/index.js';
+import {
+  dispatchLiveCommand,
+  getOrCreateLiveTable,
+  seatCharacter,
+} from '../../application/livetable/index.js';
 import type { Deps as LiveDeps, Principal } from '../../application/livetable/index.js';
 import { LiveTableError } from '../../application/livetable/index.js';
 import { projectLiveTable } from '../../domain/visibility/index.js';
@@ -53,9 +57,31 @@ function snapshotFor(
   return { kind: 'snapshot', snapshot: projectLiveTable(table, principal) };
 }
 
-/** Send the (re)joining socket its current role-filtered snapshot. */
+/**
+ * Send the (re)joining socket its current role-filtered snapshot. For a player
+ * who owns a character in this campaign and isn't seated yet, auto-seat them as
+ * a PC combatant first (so their token, ownCharacterId, and EndMyTurn work), and
+ * broadcast the updated table to everyone in the room.
+ */
 export async function sendInitialSnapshot(ctx: ConnectionContext): Promise<void> {
-  const table = await getOrCreateLiveTable(ctx.campaignId, ctx.deps.tables);
+  let table = await getOrCreateLiveTable(ctx.campaignId, ctx.deps.tables);
+
+  if (ctx.principal.role === 'player' && ctx.deps.characters) {
+    const sheets = await ctx.deps.characters.listByCampaign(ctx.campaignId);
+    const mine = sheets.find((s) => s.ownerId === ctx.principal.userId);
+    if (mine) {
+      const seated = seatCharacter(table, mine, ctx.deps.clock);
+      if (seated) {
+        table = seated.table;
+        await ctx.deps.tables.save(table);
+        for (const { client, principal } of ctx.rooms.clientsOf(ctx.roomId)) {
+          send(client, snapshotFor(table, principal));
+        }
+        return;
+      }
+    }
+  }
+
   send(ctx.client, snapshotFor(table, ctx.principal));
 }
 

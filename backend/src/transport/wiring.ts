@@ -57,7 +57,7 @@ export async function buildDeps(config: Config): Promise<BuiltDeps> {
   const ws: WsGatewayDeps = {
     config,
     campaigns: repos.campaigns,
-    live: { tables: repos.tables, srd, rng, clock },
+    live: { tables: repos.tables, srd, rng, clock, characters: repos.characters },
   };
 
   return { http, ws };

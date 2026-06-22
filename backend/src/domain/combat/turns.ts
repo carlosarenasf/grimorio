@@ -35,17 +35,10 @@ export function prevTurn(state: CombatState): CombatState {
 /**
  * Whether `userId` may end the currently active turn.
  *
- * Ownership-mapping assumption: `Combatant` (domain/types.ts) has no direct
- * `ownerId` field — it only carries `refId: string | null`, documented as
- * "sheet (pc) or bestiary entry (monster)". For this pure-domain check we
- * treat `refId` on a `type === 'pc'` combatant as holding the controlling
- * user's id. The application layer is responsible for populating
- * `Combatant.refId` with `CharacterSheet.ownerId` (not the CharacterId
- * itself) when it builds PC combatants for a LiveTable, specifically so this
- * function can compare ownership without reaching outside the domain layer.
- * Monsters (`type === 'monster'`) never match any userId — only the table's
- * DM may end a monster's turn, which is an authorization concern decided by
- * the application/transport layer, not here.
+ * A player may end the turn only when the active combatant is a PC they control
+ * (`controllerUserId === userId`). Monsters never match a player; only the DM
+ * advances their turns (a DM authorization concern handled in the application
+ * layer, not here).
  */
 export function canEndOwnTurn(
   state: CombatState,
@@ -59,5 +52,5 @@ export function canEndOwnTurn(
     return false;
   }
 
-  return active.refId === userId;
+  return active.controllerUserId === userId;
 }

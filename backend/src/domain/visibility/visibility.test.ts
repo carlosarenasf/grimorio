@@ -300,12 +300,37 @@ describe('projectLiveTable — player snapshot', () => {
     expect(json).not.toContain('SECRETO_DEL_MASTER_UNICO');
   });
 
-  it('carries the viewer own character id', () => {
-    const table = makeLiveTable();
+  it('resolves ownCharacterId to the character of the PC the viewer controls', () => {
+    const table = makeLiveTable({
+      combatants: [
+        makeCombatant({
+          id: 'cbt_lyra' as CombatantId,
+          type: 'pc',
+          hpVisibility: 'public',
+          refId: 'char_lyra',
+          controllerUserId: 'usr_player' as UserId,
+        }),
+        makeCombatant({
+          id: 'cbt_other' as CombatantId,
+          type: 'pc',
+          hpVisibility: 'public',
+          refId: 'char_other',
+          controllerUserId: 'usr_other' as UserId,
+        }),
+      ],
+    });
     const snapshot = projectLiveTable(table, playerViewer);
     expect(snapshot.viewerRole).toBe('player');
     if (snapshot.viewerRole === 'player') {
-      expect(snapshot).toHaveProperty('ownCharacterId');
+      expect(snapshot.ownCharacterId).toBe('char_lyra');
+    }
+  });
+
+  it('leaves ownCharacterId null when the viewer controls no PC', () => {
+    const table = makeLiveTable();
+    const snapshot = projectLiveTable(table, playerViewer);
+    if (snapshot.viewerRole === 'player') {
+      expect(snapshot.ownCharacterId).toBeNull();
     }
   });
 });
