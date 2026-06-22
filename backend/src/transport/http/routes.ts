@@ -9,8 +9,6 @@ import { z } from 'zod';
 import {
   CreateCampaignSchema,
   CreateCharacterSchema,
-  InviteToCampaignSchema,
-  JoinCampaignSchema,
   LoginSchema,
   RegisterSchema,
   UpdateCharacterSchema,
@@ -127,8 +125,7 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     '/campaigns/:id/invite',
     { preHandler: auth },
     async (req: FastifyRequest, reply: FastifyReply) => {
-      const cmd = parseBody(InviteToCampaignSchema, req.body, reply);
-      if (!cmd) return;
+      // The campaign id comes from the URL param (authoritative); no body needed.
       const { id } = req.params as { id: string };
       try {
         const campaign = await issueInvite(
@@ -146,11 +143,11 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     '/join/:code',
     { preHandler: auth },
     async (req: FastifyRequest, reply: FastifyReply) => {
-      const cmd = parseBody(JoinCampaignSchema, req.body, reply);
-      if (!cmd) return;
+      // The join code comes from the URL param (authoritative); no body needed.
+      const { code } = req.params as { code: string };
       try {
         const campaign = await joinByCode(
-          { joinCode: cmd.joinCode, userId: req.principal!.userId as UserId },
+          { joinCode: code, userId: req.principal!.userId as UserId },
           deps,
         );
         reply.send(campaign);
