@@ -1,0 +1,34 @@
+/* App-shell chrome: full-screen loading/empty states and the invite banner. */
+.gx-loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px 20px;
+  text-align: center;
+  background:
+    radial-gradient(80% 60% at 50% -5%, rgba(201, 162, 39, 0.08), transparent 55%),
+    var(--ink-void, #14121c);
+  color: var(--parchment, #e8e2d0);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+.gx-loading-sub {
+  color: var(--muted, rgba(232, 226, 208, 0.56));
+  font-size: 14px;
+  max-width: 40ch;
+}
+.gx-join-banner {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  text-align: center;
+  padding: 11px 16px;
+  background: rgba(201, 162, 39, 0.14);
+  border-bottom: 1px solid var(--arcane, #c9a227);
+  color: var(--arcane, #c9a227);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}

@@ -142,6 +142,26 @@ describe('HTTP transport', () => {
       expect(second.statusCode).toBe(409);
     });
 
+    it('GET /auth/me returns the principal when logged in, 401 otherwise', async () => {
+      const reg = await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: { email: 'me@example.com', password: 'password123', displayName: 'Me' },
+      });
+      const cookie = reg.cookies.find((c) => c.name === config.cookieName)!.value;
+
+      const meRes = await app.inject({
+        method: 'GET',
+        url: '/auth/me',
+        cookies: { [config.cookieName]: cookie },
+      });
+      expect(meRes.statusCode).toBe(200);
+      expect(meRes.json()).toMatchObject({ displayName: 'Me' });
+
+      const anon = await app.inject({ method: 'GET', url: '/auth/me' });
+      expect(anon.statusCode).toBe(401);
+    });
+
     it('logout clears the cookie and returns 204', async () => {
       const res = await app.inject({ method: 'POST', url: '/auth/logout' });
       expect(res.statusCode).toBe(204);

@@ -222,3 +222,27 @@
 .invite-link-input {
   flex: 1;
 }
+
+/* "Unirse con código" inline form in the top bar */
+.campanas-join {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
+}
+.campanas-join__input {
+  background: var(--ink-void, #14121c);
+  border: 1px solid var(--hairline2, rgba(232, 226, 208, 0.18));
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--parchment, #e8e2d0);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  outline: none;
+  width: 200px;
+}
+.campanas-join__input:focus {
+  border-color: var(--arcane, #c9a227);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.14);
+}

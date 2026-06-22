@@ -16,6 +16,8 @@ export interface CampanasScreenProps {
   onEnter: (campaignId: string) => void;
   /** Called once a new campaign has been created (after the invite modal flow starts). */
   onCreated?: (campaign: CampaignDTO) => void;
+  /** Called with a join code the user typed in the "Unirse con código" field. */
+  onJoinByCode?: (code: string) => void;
   /** Base URL for invite links, defaults to window.location.origin when available. */
   origin?: string;
 }
@@ -43,12 +45,14 @@ export function CampanasScreen({
   principal,
   onEnter,
   onCreated,
+  onJoinByCode,
   origin,
 }: CampanasScreenProps) {
   const [campaigns, setCampaigns] = useState<CampaignDTO[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [inviteCampaign, setInviteCampaign] = useState<CampaignDTO | null>(null);
+  const [joinCode, setJoinCode] = useState('');
   const resolvedOrigin = origin ?? defaultOrigin();
 
   useEffect(() => {
@@ -99,6 +103,27 @@ export function CampanasScreen({
           {principal ? principal.displayName : 'Invitado'}
         </span>
         <h1 className="font-display campanas-topbar__title">Campañas</h1>
+        {onJoinByCode ? (
+          <form
+            className="campanas-join"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const code = joinCode.trim();
+              if (code) onJoinByCode(code.toUpperCase());
+            }}
+          >
+            <input
+              className="campanas-join__input"
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value)}
+              placeholder="Código de invitación"
+              aria-label="Código de invitación"
+            />
+            <Button type="submit" variant="secondary" disabled={!joinCode.trim()}>
+              Unirse
+            </Button>
+          </form>
+        ) : null}
         <Button type="button" onClick={() => setShowCreate(true)}>
           + Nueva campaña
         </Button>

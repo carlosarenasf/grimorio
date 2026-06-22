@@ -114,6 +114,8 @@ export interface ApiClient {
   register(payload: RegisterPayload): Promise<Principal>;
   login(payload: LoginPayload): Promise<Principal>;
   logout(): Promise<void>;
+  /** Current principal from the session cookie, or throws ApiError(401) if none. */
+  me(): Promise<Principal>;
   listCampaigns(): Promise<CampaignDTO[]>;
   createCampaign(payload: CreateCampaignPayload): Promise<CampaignDTO>;
   invite(campaignId: string): Promise<CampaignDTO>;
@@ -199,6 +201,9 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
     },
     logout() {
       return request<void>('POST', '/auth/logout');
+    },
+    me() {
+      return request<Principal>('GET', '/auth/me');
     },
     listCampaigns() {
       return request<CampaignDTO[]>('GET', '/campaigns');

@@ -102,6 +102,16 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     reply.code(204).send();
   });
 
+  // Who am I? Lets the SPA restore the session on load (the cookie is httpOnly,
+  // so the client can't read the principal directly). 401 when not logged in.
+  app.get(
+    '/auth/me',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      reply.send(req.principal);
+    },
+  );
+
   // ---------- Campaigns ----------
 
   app.get(

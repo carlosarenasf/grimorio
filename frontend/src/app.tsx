@@ -9,12 +9,14 @@
  * snapshot carries only public combat data + the viewer's `ownCharacterId`),
  * mapping it to the `YouCharacter` the screen needs.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createApiClient, createLiveConnection, createSessionStore } from './net/index.js';
 import type { Snapshot } from '@grimorio/shared/wire';
 import type { Command } from '@grimorio/shared/commands';
 import { RegistroScreen } from './screens/Registro/index.js';
+import { LoginScreen } from './screens/Login/index.js';
 import { CampanasScreen } from './screens/Campanas/index.js';
+import './app.css';
 import { CrearPersonajeScreen } from './screens/CrearPersonaje/index.js';
 import { VistaMasterScreen, makeSrdSource } from './screens/VistaMaster/index.js';
 import { VistaJugadorScreen } from './screens/VistaJugador/index.js';
@@ -52,28 +54,113 @@ function toYouCharacter(sheet: CharacterDTO, combatantId: string | null): YouCha
 
 type Principal = { userId: string; displayName: string };
 type View =
+  | { name: 'loading' }
   | { name: 'auth' }
   | { name: 'campaigns' }
   | { name: 'character'; campaignId: string }
   | { name: 'table'; campaignId: string };
+
+/** Read an invite code from the URL: /unirse/CODE, /join/CODE, or ?join=CODE. */
+function parsePendingJoinCode(): string | null {
+  if (typeof window === 'undefined') return null;
+  const m = window.location.pathname.match(/^\/(?:unirse|join)\/([^/?#]+)/);
+  if (m) return decodeURIComponent(m[1]);
+  return new URLSearchParams(window.location.search).get('join');
+}
+
+function clearJoinUrl(): void {
+  if (typeof window !== 'undefined' && window.history?.replaceState) {
+    window.history.replaceState(null, '', '/');
+  }
+}
 
 export function App() {
   const api = useMemo(() => createApiClient({}), []);
   const srd = useMemo(() => makeSrdSource(), []);
   const session = useMemo(() => createSessionStore(), []);
   const [principal, setPrincipal] = useState<Principal | null>(null);
-  const [view, setView] = useState<View>({ name: 'auth' });
+  const [view, setView] = useState<View>({ name: 'loading' });
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const pendingJoin = useRef<string | null>(parsePendingJoinCode());
 
-  if (!principal || view.name === 'auth') {
+  const joinAndEnter = useCallback(
+    async (code: string) => {
+      try {
+        const camp = await api.joinByCode(code);
+        setView({ name: 'table', campaignId: camp.id });
+      } catch {
+        // Unknown/invalid code — drop into the campaigns hub instead of a dead end.
+        setView({ name: 'campaigns' });
+      } finally {
+        pendingJoin.current = null;
+        clearJoinUrl();
+      }
+    },
+    [api],
+  );
+
+  // Restore the session on load: the cookie is httpOnly, so ask the server who
+  // we are. If logged in, honour a pending invite link; otherwise show auth.
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .me()
+      .then((p) => {
+        if (cancelled) return;
+        session.setPrincipal(p);
+        setPrincipal(p);
+        if (pendingJoin.current) void joinAndEnter(pendingJoin.current);
+        else setView({ name: 'campaigns' });
+      })
+      .catch(() => {
+        if (!cancelled) setView({ name: 'auth' });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [api, session, joinAndEnter]);
+
+  function afterAuth() {
+    setPrincipal(session.get());
+    if (pendingJoin.current) void joinAndEnter(pendingJoin.current);
+    else setView({ name: 'campaigns' });
+  }
+
+  if (view.name === 'loading') {
     return (
-      <RegistroScreen
-        api={api}
-        session={session}
-        onRegistered={() => {
-          setPrincipal(session.get());
-          setView({ name: 'campaigns' });
-        }}
-      />
+      <main className="gx-loading" role="status" aria-live="polite">
+        <p>Cargando…</p>
+      </main>
+    );
+  }
+
+  if (view.name === 'auth' || !principal) {
+    const banner = pendingJoin.current ? (
+      <div className="gx-join-banner" role="status">
+        Inicia sesión o crea una cuenta para unirte a la campaña.
+      </div>
+    ) : null;
+    const screen =
+      authMode === 'login' ? (
+        <LoginScreen
+          api={api}
+          session={session}
+          onLoggedIn={afterAuth}
+          onGoToRegister={() => setAuthMode('register')}
+        />
+      ) : (
+        <RegistroScreen
+          api={api}
+          session={session}
+          onRegistered={afterAuth}
+          onGoToLogin={() => setAuthMode('login')}
+        />
+      );
+    return (
+      <>
+        {banner}
+        {screen}
+      </>
     );
   }
 
@@ -83,6 +170,7 @@ export function App() {
         api={api}
         principal={principal}
         onEnter={(campaignId) => setView({ name: 'table', campaignId })}
+        onJoinByCode={(code) => void joinAndEnter(code)}
       />
     );
   }
@@ -105,6 +193,7 @@ export function App() {
       srd={srd}
       campaignId={view.campaignId}
       onLeave={() => setView({ name: 'campaigns' })}
+      onCreateCharacter={() => setView({ name: 'character', campaignId: view.campaignId })}
     />
   );
 }
@@ -114,6 +203,7 @@ function TableView(props: {
   srd: ReturnType<typeof makeSrdSource>;
   campaignId: string;
   onLeave: () => void;
+  onCreateCharacter: () => void;
 }) {
   const { api, campaignId, srd } = props;
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
@@ -172,6 +262,19 @@ function TableView(props: {
 
   if (snapshot.viewerRole === 'dm') {
     return <VistaMasterScreen snapshot={snapshot} send={send} srd={srd} />;
+  }
+
+  // Player without a character in this campaign yet → invite them to create one.
+  if (!snapshot.ownCharacterId) {
+    return (
+      <main className="gx-loading" role="status" aria-live="polite">
+        <p>Aún no tienes un personaje en esta campaña.</p>
+        <Button onClick={props.onCreateCharacter}>Crear personaje</Button>
+        <Button variant="ghost" onClick={props.onLeave}>
+          ← Volver a campañas
+        </Button>
+      </main>
+    );
   }
 
   if (!you) {
