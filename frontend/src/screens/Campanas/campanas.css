@@ -1,0 +1,224 @@
+/*
+ * Campañas screen styles (DESIGN_SPEC.md §4.b): top bar, campaign card
+ * grid, status chips, and the shared modal-overlay/modal-card pattern used
+ * by CreateCampaignModal + InviteModal. Tokens-only, scoped to this screen.
+ */
+
+.campanas-screen {
+  min-height: 100vh;
+  background: var(--void);
+  color: var(--parchment);
+}
+
+.campanas-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.campanas-topbar__user {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.campanas-topbar__title {
+  margin: 0;
+  font-size: 22px;
+}
+
+.campanas-body {
+  padding: var(--space-6);
+}
+
+.campanas-loading {
+  color: var(--muted);
+}
+
+.campanas-error {
+  color: var(--ember);
+  margin: 0 0 var(--space-4);
+}
+
+.campanas-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+  border: 1px dashed var(--hairline-strong);
+  border-radius: var(--radius-lg);
+}
+
+.campanas-empty__title {
+  margin: 0;
+  color: var(--muted);
+  max-width: 32em;
+}
+
+.campanas-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-5);
+}
+
+.campaign-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.campaign-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.campaign-card__name {
+  margin: 0;
+  font-size: 18px;
+}
+
+.campaign-card__tagline {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.campaign-card__code {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.campaign-card__stats {
+  display: flex;
+  gap: var(--space-4);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.campaign-card__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: auto;
+}
+
+.status-chip {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.status-chip--active {
+  color: var(--arcane);
+  background: color-mix(in srgb, var(--arcane) 18%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--arcane) 50%, transparent);
+}
+
+.status-chip--paused {
+  color: var(--frost);
+  background: color-mix(in srgb, var(--frost) 18%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--frost) 50%, transparent);
+}
+
+.status-chip--planning {
+  color: var(--muted);
+  background: var(--raised);
+  border: 1px solid var(--hairline-strong);
+}
+
+/* ---------- Shared modal pattern (Create + Invite) ---------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 18, 28, 0.72);
+  padding: var(--space-6);
+  z-index: 100;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.modal-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.modal-card form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.modal-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ember);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.invite-code {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 32px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: var(--arcane);
+  padding: var(--space-4);
+  background: var(--void);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-md);
+}
+
+.invite-link-label {
+  display: block;
+}
+
+.invite-link-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.invite-link-input {
+  flex: 1;
+}

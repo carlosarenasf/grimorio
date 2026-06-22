@@ -1,0 +1,101 @@
+/*
+ * Registro screen styles (DESIGN_SPEC.md §4.b): centered card, brand mark,
+ * password-strength meter. Tokens-only, scoped to this screen.
+ */
+
+.registro-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: var(--void);
+}
+
+.registro-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.registro-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.registro-brand__mark {
+  font-size: 28px;
+  color: var(--arcane);
+}
+
+.registro-brand__title {
+  margin: 0;
+  font-size: 24px;
+  color: var(--parchment);
+}
+
+.registro-card form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.password-strength {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.password-strength__bars {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.password-strength__bar {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--radius-none);
+  background: var(--hairline-strong);
+}
+
+.password-strength__bar--filled {
+  background: var(--arcane);
+}
+
+.password-strength__label {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.registro-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ember);
+}
+
+.registro-login-link {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--arcane);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
