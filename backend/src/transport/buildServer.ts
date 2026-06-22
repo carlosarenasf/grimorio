@@ -38,10 +38,37 @@ export function buildServer(deps: ServerDeps): FastifyInstance {
   app.register(cors, { origin: corsOrigin, credentials: true });
   app.register(websocket);
 
+  // Treat an empty JSON body as `{}` instead of erroring 500 — some POSTs carry
+  // no body (logout, invite, join) yet clients may still send a JSON content-type.
+  app.addContentTypeParser(
+    'application/json',
+    { parseAs: 'string' },
+    (_req, body, done) => {
+      const text = typeof body === 'string' ? body.trim() : '';
+      if (text.length === 0) {
+        done(null, {});
+        return;
+      }
+      try {
+        done(null, JSON.parse(text));
+      } catch (err) {
+        (err as { statusCode?: number }).statusCode = 400;
+        done(err as Error, undefined);
+      }
+    },
+  );
+
   registerHealth(app);
   // registerHttpRoutes registers @fastify/cookie itself; safe to call directly.
   registerHttpRoutes(app, deps.http);
-  registerWsGateway(app, deps.ws);
+
+  // The WS gateway's `{ websocket: true }` routes must be registered AFTER
+  // @fastify/websocket has loaded. Deferring them inside a plugin guarantees the
+  // ordering (plugins load in registration order: websocket → this), so the
+  // route actually upgrades instead of being treated as a plain GET.
+  app.register(async (instance) => {
+    registerWsGateway(instance, deps.ws);
+  });
 
   return app;
 }

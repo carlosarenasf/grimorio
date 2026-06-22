@@ -7,6 +7,7 @@
  */
 import type { FastifyInstance } from 'fastify';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { WebSocket } from 'ws';
 import { buildServer, type ServerDeps } from './buildServer.js';
 import { makeInMemoryRepos, FakeClock, FakeHasher, SeededRng } from '../testing/index.js';
 import { StaticSrdProvider } from '../domain/srd/index.js';
@@ -113,5 +114,53 @@ describe('buildServer', () => {
     // No valid session cookie: the gateway closes the socket (401) rather
     // than completing the upgrade handshake.
     expect(res.statusCode).not.toBe(101);
+  });
+
+  // Real upgrade over a listening socket — `app.inject` cannot exercise the
+  // @fastify/websocket handshake, so this is the only test that proves the
+  // `{ websocket: true }` route actually upgrades (regression: the route used to
+  // be registered before the plugin loaded and 500'd on every connection).
+  it('completes a real /ws upgrade and pushes a snapshot to an authed client', async () => {
+    const address = await app.listen({ port: 0, host: '127.0.0.1' });
+    const port = (app.server.address() as { port: number }).port;
+
+    const reg = await app.inject({
+      method: 'POST',
+      url: '/auth/register',
+      payload: { email: 'dm@ws.co', password: 'password123', displayName: 'DM' },
+    });
+    const cookie = reg.cookies.find((c) => c.name === 'grimorio_session')!;
+    const campaign = (
+      await app.inject({
+        method: 'POST',
+        url: '/campaigns',
+        cookies: { grimorio_session: cookie.value },
+        payload: { name: 'WS Campaign', tagline: '' },
+      })
+    ).json();
+
+    const snapshot = await new Promise<Record<string, unknown>>((resolve, reject) => {
+      const ws = new WebSocket(`ws://127.0.0.1:${port}/ws/${campaign.id}`, {
+        headers: { cookie: `grimorio_session=${cookie.value}` },
+      });
+      const timer = setTimeout(() => reject(new Error('no snapshot within 4s')), 4000);
+      ws.on('message', (raw: Buffer) => {
+        const msg = JSON.parse(raw.toString());
+        if (msg.kind === 'snapshot') {
+          clearTimeout(timer);
+          ws.close();
+          resolve(msg.snapshot);
+        }
+      });
+      ws.on('error', (err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+    });
+
+    expect(snapshot.viewerRole).toBe('dm');
+    expect(snapshot.campaignId).toBe(campaign.id);
+
+    void address;
   });
 });

@@ -159,9 +159,11 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
     const init: RequestInit = {
       method,
       credentials: 'include',
-      headers: { 'content-type': 'application/json' },
     };
+    // Only declare a JSON content-type when we actually send a body — otherwise
+    // Fastify rejects a bodyless POST (e.g. logout) with "Body cannot be empty".
     if (body !== undefined) {
+      init.headers = { 'content-type': 'application/json' };
       init.body = JSON.stringify(body);
     }
 

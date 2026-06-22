@@ -51,6 +51,16 @@ function handleError(err: unknown, reply: FastifyReply): void {
   reply.code(statusForError(err)).send(bodyForError(err));
 }
 
+/**
+ * Inject the command discriminator the zod schemas require. REST clients send
+ * only the data fields (the route path already implies the command), so the
+ * server stamps the correct `type` before validating. Idempotent when a client
+ * already sent it.
+ */
+function withType(body: unknown, type: string): unknown {
+  return { ...(typeof body === 'object' && body !== null ? body : {}), type };
+}
+
 export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
   const auth = requireSession(deps.config);
 
@@ -61,7 +71,7 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
   // ---------- Auth ----------
 
   app.post('/auth/register', async (req: FastifyRequest, reply: FastifyReply) => {
-    const cmd = parseBody(RegisterSchema, req.body, reply);
+    const cmd = parseBody(RegisterSchema, withType(req.body, 'Register'), reply);
     if (!cmd) return;
     try {
       const principal = await registerUser(
@@ -76,7 +86,7 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
   });
 
   app.post('/auth/login', async (req: FastifyRequest, reply: FastifyReply) => {
-    const cmd = parseBody(LoginSchema, req.body, reply);
+    const cmd = parseBody(LoginSchema, withType(req.body, 'Login'), reply);
     if (!cmd) return;
     try {
       const principal = await login({ email: cmd.email, password: cmd.password }, deps);
@@ -111,7 +121,7 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     '/campaigns',
     { preHandler: auth },
     async (req: FastifyRequest, reply: FastifyReply) => {
-      const cmd = parseBody(CreateCampaignSchema, req.body, reply);
+      const cmd = parseBody(CreateCampaignSchema, withType(req.body, 'CreateCampaign'), reply);
       if (!cmd) return;
       try {
         const campaign = await createCampaign(
@@ -167,7 +177,7 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     '/characters',
     { preHandler: auth },
     async (req: FastifyRequest, reply: FastifyReply) => {
-      const cmd = parseBody(CreateCharacterSchema, req.body, reply);
+      const cmd = parseBody(CreateCharacterSchema, withType(req.body, 'CreateCharacter'), reply);
       if (!cmd) return;
       try {
         const character = await createCharacter(
@@ -195,7 +205,7 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     '/characters/:id',
     { preHandler: auth },
     async (req: FastifyRequest, reply: FastifyReply) => {
-      const cmd = parseBody(UpdateCharacterSchema, req.body, reply);
+      const cmd = parseBody(UpdateCharacterSchema, withType(req.body, 'UpdateCharacter'), reply);
       if (!cmd) return;
       const { id } = req.params as { id: string };
       try {
