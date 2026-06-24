@@ -103,11 +103,16 @@ export function handleAddCombatantFromBestiary(
   const monster = deps.srd.getMonster(cmd.monsterId);
   if (!monster) throw new CombatantNotFound(cmd.monsterId);
 
+  // Number duplicates of the same monster so the table can tell them apart:
+  // "Goblin", "Goblin 2", "Goblin 3"…
+  const sameKind = table.combatants.filter((c) => c.refId === monster.id).length;
+  const name = sameKind === 0 ? monster.name : `${monster.name} ${sameKind + 1}`;
+
   const combatant: Combatant = {
     id: newCombatantId(),
     refId: monster.id,
     type: 'monster',
-    name: monster.name,
+    name,
     initiative: 0,
     maxHp: monster.hp,
     currentHp: monster.hp,
@@ -115,7 +120,13 @@ export function handleAddCombatantFromBestiary(
     hpVisibility: cmd.hpVisibility, // defaults to 'dm_only' at the schema layer
   };
 
-  const next = bump({ ...table, combatants: [...table.combatants, combatant] });
+  // If combat is already running, drop the newcomer into the turn order so the
+  // DM can act with it this encounter (reorder via SetInitiative if needed).
+  const combat = table.combat.active
+    ? { ...table.combat, order: [...table.combat.order, combatant.id] }
+    : table.combat;
+
+  const next = bump({ ...table, combat, combatants: [...table.combatants, combatant] });
   const event: GameEvent = {
     type: 'CombatantAdded',
     version: next.version,

@@ -400,3 +400,48 @@
   margin: 0;
   color: var(--muted);
 }
+
+/* Self HP controls on the sheet */
+.vj-sheet__hpctl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.vj-sheet__hpctl-amount,
+.vj-targets__amount {
+  width: 60px;
+  background: var(--ink-void, #14121c);
+  border: 1px solid var(--hairline2, rgba(232, 226, 208, 0.18));
+  border-radius: 7px;
+  padding: 6px 8px;
+  color: var(--parchment, #e8e2d0);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+}
+
+/* "Atacar a un monstruo" list */
+.vj-targets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vj-targets__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.vj-targets__name {
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+.vj-targets__status {
+  font-size: 11px;
+  color: var(--muted, rgba(232, 226, 208, 0.56));
+}

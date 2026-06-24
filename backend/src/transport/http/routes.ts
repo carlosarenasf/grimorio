@@ -251,6 +251,17 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     },
   );
 
+  // ---------- SRD (curated bestiary) ----------
+
+  app.get(
+    '/srd/monsters',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { q } = req.query as { q?: string };
+      reply.send(deps.srd.searchMonsters(q ?? ''));
+    },
+  );
+
   // ---------- Live table snapshot ----------
 
   app.get(

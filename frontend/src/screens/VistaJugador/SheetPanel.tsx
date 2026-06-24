@@ -1,9 +1,12 @@
-import { Panel, StatNumber } from '../../design';
+import { useState } from 'react';
+import { Button, Panel, StatNumber } from '../../design';
 import { ABILITY_LABELS, ABILITY_ORDER, allModifiers } from './derived';
-import type { YouCharacter } from './types';
+import type { Send, YouCharacter } from './types';
 
 export interface SheetPanelProps {
   you: YouCharacter;
+  /** Lets the player heal or damage their OWN character (any time). */
+  send?: Send;
 }
 
 /**
@@ -11,10 +14,13 @@ export interface SheetPanelProps {
  * CA/Vel/Comp/Init quartet. Read-only here — HP changes arrive via the
  * server snapshot, this panel only renders the viewer's own character.
  */
-export function SheetPanel({ you }: SheetPanelProps) {
+export function SheetPanel({ you, send }: SheetPanelProps) {
   const mods = allModifiers(you.scores);
   const hpRatio = you.maxHp > 0 ? you.currentHp / you.maxHp : 1;
   const hpRole = hpRatio <= 0.25 ? 'damage' : undefined;
+  const [amount, setAmount] = useState('1');
+  const amt = Math.max(0, Math.round(Number(amount) || 0));
+  const canAdjust = Boolean(send && you.combatantId);
 
   return (
     <Panel eyebrow="Tu ficha" title={you.name}>
@@ -45,6 +51,40 @@ export function SheetPanel({ you }: SheetPanelProps) {
               style={{ width: `${Math.max(0, Math.min(1, hpRatio)) * 100}%` }}
             />
           </div>
+          {canAdjust ? (
+            <div className="vj-sheet__hpctl" role="group" aria-label="Ajustar tus PV">
+              <input
+                type="number"
+                min={0}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                aria-label="Cantidad de PV"
+                className="vj-sheet__hpctl-amount"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={amt <= 0}
+                onClick={() =>
+                  send!({ type: 'ApplyHealing', combatantId: you.combatantId!, amount: amt })
+                }
+              >
+                Curarme
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={amt <= 0}
+                onClick={() =>
+                  send!({ type: 'ApplyDamage', combatantId: you.combatantId!, amount: amt })
+                }
+              >
+                Daño
+              </Button>
+            </div>
+          ) : null}
         </div>
 
         <ul className="vj-sheet__mods" aria-label="Modificadores de característica">

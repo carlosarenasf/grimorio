@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Button, Field, Panel } from '../../design';
+import { Button, DiceRoller, Field, Panel } from '../../design';
+import type { DiceRollView } from '../../design';
 import type { Send } from './types';
 
 export interface DicePanelProps {
   send: Send;
+  /** Latest public roll from the snapshot — drives the animated die + result. */
+  latestRoll?: DiceRollView | null;
 }
 
 const QUICK_DICE = ['1d20', '1d12', '1d10', '1d8', '1d6', '1d4', '2d6'];
@@ -13,7 +16,7 @@ const QUICK_DICE = ['1d20', '1d12', '1d10', '1d8', '1d6', '1d4', '2d6'];
  * notation input, both sending public RollDice — players never have a hidden
  * roll option (that's master-only).
  */
-export function DicePanel({ send }: DicePanelProps) {
+export function DicePanel({ send, latestRoll }: DicePanelProps) {
   const [notation, setNotation] = useState('1d20');
 
   function roll(n: string) {
@@ -25,6 +28,7 @@ export function DicePanel({ send }: DicePanelProps) {
   return (
     <Panel eyebrow="Dados" title="Dados">
       <div className="vj-dice">
+        <DiceRoller latestRoll={latestRoll} />
         <div className="vj-dice__quick" role="group" aria-label="Dados rápidos">
           {QUICK_DICE.map((d) => (
             <Button

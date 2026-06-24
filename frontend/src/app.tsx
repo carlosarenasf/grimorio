@@ -18,7 +18,8 @@ import { LoginScreen } from './screens/Login/index.js';
 import { CampanasScreen } from './screens/Campanas/index.js';
 import './app.css';
 import { CrearPersonajeScreen } from './screens/CrearPersonaje/index.js';
-import { VistaMasterScreen, makeSrdSource } from './screens/VistaMaster/index.js';
+import { VistaMasterScreen } from './screens/VistaMaster/index.js';
+import type { MonsterSummary, SrdSource } from './screens/VistaMaster/index.js';
 import { VistaJugadorScreen } from './screens/VistaJugador/index.js';
 import type { YouCharacter } from './screens/VistaJugador/index.js';
 import type { CharacterDTO } from './net/http.js';
@@ -76,7 +77,6 @@ function clearJoinUrl(): void {
 
 export function App() {
   const api = useMemo(() => createApiClient({}), []);
-  const srd = useMemo(() => makeSrdSource(), []);
   const session = useMemo(() => createSessionStore(), []);
   const [principal, setPrincipal] = useState<Principal | null>(null);
   const [view, setView] = useState<View>({ name: 'loading' });
@@ -190,7 +190,6 @@ export function App() {
   return (
     <TableView
       api={api}
-      srd={srd}
       campaignId={view.campaignId}
       onLeave={() => setView({ name: 'campaigns' })}
       onCreateCharacter={() => setView({ name: 'character', campaignId: view.campaignId })}
@@ -200,15 +199,43 @@ export function App() {
 
 function TableView(props: {
   api: ReturnType<typeof createApiClient>;
-  srd: ReturnType<typeof makeSrdSource>;
   campaignId: string;
   onLeave: () => void;
   onCreateCharacter: () => void;
 }) {
-  const { api, campaignId, srd } = props;
+  const { api, campaignId } = props;
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [you, setYou] = useState<YouCharacter | null>(null);
+  const [monsters, setMonsters] = useState<MonsterSummary[]>([]);
   const connection = useMemo(() => createLiveConnection({ campaignId }), [campaignId]);
+
+  // Load the curated SRD bestiary from the backend (real ids → AddCombatantFromBestiary works).
+  const isDm = snapshot?.viewerRole === 'dm';
+  useEffect(() => {
+    if (!isDm || monsters.length > 0) return;
+    let cancelled = false;
+    api
+      .searchMonsters('')
+      .then((list) => {
+        if (!cancelled) {
+          setMonsters(list.map((m) => ({ id: m.id, name: m.name, kind: m.meta, cr: m.cr })));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isDm, api, monsters.length]);
+
+  const srd: SrdSource = useMemo(
+    () => ({
+      searchMonsters: (q: string) => {
+        const ql = q.toLowerCase().trim();
+        return ql ? monsters.filter((m) => m.name.toLowerCase().includes(ql)) : monsters;
+      },
+    }),
+    [monsters],
+  );
 
   useEffect(() => {
     const off = connection.onSnapshot((s) => setSnapshot(s));

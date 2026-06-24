@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Button, Field, Panel } from '../../design';
+import { Button, DiceRoller, Field, Panel } from '../../design';
+import type { DiceRollView } from '../../design';
 import type { Send } from './types';
 
 export interface DicePanelProps {
   send: Send;
+  /** Latest roll from the live snapshot — drives the animated die + result. */
+  latestRoll?: DiceRollView | null;
 }
 
 const QUICK_DICE = ['1d20', '1d12', '1d10', '1d8', '1d6', '1d4', '2d6'];
@@ -13,7 +16,7 @@ const QUICK_DICE = ['1d20', '1d12', '1d10', '1d8', '1d6', '1d4', '2d6'];
  * send RollDice (public), plus the dashed "tirada oculta" button that sends
  * RollHidden (dm-only result, surfaced only in the master's log).
  */
-export function DicePanel({ send }: DicePanelProps) {
+export function DicePanel({ send, latestRoll }: DicePanelProps) {
   const [notation, setNotation] = useState('1d20');
 
   function rollOpen(n: string) {
@@ -31,6 +34,7 @@ export function DicePanel({ send }: DicePanelProps) {
   return (
     <Panel eyebrow="Dados" title="Tirar">
       <div className="vm-dice">
+        <DiceRoller latestRoll={latestRoll} />
         <div className="vm-dice__quick" role="group" aria-label="Dados rápidos">
           {QUICK_DICE.map((d) => (
             <Button

@@ -45,8 +45,6 @@ const DM_ONLY = new Set<Command['type']>([
   'PrevTurn',
   'SetCondition',
   'ClearCondition',
-  'ApplyDamage',
-  'ApplyHealing',
   'AppendDmNote',
   'EndCombat',
   'RollHidden',
@@ -87,6 +85,21 @@ function authorize(table: LiveTable, command: LiveCommand, principal: Principal)
     // they own. canEndOwnTurn matches the active combatant's refId === userId.
     if (!canEndOwnTurn(table.combat, table.combatants, principal.userId)) {
       throw new NotActiveTurn();
+    }
+  }
+
+  // HP changes: the DM may target anyone, at any time. A player may damage any
+  // monster (e.g. attacking on or off their turn) or themselves, and may heal
+  // only themselves — never another player or a monster's HP up.
+  if (command.type === 'ApplyDamage' || command.type === 'ApplyHealing') {
+    if (principal.role === 'dm') return;
+    const target = table.combatants.find((c) => c.id === command.combatantId);
+    if (!target) throw new Forbidden('Unknown combatant');
+    const isOwnPc = target.type === 'pc' && target.controllerUserId === principal.userId;
+    if (command.type === 'ApplyHealing') {
+      if (!isOwnPc) throw new Forbidden('Players can only heal their own character');
+    } else if (target.type !== 'monster' && !isOwnPc) {
+      throw new Forbidden('Players can only damage monsters or their own character');
     }
   }
 }

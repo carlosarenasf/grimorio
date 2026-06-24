@@ -58,6 +58,9 @@ export function VistaMasterScreen({ snapshot, send, srd }: VistaMasterScreenProp
 
   const [amount, setAmount] = useState('1');
   const diceRef = useRef<HTMLDivElement>(null);
+  const latestRoll = snapshot.rollLog.length
+    ? snapshot.rollLog[snapshot.rollLog.length - 1]
+    : null;
 
   function focusDice() {
     const input = diceRef.current?.querySelector('input');
@@ -74,6 +77,12 @@ export function VistaMasterScreen({ snapshot, send, srd }: VistaMasterScreenProp
             snapshot={snapshot}
             selectedId={targetId}
             onSelect={setSelectedId}
+            onDamage={(id, amount) =>
+              send({ type: 'ApplyDamage', combatantId: id, amount })
+            }
+            onHeal={(id, amount) =>
+              send({ type: 'ApplyHealing', combatantId: id, amount })
+            }
           />
           <BestiaryPanel srd={srd} send={send} />
           <QuickReferencePanel />
@@ -96,7 +105,7 @@ export function VistaMasterScreen({ snapshot, send, srd }: VistaMasterScreenProp
 
         <aside className="vm-col vm-col--right" aria-label="Paneles derecha">
           <div ref={diceRef}>
-            <DicePanel send={send} />
+            <DicePanel send={send} latestRoll={latestRoll} />
           </div>
           <HistoryPanel snapshot={snapshot} />
           <DmNotesPanel snapshot={snapshot} send={send} />

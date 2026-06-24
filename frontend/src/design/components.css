@@ -271,3 +271,92 @@
   color: var(--parchment);
   border: 1px solid color-mix(in srgb, var(--chip-color, var(--ember)) 60%, transparent);
 }
+
+/* ===== DiceRoller ===== */
+@keyframes gx-die-roll {
+  0%   { transform: rotate(0deg) scale(0.7); }
+  55%  { transform: rotate(380deg) scale(1.12); }
+  100% { transform: rotate(720deg) scale(1); }
+}
+.dice-roller {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 12px;
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 90% at 50% 25%, rgba(201, 162, 39, 0.07), transparent 62%),
+    rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--hairline, rgba(232, 226, 208, 0.1));
+}
+.dice-roller__stage {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dice-roller__die {
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5));
+  transform-origin: 50% 50%;
+}
+.dice-roller[data-rolling='true'] .dice-roller__die {
+  animation: gx-die-roll 0.85s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dice-roller__shape {
+  fill: #2a2640;
+  stroke: var(--arcane, #c9a227);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+}
+.dice-roller[data-tone='crit'] .dice-roller__shape {
+  stroke: var(--arcane, #c9a227);
+}
+.dice-roller[data-tone='fumble'] .dice-roller__shape {
+  stroke: var(--ember, #b4452e);
+}
+.dice-roller__num {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 30px;
+  fill: var(--parchment, #e8e2d0);
+}
+.dice-roller[data-tone='crit'] .dice-roller__num {
+  fill: var(--arcane, #c9a227);
+}
+.dice-roller[data-tone='fumble'] .dice-roller__num {
+  fill: var(--ember, #b4452e);
+}
+.dice-roller__result {
+  text-align: center;
+  min-height: 38px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dice-roller__total {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--parchment, #e8e2d0);
+}
+.dice-roller[data-tone='crit'] .dice-roller__total {
+  color: var(--arcane, #c9a227);
+}
+.dice-roller[data-tone='fumble'] .dice-roller__total {
+  color: var(--ember, #b4452e);
+}
+.dice-roller__detail,
+.dice-roller__rolling,
+.dice-roller__empty {
+  font-size: 11.5px;
+  color: var(--muted, rgba(232, 226, 208, 0.56));
+}
+.dice-roller__rolling {
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--arcane, #c9a227);
+}

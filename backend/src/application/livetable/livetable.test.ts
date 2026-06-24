@@ -213,16 +213,15 @@ describe('ApplyDamage', () => {
     assertPlayerSeesNoSecrets(next);
   });
 
-  it('a player cannot apply damage (Forbidden)', () => {
+  it('a player may apply damage to their own character', () => {
     const table = makeTable();
-    expect(() =>
-      dispatchLiveCommand(
-        table,
-        { type: 'ApplyDamage', combatantId: pc.id, amount: 5 } as Command,
-        player,
-        makeDeps(),
-      ),
-    ).toThrow(Forbidden);
+    const { table: next } = dispatchLiveCommand(
+      table,
+      { type: 'ApplyDamage', combatantId: pc.id, amount: 5 } as Command,
+      player,
+      makeDeps(),
+    );
+    expect(next.combatants.find((c) => c.id === pc.id)!.currentHp).toBe(25);
   });
 });
 
@@ -471,5 +470,96 @@ describe('other handlers keep the visibility guarantee', () => {
     );
     expect(next.combat.currentTurnIndex).toBe(0);
     assertPlayerSeesNoSecrets(next);
+  });
+});
+
+describe('HP authorization (damage / heal)', () => {
+  it('a player can damage a monster even when it is not their turn', () => {
+    // Make the monster active (so it is NOT the player's turn).
+    const table = makeTable({
+      combat: { active: true, round: 1, order: [monster.id, pc.id], currentTurnIndex: 0 },
+    });
+    const next = dispatchLiveCommand(
+      table,
+      { type: 'ApplyDamage', combatantId: monster.id, amount: 3 } as Command,
+      player,
+      makeDeps(),
+    );
+    const hit = next.table.combatants.find((c) => c.id === monster.id)!;
+    expect(hit.currentHp).toBe(4);
+  });
+
+  it('a player can damage and heal their own character', () => {
+    const dmg = dispatchLiveCommand(
+      makeTable(),
+      { type: 'ApplyDamage', combatantId: pc.id, amount: 10 } as Command,
+      player,
+      makeDeps(),
+    );
+    expect(dmg.table.combatants.find((c) => c.id === pc.id)!.currentHp).toBe(20);
+    const heal = dispatchLiveCommand(
+      dmg.table,
+      { type: 'ApplyHealing', combatantId: pc.id, amount: 5 } as Command,
+      player,
+      makeDeps(),
+    );
+    expect(heal.table.combatants.find((c) => c.id === pc.id)!.currentHp).toBe(25);
+  });
+
+  it("a player cannot damage another player's character", () => {
+    const ally: Combatant = { ...pc, id: 'cbt_ally' as Combatant['id'], controllerUserId: OTHER_PLAYER_ID };
+    const table = makeTable({ combatants: [pc, ally, monster] });
+    expect(() =>
+      dispatchLiveCommand(
+        table,
+        { type: 'ApplyDamage', combatantId: ally.id, amount: 3 } as Command,
+        player,
+        makeDeps(),
+      ),
+    ).toThrow(Forbidden);
+  });
+
+  it('a player cannot heal a monster or another player', () => {
+    expect(() =>
+      dispatchLiveCommand(
+        makeTable(),
+        { type: 'ApplyHealing', combatantId: monster.id, amount: 3 } as Command,
+        player,
+        makeDeps(),
+      ),
+    ).toThrow(Forbidden);
+  });
+
+  it('the DM can damage any combatant on any turn', () => {
+    const next = dispatchLiveCommand(
+      makeTable(),
+      { type: 'ApplyDamage', combatantId: monster.id, amount: 2 } as Command,
+      dm,
+      makeDeps(),
+    );
+    expect(next.table.combatants.find((c) => c.id === monster.id)!.currentHp).toBe(5);
+  });
+});
+
+describe('AddCombatantFromBestiary — multiple monsters', () => {
+  it('numbers duplicates and adds each as a distinct combatant', () => {
+    const empty = makeTable({ combatants: [], combat: { active: false, round: 0, order: [], currentTurnIndex: 0 } });
+    const first = dispatchLiveCommand(
+      empty,
+      { type: 'AddCombatantFromBestiary', monsterId: 'goblin', hpVisibility: 'dm_only' } as Command,
+      dm,
+      makeDeps(),
+    );
+    const second = dispatchLiveCommand(
+      first.table,
+      { type: 'AddCombatantFromBestiary', monsterId: 'goblin', hpVisibility: 'dm_only' } as Command,
+      dm,
+      makeDeps(),
+    );
+    const monsters = second.table.combatants.filter((c) => c.type === 'monster');
+    expect(monsters).toHaveLength(2);
+    expect(monsters[0].name).toBe('Goblin');
+    expect(monsters[1].name).toBe('Goblin 2');
+    expect(monsters[0].id).not.toBe(monsters[1].id);
   });
 });

@@ -381,6 +381,31 @@ describe('HTTP transport', () => {
     });
   });
 
+  describe('srd', () => {
+    it('GET /srd/monsters returns curated bestiary refs for an authed user', async () => {
+      const reg = await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: { email: 'srd@example.com', password: 'password123', displayName: 'DM' },
+      });
+      const cookie = reg.cookies.find((c) => c.name === config.cookieName)!.value;
+      const res = await app.inject({
+        method: 'GET',
+        url: '/srd/monsters?q=goblin',
+        cookies: { [config.cookieName]: cookie },
+      });
+      expect(res.statusCode).toBe(200);
+      const list = res.json();
+      expect(Array.isArray(list)).toBe(true);
+      expect(list.some((m: { id: string }) => m.id === 'goblin')).toBe(true);
+    });
+
+    it('GET /srd/monsters requires auth', async () => {
+      const res = await app.inject({ method: 'GET', url: '/srd/monsters' });
+      expect(res.statusCode).toBe(401);
+    });
+  });
+
   describe('live table snapshot', () => {
     async function registerAndCookie(app: FastifyInstance, email: string, displayName: string) {
       const res = await app.inject({

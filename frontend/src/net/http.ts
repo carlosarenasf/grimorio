@@ -89,6 +89,14 @@ export interface CreateCharacterPayload {
 
 export type UpdateCharacterPayload = Record<string, unknown>;
 
+/** A bestiary search result from the curated SRD (`GET /srd/monsters`). */
+export interface MonsterRefDTO {
+  id: string;
+  name: string;
+  cr: string;
+  meta: string;
+}
+
 // ---------- ApiError ----------
 
 export class ApiError extends Error {
@@ -124,6 +132,8 @@ export interface ApiClient {
   updateCharacter(characterId: string, patch: UpdateCharacterPayload): Promise<CharacterDTO>;
   getCharacter(characterId: string): Promise<CharacterDTO>;
   getSnapshot(campaignId: string): Promise<Snapshot>;
+  /** Search the curated SRD bestiary; ids match what AddCombatantFromBestiary expects. */
+  searchMonsters(query?: string): Promise<MonsterRefDTO[]>;
 }
 
 function defaultBaseUrl(): string {
@@ -231,6 +241,10 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
     },
     getSnapshot(campaignId) {
       return request<Snapshot>('GET', `/tables/${campaignId}/snapshot`);
+    },
+    searchMonsters(query = '') {
+      const qs = query ? `?q=${encodeURIComponent(query)}` : '';
+      return request<MonsterRefDTO[]>('GET', `/srd/monsters${qs}`);
     },
   };
 }

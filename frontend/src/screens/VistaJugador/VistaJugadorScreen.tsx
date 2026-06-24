@@ -5,6 +5,7 @@ import { ActionBar } from './ActionBar';
 import { ActionEconomy } from './ActionEconomy';
 import { DicePanel } from './DicePanel';
 import { InventoryPanel } from './InventoryPanel';
+import { MonsterTargetsPanel } from './MonsterTargetsPanel';
 import { PublicLogPanel } from './PublicLogPanel';
 import { PublicRailPanel } from './PublicRailPanel';
 import { RulesPanel } from './RulesPanel';
@@ -33,6 +34,9 @@ export function VistaJugadorScreen({ snapshot, you, send }: VistaJugadorScreenPr
   const active = getActiveCombatant(snapshot);
   const isYourTurn =
     snapshot.combat.active && active !== null && active.id === you.combatantId;
+  const latestRoll = snapshot.rollLog.length
+    ? snapshot.rollLog[snapshot.rollLog.length - 1]
+    : null;
 
   return (
     <div className="vj-screen">
@@ -45,15 +49,16 @@ export function VistaJugadorScreen({ snapshot, you, send }: VistaJugadorScreenPr
 
       <div className="vj-screen__body">
         <main className="vj-screen__main">
-          <SheetPanel you={you} />
+          <SheetPanel you={you} send={send} />
           <ActionEconomy you={you} send={send} isYourTurn={isYourTurn} />
+          <MonsterTargetsPanel snapshot={snapshot} send={send} />
           <InventoryPanel you={you} send={send} />
           <RulesPanel />
         </main>
 
         <aside className="vj-screen__side">
           <PublicRailPanel snapshot={snapshot} />
-          <DicePanel send={send} />
+          <DicePanel send={send} latestRoll={latestRoll} />
           <PublicLogPanel snapshot={snapshot} />
         </aside>
       </div>

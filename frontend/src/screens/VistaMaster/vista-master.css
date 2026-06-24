@@ -308,3 +308,72 @@
   color: rgba(232, 226, 208, 0.55);
   font-size: 0.85rem;
 }
+
+/* Per-combatant HP controls (damage/heal anyone) */
+.vm-combatants__amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.vm-combatants__amount input {
+  width: 56px;
+  background: var(--ink-void, #14121c);
+  border: 1px solid var(--hairline2, rgba(232, 226, 208, 0.18));
+  border-radius: 7px;
+  padding: 5px 8px;
+  color: var(--parchment, #e8e2d0);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+}
+.vm-combatants__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.vm-combatants__pick {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 9px;
+  border-radius: 9px;
+  border: 1px solid var(--hairline, rgba(232, 226, 208, 0.1));
+  background: rgba(0, 0, 0, 0.16);
+  color: var(--parchment, #e8e2d0);
+  cursor: pointer;
+  text-align: left;
+}
+.vm-combatants__row--selected .vm-combatants__pick {
+  border-color: var(--arcane, #c9a227);
+}
+.vm-combatants__hpctl {
+  display: inline-flex;
+  gap: 5px;
+  flex: none;
+}
+.vm-hpbtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--hairline2, rgba(232, 226, 208, 0.18));
+  background: var(--ink-raised, #2a2640);
+  color: var(--parchment, #e8e2d0);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+.vm-hpbtn--dmg:hover {
+  border-color: var(--ember, #b4452e);
+  color: #e0917f;
+}
+.vm-hpbtn--heal:hover {
+  border-color: var(--sage, #7c9a82);
+  color: var(--sage, #7c9a82);
+}
+.vm-hpbtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

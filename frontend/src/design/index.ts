@@ -22,3 +22,6 @@ export type {
   InitiativeToken,
   ConditionChip,
 } from './InitiativeRail';
+
+export { DiceRoller } from './DiceRoller';
+export type { DiceRollerProps, DiceRollView } from './DiceRoller';
