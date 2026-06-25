@@ -7,6 +7,8 @@ export interface DiceRollView {
   notation: string;
   breakdown: string;
   byLabel?: string;
+  /** Individual die results (for the 3D tray to show each die's face). */
+  results?: number[];
 }
 
 export interface DiceRollerProps {
