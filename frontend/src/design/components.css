@@ -508,15 +508,13 @@
   font-size: 16px;
 }
 .dice-modal__tray {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 16px 14px;
-  min-height: 110px;
-  padding: 22px 18px 10px;
-  background: radial-gradient(120% 80% at 50% 20%, rgba(201, 162, 39, 0.06), transparent 60%),
-    rgba(0, 0, 0, 0.28);
+  padding: 10px 12px 4px;
+  background: radial-gradient(120% 80% at 50% 20%, rgba(201, 162, 39, 0.08), transparent 60%),
+    rgba(0, 0, 0, 0.3);
+}
+.dice-canvas {
+  width: 100%;
+  height: 180px;
 }
 .dice-modal__result {
   display: flex;

@@ -1,7 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Button } from './Button';
-import { Dice3D, type DieType } from './Dice3D';
+import type { DieType } from './Dice3D';
 import type { DiceRollView } from './DiceRoller';
+
+// three.js is heavy — load the 3D dice scene only when the modal first opens.
+const DiceCanvas = lazy(() =>
+  import('./DiceCanvas').then((m) => ({ default: m.DiceCanvas })),
+);
 
 const DIE_TYPES: { type: DieType; faces: number }[] = [
   { type: 'd4', faces: 4 },
@@ -88,18 +93,16 @@ export function DiceModal({ open, onClose, onRoll, latestRoll }: DiceModalProps)
           </button>
         </header>
 
-        {/* 3D tray */}
-        <div className="dice-modal__tray" aria-live="polite">
-          {Array.from({ length: Math.min(trayCount, 30) }).map((_, i) => (
-            <Dice3D
-              key={i}
-              type={dieType}
+        {/* 3D tray (three.js, lazy-loaded) */}
+        <div className="dice-modal__tray">
+          <Suspense fallback={<div className="dice-canvas" />}>
+            <DiceCanvas
+              dice={Array.from({ length: Math.min(trayCount, 30) }, () => dieType)}
               rolling={rolling}
+              results={showResults ? settled!.results! : null}
               tone={tone}
-              delayMs={i * 70}
-              value={showResults ? (settled!.results![i] ?? null) : null}
             />
-          ))}
+          </Suspense>
         </div>
 
         <div className="dice-modal__result" aria-live="polite">

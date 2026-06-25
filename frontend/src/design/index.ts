@@ -29,5 +29,8 @@ export type { DiceRollerProps, DiceRollView } from './DiceRoller';
 export { Dice3D } from './Dice3D';
 export type { Dice3DProps, DieType } from './Dice3D';
 
+export { DiceCanvas } from './DiceCanvas';
+export type { DiceCanvasProps } from './DiceCanvas';
+
 export { DiceModal } from './DiceModal';
 export type { DiceModalProps } from './DiceModal';

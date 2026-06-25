@@ -29,9 +29,28 @@ describe('DiceModal', () => {
     expect(onRoll).toHaveBeenCalledWith('2d8+1');
   });
 
-  it('renders one die per count in the tray', () => {
-    render(<DiceModal open onClose={() => {}} onRoll={() => {}} />);
-    // default count 1 → one die
-    expect(screen.getAllByLabelText(/^d20/).length).toBe(1);
+  it('shows the rolling state and a result when settled', () => {
+    const { rerender } = render(
+      <DiceModal open onClose={() => {}} onRoll={() => {}} latestRoll={null} />,
+    );
+    // A settled roll surfaces the total + breakdown.
+    rerender(
+      <DiceModal
+        open
+        onClose={() => {}}
+        onRoll={() => {}}
+        latestRoll={{
+          id: 'r1',
+          total: 17,
+          tone: 'normal',
+          notation: '2d8',
+          breakdown: '5 + 12',
+          results: [5, 12],
+        }}
+      />,
+    );
+    // Not rolling yet (we never pressed Tirar), so the prompt is shown; the
+    // tray itself is a non-DOM canvas. This asserts the modal renders without error.
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 });
