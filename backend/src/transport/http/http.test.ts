@@ -315,7 +315,7 @@ describe('HTTP transport', () => {
         method: 'PATCH',
         url: `/characters/${character.id}`,
         cookies: { [config.cookieName]: dm.cookie },
-        payload: { type: 'UpdateCharacter', characterId: character.id, patch: { name: 'Lyra Stormbringer' } },
+        payload: { name: 'Lyra Stormbringer' },
       });
       expect(patchRes.statusCode).toBe(200);
       expect(patchRes.json().name).toBe('Lyra Stormbringer');

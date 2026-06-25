@@ -69,6 +69,11 @@
   flex-direction: column;
   gap: 16px;
 }
+/* The wizard step content drives its own height — don't cap it like a sidebar
+   list (the global .panel__body max-height would otherwise clip steps). */
+.cp-main .panel__body {
+  max-height: none;
+}
 .cp-aside {
   position: sticky;
   top: 84px;

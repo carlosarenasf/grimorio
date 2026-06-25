@@ -238,9 +238,14 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     '/characters/:id',
     { preHandler: auth },
     async (req: FastifyRequest, reply: FastifyReply) => {
-      const cmd = parseBody(UpdateCharacterSchema, withType(req.body, 'UpdateCharacter'), reply);
-      if (!cmd) return;
+      // REST: the request body IS the patch; characterId comes from the URL.
       const { id } = req.params as { id: string };
+      const cmd = parseBody(
+        UpdateCharacterSchema,
+        withType({ characterId: id, patch: req.body ?? {} }, 'UpdateCharacter'),
+        reply,
+      );
+      if (!cmd) return;
       try {
         const character = await updateCharacter(
           {
