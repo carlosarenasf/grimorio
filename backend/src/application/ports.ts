@@ -149,6 +149,7 @@ export interface SpellDef {
   school: string;
   classes: string[];
   description: string;
+  damage?: string | null;
 }
 
 /** Curated SRD 5.2 data source (conditions, rules, bestiary, creation reference). */

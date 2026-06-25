@@ -12,6 +12,8 @@ export interface CombatantsPanelProps {
   onHeal: (id: string, amount: number) => void;
   /** Remove a combatant from the battle. */
   onRemove: (id: string) => void;
+  /** Open a PC's character sheet (given its characterId). */
+  onViewSheet?: (characterId: string) => void;
 }
 
 /**
@@ -26,6 +28,7 @@ export function CombatantsPanel({
   onDamage,
   onHeal,
   onRemove,
+  onViewSheet,
 }: CombatantsPanelProps) {
   const { combatants } = snapshot;
   const [amount, setAmount] = useState('1');
@@ -92,6 +95,17 @@ export function CombatantsPanel({
                     <span className="vm-combatants__status">{c.statusLabel}</span>
                   ) : null}
                 </button>
+                {onViewSheet && c.type === 'pc' && c.characterId ? (
+                  <button
+                    type="button"
+                    className="vm-hpbtn vm-hpbtn--sheet"
+                    aria-label={`Ver la ficha de ${c.name}`}
+                    title="Ver ficha"
+                    onClick={() => onViewSheet(c.characterId as string)}
+                  >
+                    📜
+                  </button>
+                ) : null}
                 <div className="vm-combatants__hpctl" role="group" aria-label={`Ajustar PV de ${c.name}`}>
                   <button
                     type="button"

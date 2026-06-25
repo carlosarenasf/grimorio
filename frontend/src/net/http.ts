@@ -53,6 +53,8 @@ export interface CharacterDTO {
     damageType: string;
   }>;
   inventory?: Array<{ id: string; name: string; note: string; qty: number; equipped: boolean }>;
+  /** Chosen spell ids (resolved against the SRD for display/rolling). */
+  spells?: string[];
   gold: number;
   notes: string;
   [key: string]: unknown;
@@ -130,6 +132,7 @@ export interface SpellDTO {
   school: string;
   classes: string[];
   description: string;
+  damage?: string | null;
 }
 
 // ---------- ApiError ----------

@@ -75,6 +75,8 @@ export interface SpellDef {
   school: string;
   classes: string[]; // class ids that can learn it
   description: string;
+  /** Damage/heal dice notation when the spell rolls dice (e.g. "1d10"); null for utility. */
+  damage?: string | null;
 }
 
 /** Curated SRD 5.2 data source (conditions, rules, bestiary, creation reference). */

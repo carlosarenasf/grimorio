@@ -22,14 +22,37 @@ import { VistaMasterScreen } from './screens/VistaMaster/index.js';
 import type { MonsterSummary, SrdSource } from './screens/VistaMaster/index.js';
 import { VistaJugadorScreen } from './screens/VistaJugador/index.js';
 import type { YouCharacter } from './screens/VistaJugador/index.js';
-import type { CharacterDTO } from './net/http.js';
+import type { CharacterDTO, SpellDTO } from './net/http.js';
 import { Button } from './design/index.js';
 
 const abilityMod = (score: number) => Math.floor((score - 10) / 2);
 const profBonus = (level: number) => Math.ceil(level / 4) + 1;
 
 /** Map the server's character sheet to the player screen's YouCharacter. */
-function toYouCharacter(sheet: CharacterDTO, combatantId: string | null): YouCharacter {
+function toYouCharacter(
+  sheet: CharacterDTO,
+  combatantId: string | null,
+  spellsById: Record<string, SpellDTO>,
+): YouCharacter {
+  // Weapon attacks from the sheet + the spells chosen during creation, both as
+  // "attacks" so the action economy shows them (weapon → Atacar, spell → Conjuro).
+  const weaponAttacks = (sheet.attacks ?? []).map((a) => ({
+    id: a.id,
+    name: a.name,
+    kind: a.kind,
+    bonus: a.bonus,
+    damage: a.damage,
+  }));
+  const spellAttacks = (sheet.spells ?? [])
+    .map((id) => spellsById[id])
+    .filter((s): s is SpellDTO => Boolean(s))
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      kind: 'spell' as const,
+      bonus: null,
+      damage: s.damage ?? null,
+    }));
   return {
     combatantId,
     characterId: sheet.id,
@@ -41,13 +64,7 @@ function toYouCharacter(sheet: CharacterDTO, combatantId: string | null): YouCha
     speed: sheet.speed,
     proficiencyBonus: profBonus(sheet.level),
     initiative: abilityMod(sheet.scores.dex),
-    attacks: (sheet.attacks ?? []).map((a) => ({
-      id: a.id,
-      name: a.name,
-      kind: a.kind,
-      bonus: a.bonus,
-      damage: a.damage,
-    })),
+    attacks: [...weaponAttacks, ...spellAttacks],
     inventory: sheet.inventory ?? [],
     gold: sheet.gold,
   };
@@ -208,7 +225,26 @@ function TableView(props: {
   const [you, setYou] = useState<YouCharacter | null>(null);
   const [monsters, setMonsters] = useState<MonsterSummary[]>([]);
   const [campaignCharacters, setCampaignCharacters] = useState<{ id: string; name: string }[]>([]);
+  const [spellsById, setSpellsById] = useState<Record<string, SpellDTO>>({});
   const connection = useMemo(() => createLiveConnection({ campaignId }), [campaignId]);
+
+  // Load the SRD spell list once so chosen spells resolve to names + damage
+  // (player action economy, and the DM's character-sheet view).
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .getSpells()
+      .then((list) => {
+        if (cancelled) return;
+        const map: Record<string, SpellDTO> = {};
+        for (const s of list) map[s.id] = s;
+        setSpellsById(map);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [api]);
 
   // Load the curated SRD bestiary from the backend (real ids → AddCombatantFromBestiary works).
   const isDm = snapshot?.viewerRole === 'dm';
@@ -274,12 +310,14 @@ function TableView(props: {
     let cancelled = false;
     const combatantId =
       snapshot && snapshot.viewerRole === 'player'
-        ? (snapshot.combatants.find((c) => c.type === 'pc')?.id ?? null)
+        ? (snapshot.combatants.find(
+            (c) => c.type === 'pc' && c.characterId === ownCharacterId,
+          )?.id ?? null)
         : null;
     api
       .getCharacter(ownCharacterId)
       .then((sheet) => {
-        if (!cancelled) setYou(toYouCharacter(sheet, combatantId));
+        if (!cancelled) setYou(toYouCharacter(sheet, combatantId, spellsById));
       })
       .catch(() => {
         /* leave `you` null; the player view shows a waiting state */
@@ -287,7 +325,7 @@ function TableView(props: {
     return () => {
       cancelled = true;
     };
-  }, [ownCharacterId, api, snapshot]);
+  }, [ownCharacterId, api, snapshot, spellsById]);
 
   const send = (command: Command) => connection.send(command);
 
@@ -312,6 +350,8 @@ function TableView(props: {
         send={send}
         srd={srd}
         campaignCharacters={campaignCharacters}
+        api={api}
+        spellsById={spellsById}
       />
     );
   }

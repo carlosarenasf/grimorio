@@ -15,6 +15,8 @@ import { DicePanel } from './DicePanel';
 import { HistoryPanel } from './HistoryPanel';
 import { DmNotesPanel } from './DmNotesPanel';
 import { ActionBar } from './ActionBar';
+import { CharacterSheetModal } from './CharacterSheetModal';
+import type { ApiClient, SpellDTO } from '../../net/http';
 import './vista-master.css';
 
 export interface VistaMasterScreenProps {
@@ -26,6 +28,9 @@ export interface VistaMasterScreenProps {
   srd: SrdSource;
   /** Campaign characters (for the Jugadores panel); the DM seats them into battle. */
   campaignCharacters?: { id: string; name: string }[];
+  /** API client + SRD spell map enable the DM to open a player's character sheet. */
+  api?: ApiClient;
+  spellsById?: Record<string, SpellDTO>;
 }
 
 function toRailTokens(snapshot: MasterSnapshot): InitiativeToken[] {
@@ -55,7 +60,10 @@ export function VistaMasterScreen({
   send,
   srd,
   campaignCharacters = [],
+  api,
+  spellsById = {},
 }: VistaMasterScreenProps) {
+  const [sheetCharacterId, setSheetCharacterId] = useState<string | null>(null);
   const seatedCharacterIds = snapshot.combatants
     .filter((c) => c.type === 'pc' && c.characterId)
     .map((c) => c.characterId as string);
@@ -95,6 +103,7 @@ export function VistaMasterScreen({
               send({ type: 'ApplyHealing', combatantId: id, amount })
             }
             onRemove={(id) => send({ type: 'RemoveCombatant', combatantId: id })}
+            onViewSheet={api ? (cid) => setSheetCharacterId(cid) : undefined}
           />
           <PlayersPanel
             characters={campaignCharacters}
@@ -136,6 +145,15 @@ export function VistaMasterScreen({
         amount={amount}
         onFocusDice={focusDice}
       />
+
+      {api && sheetCharacterId ? (
+        <CharacterSheetModal
+          characterId={sheetCharacterId}
+          api={api}
+          spellsById={spellsById}
+          onClose={() => setSheetCharacterId(null)}
+        />
+      ) : null}
     </div>
   );
 }
