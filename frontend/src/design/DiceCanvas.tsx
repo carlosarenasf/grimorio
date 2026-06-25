@@ -9,6 +9,8 @@ export interface DiceCanvasProps {
   /** Settled per-die results (same order as `dice`); orients each die to its face. */
   results?: (number | null)[] | null;
   tone?: 'normal' | 'crit' | 'fumble';
+  /** Die body colour (hex string or number). */
+  color?: string | number;
 }
 
 const FACE_RADIUS = 1;
@@ -91,24 +93,25 @@ function facesOf(geo: THREE.BufferGeometry): Face[] {
   }));
 }
 
-/** A small canvas texture with a number, drawn for a die face. */
-function numberTexture(text: string, color: string): THREE.Texture {
+/** A small canvas texture with a number — light fill + dark outline so it reads on any die colour. */
+function numberTexture(text: string): THREE.Texture {
   const size = 128;
   const cv = document.createElement('canvas');
   cv.width = cv.height = size;
   const ctx = cv.getContext('2d')!;
   ctx.clearRect(0, 0, size, size);
-  ctx.fillStyle = color;
-  ctx.font = 'bold 76px JetBrains Mono, monospace';
+  ctx.font = 'bold 74px JetBrains Mono, monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  ctx.lineWidth = 7;
+  ctx.strokeStyle = 'rgba(10,8,16,0.85)';
+  ctx.strokeText(text, size / 2, size / 2 + 4);
+  ctx.fillStyle = '#f6f1e3';
   ctx.fillText(text, size / 2, size / 2 + 4);
   const tex = new THREE.CanvasTexture(cv);
   tex.anisotropy = 4;
   return tex;
 }
-
-const TONE_NUM_COLOR = { normal: '#e8e2d0', crit: '#c9a227', fumble: '#e0917f' };
 
 interface DieObj {
   group: THREE.Group;
@@ -117,13 +120,13 @@ interface DieObj {
   target: THREE.Quaternion | null;
 }
 
-export function DiceCanvas({ dice, rolling, results, tone = 'normal' }: DiceCanvasProps) {
+export function DiceCanvas({ dice, rolling, results, tone = 'normal', color = 0x3a3458 }: DiceCanvasProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   // Live state the animation loop reads without re-running the scene effect.
   const stateRef = useRef({ rolling, results: results ?? null, tone });
   stateRef.current = { rolling, results: results ?? null, tone };
 
-  const key = dice.join(',');
+  const key = dice.join(',') + '|' + String(color);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -158,14 +161,14 @@ export function DiceCanvas({ dice, rolling, results, tone = 'normal' }: DiceCanv
       typeof window !== 'undefined' &&
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-    const numColor = TONE_NUM_COLOR[stateRef.current.tone];
+    const zAxisRest = new THREE.Vector3(0, 0, 1);
     const dieObjs: DieObj[] = dice.slice(0, 30).map((type) => {
       const geo = geometryFor(type);
       const faces = facesOf(geo);
       const mat = new THREE.MeshStandardMaterial({
-        color: 0x2a2640,
-        metalness: 0.35,
-        roughness: 0.45,
+        color: new THREE.Color(color),
+        metalness: 0.3,
+        roughness: 0.5,
         flatShading: true,
       });
       const mesh = new THREE.Mesh(geo, mat);
@@ -173,7 +176,7 @@ export function DiceCanvas({ dice, rolling, results, tone = 'normal' }: DiceCanv
       group.add(mesh);
       faces.forEach((f, idx) => {
         const label = type === 'd10' || type === 'd100' ? String(idx) : String(idx + 1);
-        const tex = numberTexture(label, numColor);
+        const tex = numberTexture(label);
         const plane = new THREE.Mesh(
           new THREE.PlaneGeometry(0.7, 0.7),
           new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }),
@@ -182,9 +185,11 @@ export function DiceCanvas({ dice, rolling, results, tone = 'normal' }: DiceCanv
         plane.lookAt(f.center.clone().add(f.normal));
         group.add(plane);
       });
-      group.quaternion.setFromEuler(
-        new THREE.Euler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI),
-      );
+      // Rest pose: a face toward the camera (so dice read as soon as they appear),
+      // with a small random tilt for variety.
+      group.quaternion.setFromUnitVectors(faces[0]!.normal.clone().normalize(), zAxisRest);
+      group.rotateY((Math.random() - 0.5) * 0.5);
+      group.rotateX((Math.random() - 0.5) * 0.35);
       scene.add(group);
       return {
         group,

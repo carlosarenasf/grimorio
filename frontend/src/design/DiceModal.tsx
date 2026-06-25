@@ -18,6 +18,17 @@ const DIE_TYPES: { type: DieType; faces: number }[] = [
   { type: 'd100', faces: 100 },
 ];
 
+export const DICE_PALETTE = [
+  '#5b4b8a',
+  '#c9a227',
+  '#b4452e',
+  '#7c9a82',
+  '#5e84a6',
+  '#8b5cf6',
+  '#2f7d8a',
+  '#e8e2d0',
+];
+
 export interface DiceModalProps {
   open: boolean;
   onClose: () => void;
@@ -25,13 +36,23 @@ export interface DiceModalProps {
   onRoll: (notation: string) => void;
   /** The latest roll from the live snapshot — used to settle the animation. */
   latestRoll?: DiceRollView | null;
+  /** Selected die colour + a setter (lifted so the inline tray shares it). */
+  color?: string;
+  onColorChange?: (color: string) => void;
 }
 
 /**
  * Dice tray modal: pick how many dice of which type (+ modifier), roll, and
  * watch them tumble in 3D before settling on the server-resolved result.
  */
-export function DiceModal({ open, onClose, onRoll, latestRoll }: DiceModalProps) {
+export function DiceModal({
+  open,
+  onClose,
+  onRoll,
+  latestRoll,
+  color = DICE_PALETTE[0],
+  onColorChange,
+}: DiceModalProps) {
   const [faces, setFaces] = useState(20);
   const [count, setCount] = useState(1);
   const [modifier, setModifier] = useState(0);
@@ -101,6 +122,7 @@ export function DiceModal({ open, onClose, onRoll, latestRoll }: DiceModalProps)
               rolling={rolling}
               results={showResults ? settled!.results! : null}
               tone={tone}
+              color={color}
             />
           </Suspense>
         </div>
@@ -140,6 +162,24 @@ export function DiceModal({ open, onClose, onRoll, latestRoll }: DiceModalProps)
               </button>
             ))}
           </div>
+
+          {onColorChange ? (
+            <div className="dice-modal__colors" role="group" aria-label="Color del dado">
+              <span className="eyebrow">Color</span>
+              {DICE_PALETTE.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className="dice-modal__swatch"
+                  style={{ background: c }}
+                  data-selected={c === color || undefined}
+                  aria-label={`Color ${c}`}
+                  aria-pressed={c === color}
+                  onClick={() => onColorChange(c)}
+                />
+              ))}
+            </div>
+          ) : null}
 
           <div className="dice-modal__controls">
             <label className="dice-modal__ctl">

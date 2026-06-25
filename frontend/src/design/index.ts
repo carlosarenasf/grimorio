@@ -32,5 +32,8 @@ export type { Dice3DProps, DieType } from './Dice3D';
 export { DiceCanvas } from './DiceCanvas';
 export type { DiceCanvasProps } from './DiceCanvas';
 
-export { DiceModal } from './DiceModal';
+export { DiceModal, DICE_PALETTE } from './DiceModal';
 export type { DiceModalProps } from './DiceModal';
+
+export { DiceResult3D } from './DiceResult3D';
+export type { DiceResult3DProps } from './DiceResult3D';

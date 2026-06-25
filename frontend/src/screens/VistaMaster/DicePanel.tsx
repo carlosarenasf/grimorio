@@ -1,7 +1,11 @@
-import { useState } from 'react';
-import { Button, DiceModal, DiceRoller, Field, Panel } from '../../design';
+import { lazy, Suspense, useState } from 'react';
+import { Button, DiceModal, DICE_PALETTE, Field, Panel } from '../../design';
 import type { DiceRollView } from '../../design';
 import type { Send } from './types';
+
+const DiceResult3D = lazy(() =>
+  import('../../design/DiceResult3D').then((m) => ({ default: m.DiceResult3D })),
+);
 
 export interface DicePanelProps {
   send: Send;
@@ -19,6 +23,7 @@ const QUICK_DICE = ['1d20', '1d12', '1d10', '1d8', '1d6', '1d4', '2d6'];
 export function DicePanel({ send, latestRoll }: DicePanelProps) {
   const [notation, setNotation] = useState('1d20');
   const [modalOpen, setModalOpen] = useState(false);
+  const [color, setColor] = useState(DICE_PALETTE[0]!);
 
   function rollOpen(n: string) {
     const value = n.trim();
@@ -35,7 +40,9 @@ export function DicePanel({ send, latestRoll }: DicePanelProps) {
   return (
     <Panel eyebrow="Dados" title="Tirar">
       <div className="vm-dice">
-        <DiceRoller latestRoll={latestRoll} />
+        <Suspense fallback={<div className="dice-canvas" />}>
+          <DiceResult3D latestRoll={latestRoll} color={color} />
+        </Suspense>
         <Button variant="primary" onClick={() => setModalOpen(true)}>
           🎲 Tirar dados…
         </Button>
@@ -44,6 +51,8 @@ export function DicePanel({ send, latestRoll }: DicePanelProps) {
           onClose={() => setModalOpen(false)}
           onRoll={(n) => rollOpen(n)}
           latestRoll={latestRoll}
+          color={color}
+          onColorChange={setColor}
         />
         <div className="vm-dice__quick" role="group" aria-label="Dados rápidos">
           {QUICK_DICE.map((d) => (

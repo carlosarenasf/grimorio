@@ -617,3 +617,22 @@
 .dice-modal__actions .button {
   width: 100%;
 }
+
+.dice-modal__colors {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dice-modal__swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.dice-modal__swatch[data-selected] {
+  border-color: var(--parchment, #e8e2d0);
+  box-shadow: 0 0 0 2px rgba(232, 226, 208, 0.3);
+}
