@@ -4,7 +4,7 @@ import type { InMemoryRepos } from '../../testing/index.js';
 import { createCampaign , addMember } from '../../domain/campaign/index.js';
 import { newUserId } from '../../domain/ids.js';
 import type { CampaignId, UserId } from '../../domain/ids.js';
-import { createCharacter, updateCharacter, CharacterError } from './index.js';
+import { createCharacter, updateCharacter } from './index.js';
 
 describe('application/character', () => {
   let repos: InMemoryRepos;
@@ -209,7 +209,7 @@ describe('application/character', () => {
     ).rejects.toMatchObject({ code: 'IllegalPointBuy' });
   });
 
-  test('update rejects illegal point-buy patch', async () => {
+  test('update accepts non-point-buy scores (from a 4d6 roll / standard array)', async () => {
     const sheet = await createCharacter(
       {
         campaignId,
@@ -225,15 +225,15 @@ describe('application/character', () => {
       { characters: repos.characters, campaigns: repos.campaigns, rng },
     );
 
-    await expect(
-      updateCharacter(
-        {
-          characterId: sheet.id,
-          actorId: playerAId,
-          patch: { scores: { str: 20, dex: 20, con: 20, int: 20, wis: 20, cha: 20 } },
-        },
-        { characters: repos.characters, campaigns: repos.campaigns },
-      ),
-    ).rejects.toBeInstanceOf(CharacterError);
+    // A 17 is a valid 5e score (rolled) but not a legal 27-point buy — allowed.
+    const updated = await updateCharacter(
+      {
+        characterId: sheet.id,
+        actorId: playerAId,
+        patch: { scores: { str: 15, dex: 15, con: 17, int: 10, wis: 8, cha: 12 } },
+      },
+      { characters: repos.characters, campaigns: repos.campaigns },
+    );
+    expect(updated.scores.con).toBe(17);
   });
 });

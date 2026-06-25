@@ -7,7 +7,6 @@ import type { CharacterId } from '../../domain/ids.js';
 import type { UserId } from '../../domain/ids.js';
 import type { CharacterSheet } from '../../domain/types.js';
 import { clampHp } from '../../domain/character/index.js';
-import { isLegalPointBuy } from '../../domain/rules/index.js';
 import type { CampaignRepository, CharacterRepository } from '../ports.js';
 import { CharacterError } from './errors.js';
 
@@ -45,9 +44,8 @@ export async function updateCharacter(
     );
   }
 
-  if (cmd.patch.scores && !isLegalPointBuy(cmd.patch.scores)) {
-    throw new CharacterError('IllegalPointBuy', 'Patched scores are not a legal point-buy');
-  }
+  // No point-buy check on update: scores may come from a 4d6 roll or the
+  // standard array (e.g. a 17), which are valid 5e scores but not a 27-point buy.
 
   const patched: CharacterSheet = {
     ...existing,
