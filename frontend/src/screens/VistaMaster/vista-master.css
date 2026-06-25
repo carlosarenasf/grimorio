@@ -89,26 +89,6 @@
   margin: 0;
   padding: 0;
 }
-.vm-combatants__row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 10px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.vm-combatants__row:hover {
-  background: var(--ink-raised);
-}
-.vm-combatants__row--selected {
-  border-color: var(--arcane);
-}
 .vm-combatants__hp-max,
 .vm-combatants__status {
   color: rgba(232, 226, 208, 0.6);
@@ -331,9 +311,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap; /* narrow left column: HP controls drop below the name */
 }
 .vm-combatants__pick {
-  flex: 1;
+  flex: 1 1 150px;
   min-width: 0;
   display: flex;
   align-items: center;
