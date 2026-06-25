@@ -68,9 +68,9 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
 }
-/* The wizard step content drives its own height — don't cap it like a sidebar
-   list (the global .panel__body max-height would otherwise clip steps). */
+/* The wizard step content drives its own height — don't cap it like a sidebar. */
 .cp-main .panel__body {
   max-height: none;
 }
@@ -86,18 +86,35 @@
   gap: 12px;
 }
 
+/* ---- list resets for every wizard list ---- */
+.cp-cards,
+.cp-abilities,
+.cp-skills,
+.cp-spells,
+.cp-summary__abilities,
+.cp-summary__skills ul,
+.cp-summary__spells ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 /* ----- selectable cards (clase / especie / trasfondo) ----- */
 .cp-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 12px;
 }
+.cp-cards > [role='listitem'] {
+  display: flex; /* let the card button fill the grid cell */
+}
 .cp-card {
+  width: 100%;
   display: flex !important;
   flex-direction: column;
   align-items: stretch;
   text-align: left;
-  gap: 6px;
+  gap: 5px;
   height: auto;
   white-space: normal;
   padding: 14px 15px;
@@ -108,16 +125,26 @@
   font-weight: 600;
 }
 .cp-card__meta {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 .cp-card__desc {
   font-size: 13px;
-  opacity: 0.9;
+  opacity: 0.92;
 }
 .cp-card__detail {
   font-size: 12px;
   opacity: 0.8;
-  margin-top: 4px;
+}
+
+/* ----- step containers ----- */
+.cp-caracteristicas,
+.cp-competencias,
+.cp-conjuros,
+.cp-trasfondo,
+.cp-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 /* ----- characteristics ----- */
@@ -125,14 +152,13 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 14px;
 }
 .cp-abilities {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 11px;
 }
-@media (max-width: 520px) {
+@media (max-width: 560px) {
   .cp-abilities {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -144,38 +170,41 @@
   padding: 12px 10px;
   text-align: center;
 }
+.cp-ability[data-primary='true'] {
+  border-color: var(--arcane, #c9a227);
+}
 .cp-ability__name {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .cp-ability__score {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 4px 8px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1;
 }
 .cp-ability__mod {
-  font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   font-weight: 700;
   color: var(--arcane, #c9a227);
-  display: block;
-  margin-top: 2px;
-}
-.cp-ability[data-primary='true'] {
-  border-color: var(--arcane, #c9a227);
 }
 .cp-stepper {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  flex-basis: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
   margin-top: 8px;
 }
 
 /* ----- skills ----- */
 .cp-skills {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 8px;
 }
 .cp-skill {
@@ -186,33 +215,21 @@
   border-radius: 9px;
   border: 1px solid var(--hairline, rgba(232, 226, 208, 0.1));
   background: rgba(0, 0, 0, 0.16);
-  width: 100%;
-  text-align: left;
-  color: var(--parchment, #e8e2d0);
-  cursor: pointer;
-}
-.cp-skill[data-selected='true'],
-.cp-skill[aria-pressed='true'] {
-  border-color: var(--arcane, #c9a227);
-  background: rgba(201, 162, 39, 0.08);
 }
 .cp-skill__label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   flex: 1;
+  min-width: 0;
+  cursor: pointer;
 }
 .cp-skill__granted {
+  margin-left: auto;
   color: var(--sage, #7c9a82);
 }
 
 /* ----- spells ----- */
-.cp-conjuros,
-.cp-caracteristicas,
-.cp-competencias,
-.cp-trasfondo,
-.cp-resumen {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
 .cp-spells {
   display: flex;
   flex-direction: column;
@@ -221,25 +238,17 @@
 .cp-spell {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 3px;
-  text-align: left;
   padding: 11px 13px;
   border-radius: 10px;
   border: 1px solid var(--hairline, rgba(232, 226, 208, 0.1));
   background: rgba(0, 0, 0, 0.16);
-  width: 100%;
-  white-space: normal;
-  height: auto;
+}
+.cp-spell__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
-  color: var(--parchment, #e8e2d0);
-}
-.cp-spell[data-selected='true'],
-.cp-spell[aria-pressed='true'] {
-  border-color: var(--arcane, #c9a227);
-  background: rgba(201, 162, 39, 0.08);
-}
-.cp-spell__name {
   font-weight: 600;
 }
 .cp-spell__school {
@@ -250,6 +259,7 @@
   opacity: 0.9;
   line-height: 1.45;
 }
+
 .cp-hint {
   font-size: 12.5px;
   color: var(--muted, rgba(232, 226, 208, 0.56));
@@ -257,6 +267,7 @@
 .cp-pointbuy {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
+  margin: 0;
 }
 .cp-pointbuy--over {
   color: #e0917f;
@@ -266,12 +277,28 @@
 .cp-summary__subtitle {
   color: var(--muted, rgba(232, 226, 208, 0.56));
   font-size: 13px;
+  margin: 0 0 4px;
 }
 .cp-summary__combat {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin: 12px 0;
+}
+.cp-summary__combat div {
+  text-align: center;
+  background: var(--ink-void, #14121c);
+  border: 1px solid var(--hairline, rgba(232, 226, 208, 0.1));
+  border-radius: 9px;
+  padding: 8px 4px;
+}
+.cp-summary__combat dt {
+  margin-bottom: 2px;
+}
+.cp-summary__combat dd {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
 }
 .cp-summary__abilities {
   display: grid;
@@ -290,8 +317,15 @@
 .cp-summary__spells {
   font-size: 12.5px;
   color: var(--muted, rgba(232, 226, 208, 0.56));
-  margin-top: 8px;
+  margin-top: 10px;
   line-height: 1.5;
+}
+.cp-summary__skills ul,
+.cp-summary__spells ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 4px;
 }
 .cp-summary__empty {
   color: var(--faint, rgba(232, 226, 208, 0.34));
