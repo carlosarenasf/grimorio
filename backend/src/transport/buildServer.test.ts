@@ -78,6 +78,19 @@ describe('buildServer', () => {
     expect(res.headers['access-control-allow-credentials']).toBe('true');
   });
 
+  it('CORS preflight allows PATCH (the character wizard PATCHes scores)', async () => {
+    const res = await app.inject({
+      method: 'OPTIONS',
+      url: '/characters/chr_x',
+      headers: {
+        origin: 'http://localhost:5173',
+        'access-control-request-method': 'PATCH',
+        'access-control-request-headers': 'content-type',
+      },
+    });
+    expect(String(res.headers['access-control-allow-methods'])).toMatch(/PATCH/);
+  });
+
   it('register then login works end-to-end through the composed HTTP transport', async () => {
     const registerRes = await app.inject({
       method: 'POST',

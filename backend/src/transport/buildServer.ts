@@ -35,7 +35,13 @@ export function buildServer(deps: ServerDeps): FastifyInstance {
   // origin, compatible with credentials). In production `assertSafeForProduction`
   // requires an explicit origin, so this reflection only ever applies in dev.
   const corsOrigin = deps.config.corsOrigin === '*' ? true : deps.config.corsOrigin;
-  app.register(cors, { origin: corsOrigin, credentials: true });
+  app.register(cors, {
+    origin: corsOrigin,
+    credentials: true,
+    // Be explicit so preflight allows PATCH/PUT/DELETE (the character wizard
+    // PATCHes scores) — otherwise the browser blocks them with a CORS error.
+    methods: ['GET', 'HEAD', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  });
   app.register(websocket);
 
   // Treat an empty JSON body as `{}` instead of erroring 500 — some POSTs carry
