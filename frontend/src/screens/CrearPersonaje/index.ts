@@ -4,9 +4,6 @@ export type { CrearPersonajeScreenProps } from './CrearPersonajeScreen';
 export { SummaryCard } from './SummaryCard';
 export type { SummaryCardProps } from './SummaryCard';
 
-export { AttacksEditor, makeAttack, ATTACK_KIND_LABELS } from './AttacksEditor';
-export type { AttacksEditorProps, AttackRow, AttackKind } from './AttacksEditor';
-
 export { ABILITIES, ABILITY_KEYS, DEFAULT_SCORES, BUY_BASELINE_SCORES } from './abilities';
 export type { AbilityDef, AbilityKey, AbilityScores } from './abilities';
 

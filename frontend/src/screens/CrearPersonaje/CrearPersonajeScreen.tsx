@@ -1,33 +1,36 @@
-import { useMemo, useState } from 'react';
-import { Button, Field, Panel, StatNumber } from '../../design';
+import { useEffect, useMemo, useState } from 'react';
+import { Button, Panel } from '../../design';
 import '../../design/tokens.css';
 import '../../design/components.css';
+import './crear-personaje.css';
 import type { ApiClient, CharacterDTO } from '../../net';
+import type {
+  ClassDTO,
+  SpeciesDTO,
+  BackgroundDTO,
+  SpellDTO,
+} from '../../net/http';
 import { ApiError } from '../../net';
-import { ABILITIES } from './abilities';
-import type { AbilityKey, AbilityScores } from './abilities';
-import { BUY_BASELINE_SCORES } from './abilities';
-import { SKILLS } from './skills';
+import type { AbilityScores } from './abilities';
+import { BUY_BASELINE_SCORES, ABILITY_KEYS } from './abilities';
+import { isLegalPointBuy } from './pointbuy';
+import { abilityMod } from './derived';
+import { canonicalSkillKey } from './labels';
 import {
-  POINT_BUY_BUDGET,
-  totalCost,
-  isOverBudget,
-  canStepInBuy,
-  rollScores,
-  BUY_MIN,
-  BUY_MAX,
-} from './pointbuy';
-import {
-  abilityMod,
-  proficiencyBonus,
-  skillModifier,
-} from './derived';
+  stepsFor,
+  isStepValid,
+  findById,
+  STANDARD_ARRAY,
+} from './wizard';
+import type { WizardState, GenMethod } from './wizard';
+import { StepClase } from './StepClase';
+import { StepEspecie } from './StepEspecie';
+import { StepTrasfondo } from './StepTrasfondo';
+import { StepCaracteristicas } from './StepCaracteristicas';
+import { StepCompetencias } from './StepCompetencias';
+import { StepConjuros } from './StepConjuros';
+import { StepResumen } from './StepResumen';
 import { SummaryCard } from './SummaryCard';
-import { AttacksEditor } from './AttacksEditor';
-import type { AttackRow } from './AttacksEditor';
-import { makeAttack } from './AttacksEditor';
-
-type Method = 'buy' | 'roll';
 
 export interface CrearPersonajeScreenProps {
   /** Injected API client. */
@@ -40,124 +43,39 @@ export interface CrearPersonajeScreenProps {
   onSaved?: (sheet: CharacterDTO) => void;
   /** Called when the user presses "Volver". */
   onBack?: () => void;
-  /** When provided, the screen runs in edit mode (PATCH instead of POST). */
+  /** Pre-fills the name when re-creating from an existing sheet. */
   initialSheet?: CharacterDTO;
 }
 
-interface FormState {
-  name: string;
-  species: string;
-  className: string;
-  background: string;
-  level: number;
-  method: Method;
-  scores: AbilityScores;
-  maxHp: number;
-  currentHp: number;
-  armorClass: number;
-  speed: number;
-  proficientSkills: string[];
-  attacks: AttackRow[];
-  notes: string;
+/** Standard array assigned highest-first to abilities in canonical order. */
+function standardArrayScores(): AbilityScores {
+  const out = {} as AbilityScores;
+  ABILITY_KEYS.forEach((key, i) => {
+    out[key] = STANDARD_ARRAY[i] ?? 10;
+  });
+  return out;
 }
 
-function scoresFrom(dto: CharacterDTO | undefined, fallback: AbilityScores): AbilityScores {
-  if (!dto) return fallback;
-  return { ...fallback, ...dto.scores };
-}
-
-function attacksFrom(dto: CharacterDTO | undefined): AttackRow[] {
-  const raw = dto?.attacks;
-  if (!Array.isArray(raw)) return [];
-  return (raw as Array<Record<string, unknown>>).map((a) => ({
-    id: String(a.id ?? makeAttack().id),
-    name: String(a.name ?? ''),
-    kind:
-      a.kind === 'spell' || a.kind === 'save' ? (a.kind as AttackRow['kind']) : 'weapon',
-    bonus: a.bonus === null || a.bonus === undefined ? 0 : Number(a.bonus),
-    damage: a.damage === null || a.damage === undefined ? '' : String(a.damage),
-  }));
-}
-
-function initialState(initialSheet?: CharacterDTO): FormState {
+function initialWizardState(initialSheet?: CharacterDTO): WizardState {
   return {
-    name: initialSheet?.name ?? '',
-    species: initialSheet?.species ?? '',
-    className: initialSheet?.className ?? '',
-    background: initialSheet?.background ?? '',
-    level: initialSheet?.level ?? 1,
+    classId: null,
+    speciesId: null,
+    backgroundId: null,
+    backgroundAbility: null,
     method: 'buy',
-    // In a fresh sheet, buy mode starts at the cheapest legal baseline (all 8s,
-    // 0/27). An edit keeps the persisted scores.
-    scores: scoresFrom(initialSheet, BUY_BASELINE_SCORES),
-    maxHp: initialSheet?.maxHp ?? 10,
-    currentHp: initialSheet?.currentHp ?? 10,
-    armorClass: initialSheet?.armorClass ?? 10,
-    speed: initialSheet?.speed ?? 9,
-    proficientSkills: initialSheet?.proficientSkills ?? [],
-    attacks: attacksFrom(initialSheet),
+    scores: { ...BUY_BASELINE_SCORES },
+    classSkills: [],
+    cantrips: [],
+    level1Spells: [],
+    name: initialSheet?.name ?? '',
     notes: initialSheet?.notes ?? '',
   };
 }
 
-const STEPS = [
-  'Identidad',
-  'Características',
-  'Combate',
-  'Competencias',
-  'Ataques y conjuros',
-  'Rasgos',
-] as const;
-
 /**
- * Stepper button pair shared by the numeric controls. Each control is a real
- * <button> with an aria-label (DESIGN_SPEC §8 — keyboard + a11y).
- */
-function Stepper({
-  label,
-  value,
-  onStep,
-  canDecrement = true,
-  canIncrement = true,
-  signed = false,
-}: {
-  label: string;
-  value: number;
-  onStep: (delta: number) => void;
-  canDecrement?: boolean;
-  canIncrement?: boolean;
-  signed?: boolean;
-}) {
-  return (
-    <div className="cp-stepper" role="group" aria-label={label}>
-      <Button
-        variant="ghost"
-        size="sm"
-        aria-label={`Reducir ${label}`}
-        disabled={!canDecrement}
-        onClick={() => onStep(-1)}
-      >
-        −
-      </Button>
-      <StatNumber value={value} label={label} signed={signed} />
-      <Button
-        variant="ghost"
-        size="sm"
-        aria-label={`Aumentar ${label}`}
-        disabled={!canIncrement}
-        onClick={() => onStep(+1)}
-      >
-        +
-      </Button>
-    </div>
-  );
-}
-
-/**
- * Crear Personaje (DESIGN_SPEC §4.b): a 6-step 5e sheet with a live summary
- * card. Self-contained — deps are injected via props; nothing imports the app
- * router. All math shown is a client preview; the server returns the canonical
- * sheet on save.
+ * Guided "Crear personaje" wizard (D&D 2024 order). One decision per step;
+ * Siguiente is disabled until the step is valid. The Conjuros step only appears
+ * for casters. The server returns the canonical sheet on save.
  */
 export function CrearPersonajeScreen({
   api,
@@ -167,95 +85,214 @@ export function CrearPersonajeScreen({
   onBack,
   initialSheet,
 }: CrearPersonajeScreenProps) {
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormState>(() => initialState(initialSheet));
+  const [classes, setClasses] = useState<ClassDTO[]>([]);
+  const [species, setSpecies] = useState<SpeciesDTO[]>([]);
+  const [backgrounds, setBackgrounds] = useState<BackgroundDTO[]>([]);
+  const [spells, setSpells] = useState<SpellDTO[]>([]);
+  const [spellsLoading, setSpellsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const [state, setState] = useState<WizardState>(() =>
+    initialWizardState(initialSheet),
+  );
+  const [stepIndex, setStepIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [savedName, setSavedName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const isEdit = initialSheet !== undefined;
-  const prof = proficiencyBonus(form.level);
-  const pointsUsed = totalCost(form.scores);
-  const overBudget = isOverBudget(form.scores);
+  // Load reference data once.
+  useEffect(() => {
+    let active = true;
+    Promise.all([api.getClasses(), api.getSpecies(), api.getBackgrounds()])
+      .then(([cls, spc, bg]) => {
+        if (!active) return;
+        setClasses(cls);
+        setSpecies(spc);
+        setBackgrounds(bg);
+      })
+      .catch(() => {
+        if (active) setLoadError('No se pudieron cargar los datos de creación.');
+      });
+    return () => {
+      active = false;
+    };
+  }, [api]);
 
-  function patch(next: Partial<FormState>) {
-    setForm((prev) => ({ ...prev, ...next }));
-  }
+  const selectedClass = findById(classes, state.classId);
+  const selectedSpecies = findById(species, state.speciesId);
+  const selectedBackground = findById(backgrounds, state.backgroundId);
 
-  function setScore(key: AbilityKey, value: number) {
-    patch({ scores: { ...form.scores, [key]: value } });
-  }
-
-  function stepScore(key: AbilityKey, delta: number) {
-    if (form.method === 'buy') {
-      if (!canStepInBuy(form.scores, key, delta)) return;
-      setScore(key, form.scores[key] + delta);
-    } else {
-      const next = Math.max(3, Math.min(20, form.scores[key] + delta));
-      setScore(key, next);
+  // Fetch spells whenever the chosen caster class changes.
+  useEffect(() => {
+    if (!selectedClass || selectedClass.spellcasting === 'none') {
+      setSpells([]);
+      return;
     }
+    let active = true;
+    setSpellsLoading(true);
+    api
+      .getSpells(selectedClass.id)
+      .then((list) => {
+        if (active) setSpells(list);
+      })
+      .catch(() => {
+        if (active) setSpells([]);
+      })
+      .finally(() => {
+        if (active) setSpellsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [api, selectedClass]);
+
+  const steps = useMemo(() => stepsFor(selectedClass), [selectedClass]);
+  // Keep stepIndex in range when the step list shrinks/grows (caster toggle).
+  const clampedIndex = Math.min(stepIndex, steps.length - 1);
+  const current = steps[clampedIndex];
+
+  function update(next: Partial<WizardState>) {
+    setState((prev) => ({ ...prev, ...next }));
   }
 
-  function setMethod(method: Method) {
-    if (method === 'buy') {
-      patch({ method, scores: BUY_BASELINE_SCORES });
-    } else {
-      patch({ method });
-    }
+  function selectClass(id: string) {
+    // Changing class invalidates class-skill picks and spells.
+    update({ classId: id, classSkills: [], cantrips: [], level1Spells: [] });
   }
 
-  function rollAll() {
-    patch({ method: 'roll', scores: rollScores() });
+  function selectSpecies(id: string) {
+    update({ speciesId: id });
   }
 
-  function toggleSkill(key: string) {
-    const has = form.proficientSkills.includes(key);
-    patch({
-      proficientSkills: has
-        ? form.proficientSkills.filter((k) => k !== key)
-        : [...form.proficientSkills, key],
+  function selectBackground(id: string) {
+    const bg = backgrounds.find((b) => b.id === id);
+    const onlyOption =
+      bg && bg.abilityOptions.length === 1 ? bg.abilityOptions[0] : null;
+    update({ backgroundId: id, backgroundAbility: onlyOption });
+  }
+
+  function changeMethod(method: GenMethod) {
+    if (method === 'buy') update({ method, scores: { ...BUY_BASELINE_SCORES } });
+    else if (method === 'standard') update({ method, scores: standardArrayScores() });
+    else update({ method });
+  }
+
+  function toggleClassSkill(key: string) {
+    const has = state.classSkills.includes(key);
+    update({
+      classSkills: has
+        ? state.classSkills.filter((k) => k !== key)
+        : [...state.classSkills, key],
     });
   }
 
-  async function handleSave() {
+  function toggleCantrip(id: string) {
+    const has = state.cantrips.includes(id);
+    update({
+      cantrips: has
+        ? state.cantrips.filter((c) => c !== id)
+        : [...state.cantrips, id],
+    });
+  }
+
+  function toggleLevel1(id: string) {
+    const has = state.level1Spells.includes(id);
+    update({
+      level1Spells: has
+        ? state.level1Spells.filter((c) => c !== id)
+        : [...state.level1Spells, id],
+    });
+  }
+
+  // ---- Derived stats for the summary and the save payload ----
+  const grantedSkills = (selectedBackground?.skills ?? []).map(canonicalSkillKey);
+  const proficientSkills = useMemo(() => {
+    const set = new Set<string>([...grantedSkills, ...state.classSkills]);
+    return [...set];
+  }, [grantedSkills, state.classSkills]);
+
+  const conMod = abilityMod(state.scores.con);
+  const dexMod = abilityMod(state.scores.dex);
+  const maxHp = (selectedClass?.hitDie ?? 8) + conMod;
+  const armorClass = 10 + dexMod;
+  const speed = selectedSpecies?.speed ?? 9;
+
+  const chosenSpellIds = useMemo(
+    () => [...state.cantrips, ...state.level1Spells],
+    [state.cantrips, state.level1Spells],
+  );
+  const spellNames = useMemo(
+    () =>
+      chosenSpellIds
+        .map((id) => spells.find((s) => s.id === id)?.name)
+        .filter((n): n is string => Boolean(n)),
+    [chosenSpellIds, spells],
+  );
+
+  const stepValid = current ? isStepValid(current.id, state, selectedClass) : false;
+  const isLast = clampedIndex === steps.length - 1;
+
+  function goNext() {
+    if (!stepValid) return;
+    setStepIndex(Math.min(clampedIndex + 1, steps.length - 1));
+  }
+  function goBack() {
+    setStepIndex(Math.max(clampedIndex - 1, 0));
+  }
+
+  async function handleCreate() {
+    if (!selectedClass || !selectedSpecies || !selectedBackground) return;
     setError(null);
     setSavedName(null);
     setSaving(true);
+
+    const scores = state.scores;
+    const speciesName = selectedSpecies.name;
+    const className = selectedClass.name;
+    const backgroundName = selectedBackground.name;
+
     try {
       let result: CharacterDTO;
-      if (isEdit && initialSheet) {
-        result = await api.updateCharacter(initialSheet.id, {
-          type: 'UpdateCharacter',
-          characterId: initialSheet.id,
-          patch: {
-            name: form.name,
-            species: form.species,
-            className: form.className,
-            background: form.background,
-            level: form.level,
-            scores: form.scores,
-            maxHp: form.maxHp,
-            currentHp: form.currentHp,
-            armorClass: form.armorClass,
-            speed: form.speed,
-            proficientSkills: form.proficientSkills,
-            notes: form.notes,
-          },
-        });
-      } else {
+      // Point-buy that is a legal 27-point spread → method 'buy' with scores.
+      // Otherwise (standard array / 4d6, which 'buy' would reject) → create with
+      // method 'roll' (server rolls), then PATCH the exact chosen scores back.
+      const canBuy = state.method === 'buy' && isLegalPointBuy(scores);
+
+      if (canBuy) {
         result = await api.createCharacter({
-          type: 'CreateCharacter',
           campaignId,
           ownerId,
-          name: form.name,
-          species: form.species,
-          className: form.className,
-          background: form.background,
-          level: form.level,
-          method: form.method,
-          scores: form.scores,
+          name: state.name,
+          species: speciesName,
+          className,
+          background: backgroundName,
+          level: 1,
+          method: 'buy',
+          scores,
+          proficientSkills,
+          spells: chosenSpellIds,
         } as Parameters<ApiClient['createCharacter']>[0]);
+      } else {
+        const created = await api.createCharacter({
+          campaignId,
+          ownerId,
+          name: state.name,
+          species: speciesName,
+          className,
+          background: backgroundName,
+          level: 1,
+          method: 'roll',
+          proficientSkills,
+          spells: chosenSpellIds,
+        } as Parameters<ApiClient['createCharacter']>[0]);
+        result = await api.updateCharacter(created.id, {
+          scores,
+          maxHp,
+          currentHp: maxHp,
+          armorClass,
+        });
       }
+
       setSavedName(result.name);
       onSaved?.(result);
     } catch (err) {
@@ -263,32 +300,19 @@ export function CrearPersonajeScreen({
         if (err.status === 400 && err.code === 'IllegalPointBuy') {
           setError('La compra de puntos no es válida.');
         } else {
-          setError(err.message || 'No se pudo guardar el personaje.');
+          setError(err.message || 'No se pudo crear el personaje.');
         }
       } else {
-        setError('No se pudo guardar el personaje.');
+        setError('No se pudo crear el personaje.');
       }
     } finally {
       setSaving(false);
     }
   }
 
-  const summary = useMemo(
-    () => (
-      <SummaryCard
-        name={form.name}
-        species={form.species}
-        className={form.className}
-        level={form.level}
-        scores={form.scores}
-        maxHp={form.maxHp}
-        armorClass={form.armorClass}
-        speed={form.speed}
-        attacks={form.attacks}
-      />
-    ),
-    [form],
-  );
+  const stepNumberLabel = `Paso ${clampedIndex + 1} de ${steps.length} · ${
+    current?.title ?? ''
+  }`;
 
   return (
     <div className="cp-screen">
@@ -296,17 +320,18 @@ export function CrearPersonajeScreen({
         <Button variant="ghost" onClick={() => onBack?.()}>
           Volver
         </Button>
-        <h1 className="font-display cp-header__title">
-          {isEdit ? 'Editar personaje' : 'Crear personaje'}
-        </h1>
-        <Button variant="primary" onClick={handleSave} disabled={saving}>
-          {saving ? 'Guardando…' : 'Guardar'}
-        </Button>
+        <h1 className="font-display cp-header__title">Crear personaje</h1>
+        <span aria-hidden="true" />
       </header>
 
+      {loadError ? (
+        <p className="cp-error" role="alert">
+          {loadError}
+        </p>
+      ) : null}
       {savedName ? (
         <p className="cp-saved" role="status">
-          Personaje «{savedName}» guardado.
+          Personaje «{savedName}» creado.
         </p>
       ) : null}
       {error ? (
@@ -315,239 +340,112 @@ export function CrearPersonajeScreen({
         </p>
       ) : null}
 
-      <nav className="cp-steps" aria-label="Pasos">
-        {STEPS.map((label, i) => (
-          <Button
-            key={label}
-            variant={i === step ? 'primary' : 'ghost'}
-            size="sm"
-            aria-current={i === step ? 'step' : undefined}
-            onClick={() => setStep(i)}
-          >
-            {i + 1}. {label}
-          </Button>
-        ))}
-      </nav>
-
       <div className="cp-layout">
         <main className="cp-main">
-          {step === 0 ? (
-            <Panel eyebrow={`Paso 1 de ${STEPS.length}`} title="Identidad">
-              <Field
-                label="Nombre"
-                value={form.name}
-                onChange={(e) => patch({ name: e.target.value })}
+          <Panel eyebrow={stepNumberLabel} title={current?.title ?? ''}>
+            {current?.id === 'clase' ? (
+              <StepClase
+                classes={classes}
+                selectedId={state.classId}
+                onSelect={selectClass}
               />
-              <Field
-                label="Especie"
-                value={form.species}
-                onChange={(e) => patch({ species: e.target.value })}
+            ) : null}
+
+            {current?.id === 'especie' ? (
+              <StepEspecie
+                species={species}
+                selectedId={state.speciesId}
+                onSelect={selectSpecies}
               />
-              <Field
-                label="Clase"
-                value={form.className}
-                onChange={(e) => patch({ className: e.target.value })}
+            ) : null}
+
+            {current?.id === 'trasfondo' ? (
+              <StepTrasfondo
+                backgrounds={backgrounds}
+                selectedId={state.backgroundId}
+                selectedAbility={state.backgroundAbility}
+                onSelect={selectBackground}
+                onSelectAbility={(a) => update({ backgroundAbility: a })}
               />
-              <Field
-                label="Trasfondo"
-                value={form.background}
-                onChange={(e) => patch({ background: e.target.value })}
+            ) : null}
+
+            {current?.id === 'caracteristicas' ? (
+              <StepCaracteristicas
+                method={state.method}
+                scores={state.scores}
+                primaryAbility={selectedClass?.primaryAbility}
+                onChangeMethod={changeMethod}
+                onChangeScores={(scores) => update({ scores })}
               />
-              <div className="field">
-                <span className="eyebrow field__label" id="cp-level-label">
-                  Nivel
-                </span>
-                <Stepper
-                  label="Nivel"
-                  value={form.level}
-                  canDecrement={form.level > 1}
-                  canIncrement={form.level < 20}
-                  onStep={(d) =>
-                    patch({
-                      level: Math.max(1, Math.min(20, form.level + d)),
-                    })
-                  }
-                />
-              </div>
-            </Panel>
-          ) : null}
+            ) : null}
 
-          {step === 1 ? (
-            <Panel eyebrow={`Paso 2 de ${STEPS.length}`} title="Características">
-              <div className="cp-method" role="group" aria-label="Método de generación">
-                <Button
-                  variant={form.method === 'buy' ? 'primary' : 'secondary'}
-                  size="sm"
-                  aria-pressed={form.method === 'buy'}
-                  onClick={() => setMethod('buy')}
-                >
-                  Compra de puntos
-                </Button>
-                <Button
-                  variant={form.method === 'roll' ? 'primary' : 'secondary'}
-                  size="sm"
-                  aria-pressed={form.method === 'roll'}
-                  onClick={rollAll}
-                >
-                  Tirar 4d6
-                </Button>
-                <p
-                  className={`cp-pointbuy ${overBudget ? 'cp-pointbuy--over' : ''}`}
-                  data-over={overBudget || undefined}
-                  aria-live="polite"
-                >
-                  Puntos:{' '}
-                  <span className="tabular-nums">
-                    {pointsUsed} / {POINT_BUY_BUDGET}
-                  </span>
-                  {overBudget ? ' — fuera de presupuesto' : ''}
-                </p>
-              </div>
-
-              <ul className="cp-abilities">
-                {ABILITIES.map((a) => {
-                  const score = form.scores[a.key];
-                  const mod = abilityMod(score);
-                  const buyMode = form.method === 'buy';
-                  const canDec = buyMode
-                    ? canStepInBuy(form.scores, a.key, -1)
-                    : score > 3;
-                  const canInc = buyMode
-                    ? canStepInBuy(form.scores, a.key, +1)
-                    : score < 20;
-                  return (
-                    <li key={a.key} className="cp-ability" data-testid={`ability-${a.key}`}>
-                      <span className="eyebrow cp-ability__name">{a.label}</span>
-                      <span className="cp-ability__score">
-                        <StatNumber value={score} label={`Puntuación de ${a.label}`} />
-                        <span
-                          className="cp-ability__mod tabular-nums"
-                          aria-label={`Modificador de ${a.label}`}
-                        >
-                          ({mod >= 0 ? '+' : ''}
-                          {mod})
-                        </span>
-                      </span>
-                      <Stepper
-                        label={`puntuación de ${a.label}`}
-                        value={score}
-                        canDecrement={canDec}
-                        canIncrement={canInc}
-                        onStep={(d) => stepScore(a.key, d)}
-                      />
-                    </li>
-                  );
-                })}
-              </ul>
-              {form.method === 'buy' ? (
-                <p className="cp-hint">
-                  En compra de puntos cada característica va de {BUY_MIN} a {BUY_MAX}.
-                </p>
-              ) : null}
-            </Panel>
-          ) : null}
-
-          {step === 2 ? (
-            <Panel eyebrow={`Paso 3 de ${STEPS.length}`} title="Combate">
-              <div className="cp-combat">
-                <div className="field">
-                  <span className="eyebrow field__label">Puntos de vida (PV)</span>
-                  <Stepper
-                    label="puntos de vida"
-                    value={form.maxHp}
-                    canDecrement={form.maxHp > 0}
-                    onStep={(d) =>
-                      patch({
-                        maxHp: Math.max(0, form.maxHp + d),
-                        currentHp: Math.max(0, form.maxHp + d),
-                      })
-                    }
-                  />
-                </div>
-                <div className="field">
-                  <span className="eyebrow field__label">Clase de armadura (CA)</span>
-                  <Stepper
-                    label="clase de armadura"
-                    value={form.armorClass}
-                    canDecrement={form.armorClass > 0}
-                    onStep={(d) =>
-                      patch({ armorClass: Math.max(0, form.armorClass + d) })
-                    }
-                  />
-                </div>
-                <div className="field">
-                  <span className="eyebrow field__label">Velocidad</span>
-                  <Stepper
-                    label="velocidad"
-                    value={form.speed}
-                    canDecrement={form.speed > 0}
-                    onStep={(d) => patch({ speed: Math.max(0, form.speed + d) })}
-                  />
-                </div>
-              </div>
-            </Panel>
-          ) : null}
-
-          {step === 3 ? (
-            <Panel eyebrow={`Paso 4 de ${STEPS.length}`} title="Competencias">
-              <p className="cp-hint">
-                Bono de competencia actual:{' '}
-                <span className="tabular-nums">+{prof}</span>
-              </p>
-              <ul className="cp-skills">
-                {SKILLS.map((s) => {
-                  const on = form.proficientSkills.includes(s.key);
-                  const mod = skillModifier(s.key, form.scores, form.level, on);
-                  return (
-                    <li key={s.key} className="cp-skill">
-                      <label className="cp-skill__label">
-                        <input
-                          type="checkbox"
-                          checked={on}
-                          onChange={() => toggleSkill(s.key)}
-                          aria-label={`Competente en ${s.label}`}
-                        />
-                        <span>{s.label}</span>
-                      </label>
-                      <span
-                        className="cp-skill__mod tabular-nums"
-                        data-testid={`skill-mod-${s.key}`}
-                        aria-label={`Modificador de ${s.label}`}
-                      >
-                        {mod >= 0 ? '+' : ''}
-                        {mod}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </Panel>
-          ) : null}
-
-          {step === 4 ? (
-            <Panel eyebrow={`Paso 5 de ${STEPS.length}`} title="Ataques y conjuros">
-              <AttacksEditor
-                attacks={form.attacks}
-                onChange={(attacks) => patch({ attacks })}
+            {current?.id === 'competencias' ? (
+              <StepCompetencias
+                selectedClass={selectedClass}
+                selectedBackground={selectedBackground}
+                classSkills={state.classSkills}
+                onToggleClassSkill={toggleClassSkill}
               />
-            </Panel>
-          ) : null}
+            ) : null}
 
-          {step === 5 ? (
-            <Panel eyebrow={`Paso 6 de ${STEPS.length}`} title="Rasgos">
-              <Field
-                as="textarea"
-                label="Rasgos, personalidad y vínculos"
-                rows={8}
-                value={form.notes}
-                onChange={(e) => patch({ notes: e.target.value })}
+            {current?.id === 'conjuros' ? (
+              <StepConjuros
+                spells={spells}
+                loading={spellsLoading}
+                cantrips={state.cantrips}
+                level1Spells={state.level1Spells}
+                onToggleCantrip={toggleCantrip}
+                onToggleLevel1={toggleLevel1}
               />
-            </Panel>
-          ) : null}
+            ) : null}
+
+            {current?.id === 'resumen' ? (
+              <StepResumen
+                name={state.name}
+                notes={state.notes}
+                onChangeName={(name) => update({ name })}
+                onChangeNotes={(notes) => update({ notes })}
+              />
+            ) : null}
+          </Panel>
+
+          <nav className="cp-nav" aria-label="Navegación de pasos">
+            <Button
+              variant="secondary"
+              onClick={goBack}
+              disabled={clampedIndex === 0}
+            >
+              Atrás
+            </Button>
+            {isLast ? (
+              <Button
+                variant="primary"
+                onClick={handleCreate}
+                disabled={saving || !stepValid}
+              >
+                {saving ? 'Creando…' : 'Crear personaje'}
+              </Button>
+            ) : (
+              <Button variant="primary" onClick={goNext} disabled={!stepValid}>
+                Siguiente
+              </Button>
+            )}
+          </nav>
         </main>
 
         <aside className="cp-aside" aria-label="Resumen del personaje">
-          {summary}
+          <SummaryCard
+            name={state.name}
+            species={selectedSpecies?.name ?? ''}
+            className={selectedClass?.name ?? ''}
+            level={1}
+            scores={state.scores}
+            maxHp={maxHp}
+            armorClass={armorClass}
+            speed={speed}
+            proficientSkills={proficientSkills}
+            spellNames={spellNames}
+          />
         </aside>
       </div>
     </div>

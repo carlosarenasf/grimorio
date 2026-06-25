@@ -8,7 +8,20 @@ import type { Condition } from '../types.js';
 import { BESTIARY } from './data/bestiary.js';
 import { CONDITIONS } from './data/conditions.js';
 import { RULES_REFERENCE } from './data/rulesReference.js';
-import type { Monster, MonsterRef, RuleSection, SrdProvider } from './types.js';
+import { SPECIES } from './data/species.js';
+import { CLASSES } from './data/classes.js';
+import { BACKGROUNDS } from './data/backgrounds.js';
+import { SPELLS } from './data/spells.js';
+import type {
+  BackgroundDef,
+  ClassDef,
+  Monster,
+  MonsterRef,
+  RuleSection,
+  SpeciesDef,
+  SpellDef,
+  SrdProvider,
+} from './types.js';
 
 /** Cap on results from an unfiltered/empty bestiary search. */
 const MAX_SEARCH_RESULTS = 50;
@@ -37,5 +50,22 @@ export class StaticSrdProvider implements SrdProvider {
 
   rulesReference(): RuleSection[] {
     return RULES_REFERENCE;
+  }
+
+  species(): SpeciesDef[] {
+    return SPECIES;
+  }
+
+  classes(): ClassDef[] {
+    return CLASSES;
+  }
+
+  backgrounds(): BackgroundDef[] {
+    return BACKGROUNDS;
+  }
+
+  spells(classId?: string): SpellDef[] {
+    if (!classId) return SPELLS;
+    return SPELLS.filter((s) => s.classes.includes(classId));
   }
 }

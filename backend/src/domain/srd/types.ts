@@ -34,10 +34,58 @@ export interface RuleSection {
   body: string;
 }
 
-/** Curated SRD 5.2 data source (conditions, rules reference, bestiary). */
+// ---------- Character-creation reference (D&D 2024 / SRD 5.2) ----------
+
+export type Spellcasting = 'full' | 'half' | 'none';
+
+export interface SpeciesDef {
+  id: string;
+  name: string;
+  size: string; // "Mediano", "Pequeño"
+  speed: number; // metres
+  description: string;
+  traits: string[];
+}
+
+export interface ClassDef {
+  id: string;
+  name: string;
+  hitDie: number; // 6, 8, 10, 12
+  primaryAbility: string; // ability key, e.g. "str"
+  savingThrows: string[]; // ability keys
+  spellcasting: Spellcasting;
+  description: string;
+  skillChoices: number;
+  skillOptions: string[]; // skill keys
+}
+
+export interface BackgroundDef {
+  id: string;
+  name: string;
+  description: string;
+  /** The abilities this background can boost (2024: background grants ability scores). */
+  abilityOptions: string[];
+  skills: string[]; // skill keys granted
+}
+
+export interface SpellDef {
+  id: string;
+  name: string;
+  level: number; // 0 = cantrip
+  school: string;
+  classes: string[]; // class ids that can learn it
+  description: string;
+}
+
+/** Curated SRD 5.2 data source (conditions, rules, bestiary, creation reference). */
 export interface SrdProvider {
   searchMonsters(query: string): MonsterRef[];
   getMonster(id: string): Monster | null;
   conditions(): Condition[];
   rulesReference(): RuleSection[];
+  species(): SpeciesDef[];
+  classes(): ClassDef[];
+  backgrounds(): BackgroundDef[];
+  /** All spells, or those available to a given class id. */
+  spells(classId?: string): SpellDef[];
 }

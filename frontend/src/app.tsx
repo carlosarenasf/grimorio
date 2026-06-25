@@ -207,6 +207,7 @@ function TableView(props: {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [you, setYou] = useState<YouCharacter | null>(null);
   const [monsters, setMonsters] = useState<MonsterSummary[]>([]);
+  const [campaignCharacters, setCampaignCharacters] = useState<{ id: string; name: string }[]>([]);
   const connection = useMemo(() => createLiveConnection({ campaignId }), [campaignId]);
 
   // Load the curated SRD bestiary from the backend (real ids → AddCombatantFromBestiary works).
@@ -236,6 +237,23 @@ function TableView(props: {
     }),
     [monsters],
   );
+
+  // The DM's "Jugadores" panel: load the campaign's characters; refresh when the
+  // combatant set changes (e.g. a new player seated/created their character).
+  const combatantCount = snapshot?.combatants.length ?? 0;
+  useEffect(() => {
+    if (!isDm) return;
+    let cancelled = false;
+    api
+      .listCampaignCharacters(campaignId)
+      .then((list) => {
+        if (!cancelled) setCampaignCharacters(list.map((c) => ({ id: c.id, name: c.name })));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isDm, api, campaignId, combatantCount]);
 
   useEffect(() => {
     const off = connection.onSnapshot((s) => setSnapshot(s));
@@ -288,7 +306,14 @@ function TableView(props: {
   }
 
   if (snapshot.viewerRole === 'dm') {
-    return <VistaMasterScreen snapshot={snapshot} send={send} srd={srd} />;
+    return (
+      <VistaMasterScreen
+        snapshot={snapshot}
+        send={send}
+        srd={srd}
+        campaignCharacters={campaignCharacters}
+      />
+    );
   }
 
   // Player without a character in this campaign yet → invite them to create one.

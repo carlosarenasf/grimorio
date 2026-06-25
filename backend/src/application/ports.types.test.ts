@@ -60,6 +60,10 @@ const srd = {
   getMonster: () => null,
   conditions: () => [],
   rulesReference: () => [],
+  species: () => [],
+  classes: () => [],
+  backgrounds: () => [],
+  spells: () => [],
 } satisfies SrdProvider;
 
 test('ports are implementable by minimal dummies (type-level contract)', () => {

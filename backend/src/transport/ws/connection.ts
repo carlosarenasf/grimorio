@@ -28,7 +28,7 @@ import {
 import type { Deps as LiveDeps, Principal } from '../../application/livetable/index.js';
 import { LiveTableError } from '../../application/livetable/index.js';
 import { projectLiveTable } from '../../domain/visibility/index.js';
-import type { CampaignId } from '../../domain/ids.js';
+import type { CampaignId, CharacterId } from '../../domain/ids.js';
 import type { WsClient, RoomManager } from './room.js';
 
 /** Outbound envelope: a role-filtered snapshot, or a sender-only error. */
@@ -110,6 +110,13 @@ export async function handleMessage(raw: string, ctx: ConnectionContext): Promis
     return;
   }
 
+  // SeatPlayer needs an async character lookup (repo), so it is handled here
+  // rather than in the synchronous dispatcher. DM-only.
+  if (parsed.data.type === 'SeatPlayer') {
+    await handleSeatPlayer(parsed.data.characterId, ctx);
+    return;
+  }
+
   const current = await getOrCreateLiveTable(ctx.campaignId, ctx.deps.tables);
 
   let result;
@@ -124,9 +131,39 @@ export async function handleMessage(raw: string, ctx: ConnectionContext): Promis
   }
 
   await ctx.deps.tables.save(result.table);
+  broadcast(ctx, result.table);
+}
 
-  // Per-recipient filtered fan-out: each socket gets THEIR own projection.
+/** Fan out a fresh, per-recipient role-filtered snapshot to the whole room. */
+function broadcast(ctx: ConnectionContext, table: Parameters<typeof snapshotFor>[0]): void {
   for (const { client, principal } of ctx.rooms.clientsOf(ctx.roomId)) {
-    send(client, snapshotFor(result.table, principal));
+    send(client, snapshotFor(table, principal));
   }
+}
+
+/** DM seats a campaign character into combat (async character lookup). */
+async function handleSeatPlayer(characterId: string, ctx: ConnectionContext): Promise<void> {
+  if (ctx.principal.role !== 'dm') {
+    send(ctx.client, { kind: 'error', error: { code: 'Forbidden', message: 'Solo el máster' } });
+    return;
+  }
+  if (!ctx.deps.characters) {
+    send(ctx.client, { kind: 'error', error: { code: 'Unavailable', message: 'Sin personajes' } });
+    return;
+  }
+  const sheet = await ctx.deps.characters.findById(characterId as CharacterId);
+  if (!sheet || sheet.campaignId !== ctx.campaignId) {
+    send(ctx.client, {
+      kind: 'error',
+      error: { code: 'CombatantNotFound', message: 'Personaje no encontrado' },
+    });
+    return;
+  }
+  let table = await getOrCreateLiveTable(ctx.campaignId, ctx.deps.tables);
+  const seated = seatCharacter(table, sheet, ctx.deps.clock);
+  if (seated) {
+    table = seated.table;
+    await ctx.deps.tables.save(table);
+  }
+  broadcast(ctx, table);
 }

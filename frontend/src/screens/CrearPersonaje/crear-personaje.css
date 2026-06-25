@@ -1,0 +1,294 @@
+/* Crear personaje — guided wizard styling (uses design tokens). */
+
+.cp-screen {
+  min-height: 100vh;
+  background: radial-gradient(110% 45% at 50% -8%, rgba(201, 162, 39, 0.06), transparent 55%),
+    var(--ink-void, #14121c);
+  color: var(--parchment, #e8e2d0);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  padding: 0 0 64px;
+}
+
+.cp-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 24px;
+  background: rgba(20, 18, 28, 0.86);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--hairline, rgba(232, 226, 208, 0.1));
+}
+.cp-header__title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.cp-error,
+.cp-saved {
+  max-width: 1100px;
+  margin: 12px auto 0;
+  padding: 11px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.cp-error {
+  background: rgba(180, 69, 46, 0.12);
+  border: 1px solid rgba(180, 69, 46, 0.5);
+  color: #e0917f;
+}
+.cp-saved {
+  background: rgba(124, 154, 130, 0.12);
+  border: 1px solid rgba(124, 154, 130, 0.5);
+  color: var(--sage, #7c9a82);
+}
+
+.cp-layout {
+  max-width: 1100px;
+  margin: 18px auto 0;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .cp-layout {
+    grid-template-columns: 1fr;
+  }
+  .cp-aside {
+    order: -1;
+  }
+}
+.cp-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cp-aside {
+  position: sticky;
+  top: 84px;
+}
+
+.cp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* ----- selectable cards (clase / especie / trasfondo) ----- */
+.cp-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.cp-card {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  gap: 6px;
+  height: auto;
+  white-space: normal;
+  padding: 14px 15px;
+  line-height: 1.4;
+}
+.cp-card__title {
+  font-size: 16px;
+  font-weight: 600;
+}
+.cp-card__meta {
+  opacity: 0.8;
+}
+.cp-card__desc {
+  font-size: 13px;
+  opacity: 0.9;
+}
+.cp-card__detail {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+/* ----- characteristics ----- */
+.cp-method {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.cp-abilities {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 11px;
+}
+@media (max-width: 520px) {
+  .cp-abilities {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.cp-ability {
+  background: var(--ink-void, #14121c);
+  border: 1px solid var(--hairline2, rgba(232, 226, 208, 0.18));
+  border-radius: 11px;
+  padding: 12px 10px;
+  text-align: center;
+}
+.cp-ability__name {
+  display: block;
+  margin-bottom: 6px;
+}
+.cp-ability__score {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+.cp-ability__mod {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--arcane, #c9a227);
+  display: block;
+  margin-top: 2px;
+}
+.cp-ability[data-primary='true'] {
+  border-color: var(--arcane, #c9a227);
+}
+.cp-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ----- skills ----- */
+.cp-skills {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+.cp-skill {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--hairline, rgba(232, 226, 208, 0.1));
+  background: rgba(0, 0, 0, 0.16);
+  width: 100%;
+  text-align: left;
+  color: var(--parchment, #e8e2d0);
+  cursor: pointer;
+}
+.cp-skill[data-selected='true'],
+.cp-skill[aria-pressed='true'] {
+  border-color: var(--arcane, #c9a227);
+  background: rgba(201, 162, 39, 0.08);
+}
+.cp-skill__label {
+  flex: 1;
+}
+.cp-skill__granted {
+  color: var(--sage, #7c9a82);
+}
+
+/* ----- spells ----- */
+.cp-conjuros,
+.cp-caracteristicas,
+.cp-competencias,
+.cp-trasfondo,
+.cp-resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cp-spells {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cp-spell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  text-align: left;
+  padding: 11px 13px;
+  border-radius: 10px;
+  border: 1px solid var(--hairline, rgba(232, 226, 208, 0.1));
+  background: rgba(0, 0, 0, 0.16);
+  width: 100%;
+  white-space: normal;
+  height: auto;
+  cursor: pointer;
+  color: var(--parchment, #e8e2d0);
+}
+.cp-spell[data-selected='true'],
+.cp-spell[aria-pressed='true'] {
+  border-color: var(--arcane, #c9a227);
+  background: rgba(201, 162, 39, 0.08);
+}
+.cp-spell__name {
+  font-weight: 600;
+}
+.cp-spell__school {
+  opacity: 0.8;
+}
+.cp-spell__desc {
+  font-size: 12.5px;
+  opacity: 0.9;
+  line-height: 1.45;
+}
+.cp-hint {
+  font-size: 12.5px;
+  color: var(--muted, rgba(232, 226, 208, 0.56));
+}
+.cp-pointbuy {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+.cp-pointbuy--over {
+  color: #e0917f;
+}
+
+/* ----- live summary ----- */
+.cp-summary__subtitle {
+  color: var(--muted, rgba(232, 226, 208, 0.56));
+  font-size: 13px;
+}
+.cp-summary__combat {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+.cp-summary__abilities {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 5px;
+  margin: 10px 0;
+}
+.cp-summary__ability {
+  text-align: center;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--hairline, rgba(232, 226, 208, 0.1));
+  border-radius: 7px;
+  padding: 6px 2px;
+}
+.cp-summary__skills,
+.cp-summary__spells {
+  font-size: 12.5px;
+  color: var(--muted, rgba(232, 226, 208, 0.56));
+  margin-top: 8px;
+  line-height: 1.5;
+}
+.cp-summary__empty {
+  color: var(--faint, rgba(232, 226, 208, 0.34));
+  font-size: 13px;
+}

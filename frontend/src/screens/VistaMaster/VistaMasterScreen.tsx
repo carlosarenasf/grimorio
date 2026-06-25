@@ -7,6 +7,7 @@ import { getActiveCombatant } from '../../net';
 import type { MasterSnapshot, Send, SrdSource } from './types';
 import { SessionBar } from './SessionBar';
 import { CombatantsPanel } from './CombatantsPanel';
+import { PlayersPanel } from './PlayersPanel';
 import { BestiaryPanel } from './BestiaryPanel';
 import { QuickReferencePanel } from './QuickReferencePanel';
 import { ActiveTurnPanel } from './ActiveTurnPanel';
@@ -23,6 +24,8 @@ export interface VistaMasterScreenProps {
   send: Send;
   /** Injected SRD bestiary source for the Bestiario panel. */
   srd: SrdSource;
+  /** Campaign characters (for the Jugadores panel); the DM seats them into battle. */
+  campaignCharacters?: { id: string; name: string }[];
 }
 
 function toRailTokens(snapshot: MasterSnapshot): InitiativeToken[] {
@@ -47,7 +50,15 @@ function toRailTokens(snapshot: MasterSnapshot): InitiativeToken[] {
  * bar and a bottom action bar. Renders from a MasterSnapshot and emits commands
  * through `send`. Fully prop-injected for testability (no WebSocket required).
  */
-export function VistaMasterScreen({ snapshot, send, srd }: VistaMasterScreenProps) {
+export function VistaMasterScreen({
+  snapshot,
+  send,
+  srd,
+  campaignCharacters = [],
+}: VistaMasterScreenProps) {
+  const seatedCharacterIds = snapshot.combatants
+    .filter((c) => c.type === 'pc' && c.characterId)
+    .map((c) => c.characterId as string);
   const active = getActiveCombatant(snapshot);
   const activeId = active?.id ?? null;
 
@@ -83,6 +94,12 @@ export function VistaMasterScreen({ snapshot, send, srd }: VistaMasterScreenProp
             onHeal={(id, amount) =>
               send({ type: 'ApplyHealing', combatantId: id, amount })
             }
+            onRemove={(id) => send({ type: 'RemoveCombatant', combatantId: id })}
+          />
+          <PlayersPanel
+            characters={campaignCharacters}
+            seatedCharacterIds={seatedCharacterIds}
+            onSeat={(characterId) => send({ type: 'SeatPlayer', characterId })}
           />
           <BestiaryPanel srd={srd} send={send} />
           <QuickReferencePanel />

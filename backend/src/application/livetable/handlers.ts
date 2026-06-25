@@ -33,6 +33,7 @@ import type { UserId } from '../../domain/ids.js';
 import type {
   AddCombatantFromBestiaryCommand,
   AddManualCombatantCommand,
+  RemoveCombatantCommand,
   ApplyDamageCommand,
   ApplyHealingCommand,
   AppendDmNoteCommand,
@@ -273,6 +274,26 @@ function hpChangeEvent(
       at: logLine.at,
     },
   };
+}
+
+export function handleRemoveCombatant(
+  table: LiveTable,
+  cmd: RemoveCombatantCommand,
+): DispatchResult {
+  if (!table.combatants.some((c) => c.id === cmd.combatantId)) {
+    throw new CombatantNotFound(cmd.combatantId);
+  }
+  const combatants = table.combatants.filter((c) => c.id !== cmd.combatantId);
+  const order = table.combat.order.filter((id) => id !== cmd.combatantId);
+  const currentTurnIndex =
+    order.length === 0 ? 0 : Math.min(table.combat.currentTurnIndex, order.length - 1);
+  const next = bump({
+    ...table,
+    combatants,
+    combat: { ...table.combat, order, currentTurnIndex },
+  });
+  // Transport broadcasts a fresh snapshot; no incremental event needed here.
+  return { table: next, events: [] };
 }
 
 export function handleApplyDamage(

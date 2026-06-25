@@ -10,6 +10,8 @@ export interface CombatantsPanelProps {
   /** Apply damage / healing to any combatant directly from its row. */
   onDamage: (id: string, amount: number) => void;
   onHeal: (id: string, amount: number) => void;
+  /** Remove a combatant from the battle. */
+  onRemove: (id: string) => void;
 }
 
 /**
@@ -23,6 +25,7 @@ export function CombatantsPanel({
   onSelect,
   onDamage,
   onHeal,
+  onRemove,
 }: CombatantsPanelProps) {
   const { combatants } = snapshot;
   const [amount, setAmount] = useState('1');
@@ -107,6 +110,15 @@ export function CombatantsPanel({
                     onClick={() => onHeal(c.id, amt)}
                   >
                     +
+                  </button>
+                  <button
+                    type="button"
+                    className="vm-hpbtn vm-hpbtn--remove"
+                    aria-label={`Sacar a ${c.name} del combate`}
+                    title="Sacar del combate"
+                    onClick={() => onRemove(c.id)}
+                  >
+                    ✕
                   </button>
                 </div>
               </li>

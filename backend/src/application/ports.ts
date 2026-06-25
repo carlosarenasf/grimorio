@@ -113,10 +113,52 @@ export interface RuleSection {
   body: string;
 }
 
-/** Curated SRD 5.2 data source (conditions, rules reference, bestiary). */
+export interface SpeciesDef {
+  id: string;
+  name: string;
+  size: string;
+  speed: number;
+  description: string;
+  traits: string[];
+}
+
+export interface ClassDef {
+  id: string;
+  name: string;
+  hitDie: number;
+  primaryAbility: string;
+  savingThrows: string[];
+  spellcasting: 'full' | 'half' | 'none';
+  description: string;
+  skillChoices: number;
+  skillOptions: string[];
+}
+
+export interface BackgroundDef {
+  id: string;
+  name: string;
+  description: string;
+  abilityOptions: string[];
+  skills: string[];
+}
+
+export interface SpellDef {
+  id: string;
+  name: string;
+  level: number;
+  school: string;
+  classes: string[];
+  description: string;
+}
+
+/** Curated SRD 5.2 data source (conditions, rules, bestiary, creation reference). */
 export interface SrdProvider {
   searchMonsters(query: string): MonsterRef[];
   getMonster(id: string): Monster | null;
   conditions(): Condition[];
   rulesReference(): RuleSection[];
+  species(): SpeciesDef[];
+  classes(): ClassDef[];
+  backgrounds(): BackgroundDef[];
+  spells(classId?: string): SpellDef[];
 }

@@ -563,3 +563,27 @@ describe('AddCombatantFromBestiary — multiple monsters', () => {
     expect(monsters[0].id).not.toBe(monsters[1].id);
   });
 });
+
+describe('RemoveCombatant', () => {
+  it('the DM removes a combatant from the table and the turn order', () => {
+    const next = dispatchLiveCommand(
+      makeTable(),
+      { type: 'RemoveCombatant', combatantId: monster.id } as Command,
+      dm,
+      makeDeps(),
+    );
+    expect(next.table.combatants.some((c) => c.id === monster.id)).toBe(false);
+    expect(next.table.combat.order.includes(monster.id)).toBe(false);
+  });
+
+  it('a player cannot remove a combatant (Forbidden)', () => {
+    expect(() =>
+      dispatchLiveCommand(
+        makeTable(),
+        { type: 'RemoveCombatant', combatantId: monster.id } as Command,
+        player,
+        makeDeps(),
+      ),
+    ).toThrow(Forbidden);
+  });
+});

@@ -26,6 +26,9 @@ export function projectCombatant(combatant: Combatant, viewer: Viewer): PublicCo
     type: combatant.type,
     name: combatant.name,
     initiative: combatant.initiative,
+    // For PCs, refId holds the CharacterId — expose it so clients can match a
+    // combatant to its character (not secret). Monsters keep it undefined.
+    characterId: combatant.type === 'pc' ? (combatant.refId ?? undefined) : undefined,
     conditions: combatant.conditions,
   };
 

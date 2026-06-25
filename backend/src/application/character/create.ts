@@ -20,6 +20,8 @@ export interface CreateCharacterCommand {
   level: number;
   method: 'buy' | 'roll';
   scores?: Record<AbilityKey, number>;
+  proficientSkills?: string[];
+  spells?: string[];
 }
 
 export interface CreateCharacterDeps {
@@ -58,6 +60,8 @@ export async function createCharacter(
         level: cmd.level,
         method: cmd.method,
         scores: cmd.scores,
+        proficientSkills: cmd.proficientSkills,
+        spells: cmd.spells,
       },
       deps.rng,
     );

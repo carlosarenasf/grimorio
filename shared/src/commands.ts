@@ -99,6 +99,8 @@ export const CreateCharacterSchema = z.object({
   // scores" rule is enforced server-side: the domain throws → IllegalPointBuy.
   scores: AbilityScores.optional(),
   method: z.enum(['buy', 'roll']),
+  proficientSkills: z.array(z.string()).optional(),
+  spells: z.array(z.string()).optional(),
 });
 
 export const UpdateCharacterSchema = z.object({
@@ -127,6 +129,16 @@ export const AddManualCombatantSchema = z.object({
   combatantType: CombatantType,
   hpVisibility: Visibility.default('public'),
   refId: z.string().nullable().default(null),
+});
+
+export const RemoveCombatantSchema = z.object({
+  type: z.literal('RemoveCombatant'),
+  combatantId: z.string().min(1),
+});
+
+export const SeatPlayerSchema = z.object({
+  type: z.literal('SeatPlayer'),
+  characterId: z.string().min(1),
 });
 
 export const SetInitiativeSchema = z.object({
@@ -218,6 +230,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
   StartCombatSchema,
   AddCombatantFromBestiarySchema,
   AddManualCombatantSchema,
+  RemoveCombatantSchema,
+  SeatPlayerSchema,
   SetInitiativeSchema,
   ReorderInitiativeSchema,
   NextTurnSchema,
@@ -249,6 +263,8 @@ export type UpdateCharacterCommand = z.infer<typeof UpdateCharacterSchema>;
 export type StartCombatCommand = z.infer<typeof StartCombatSchema>;
 export type AddCombatantFromBestiaryCommand = z.infer<typeof AddCombatantFromBestiarySchema>;
 export type AddManualCombatantCommand = z.infer<typeof AddManualCombatantSchema>;
+export type RemoveCombatantCommand = z.infer<typeof RemoveCombatantSchema>;
+export type SeatPlayerCommand = z.infer<typeof SeatPlayerSchema>;
 export type SetInitiativeCommand = z.infer<typeof SetInitiativeSchema>;
 export type ReorderInitiativeCommand = z.infer<typeof ReorderInitiativeSchema>;
 export type NextTurnCommand = z.infer<typeof NextTurnSchema>;

@@ -181,6 +181,27 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     },
   );
 
+  app.get(
+    '/campaigns/:id/characters',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { id } = req.params as { id: string };
+      try {
+        const campaign = await deps.campaigns.findById(id as CampaignId);
+        if (!campaign) {
+          reply.code(404).send({ error: 'NotFound', message: 'Campaign not found' });
+          return;
+        }
+        if (!resolveRole(campaign, req.principal!.userId as UserId)) {
+          throw new NotCampaignMemberError();
+        }
+        reply.send(await deps.characters.listByCampaign(id as CampaignId));
+      } catch (err) {
+        handleError(err, reply);
+      }
+    },
+  );
+
   // ---------- Characters ----------
 
   app.post(
@@ -201,6 +222,8 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
             level: cmd.level,
             method: cmd.method,
             scores: cmd.scores,
+            proficientSkills: cmd.proficientSkills,
+            spells: cmd.spells,
           },
           deps,
         );
@@ -259,6 +282,27 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     async (req: FastifyRequest, reply: FastifyReply) => {
       const { q } = req.query as { q?: string };
       reply.send(deps.srd.searchMonsters(q ?? ''));
+    },
+  );
+
+  app.get('/srd/species', { preHandler: auth }, async (_req, reply) => {
+    reply.send(deps.srd.species());
+  });
+
+  app.get('/srd/classes', { preHandler: auth }, async (_req, reply) => {
+    reply.send(deps.srd.classes());
+  });
+
+  app.get('/srd/backgrounds', { preHandler: auth }, async (_req, reply) => {
+    reply.send(deps.srd.backgrounds());
+  });
+
+  app.get(
+    '/srd/spells',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { class: classId } = req.query as { class?: string };
+      reply.send(deps.srd.spells(classId));
     },
   );
 

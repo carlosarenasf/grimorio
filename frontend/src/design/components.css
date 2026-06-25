@@ -56,8 +56,19 @@
 
 .panel__body {
   flex: 1;
+  min-height: 0;
+  /* Each module scrolls its own content instead of growing the page. Override
+     per-panel with `--panel-max-body` when a taller body is wanted. */
+  max-height: var(--panel-max-body, 60vh);
   overflow-y: auto;
   padding: var(--space-5);
+}
+.panel__body::-webkit-scrollbar {
+  width: 9px;
+}
+.panel__body::-webkit-scrollbar-thumb {
+  background: rgba(232, 226, 208, 0.16);
+  border-radius: 9px;
 }
 
 /* ---------- Button ---------- */

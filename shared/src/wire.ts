@@ -62,6 +62,8 @@ export interface PublicCombatantDTO {
   type: CombatantType;
   name: string;
   initiative: number;
+  /** For a PC combatant, the CharacterId it represents (so clients can match it). */
+  characterId?: string;
   conditions: ConditionDTO[];
   /** Present only when the viewer may see numeric HP. */
   currentHp?: number;

@@ -97,6 +97,41 @@ export interface MonsterRefDTO {
   meta: string;
 }
 
+export interface SpeciesDTO {
+  id: string;
+  name: string;
+  size: string;
+  speed: number;
+  description: string;
+  traits: string[];
+}
+export interface ClassDTO {
+  id: string;
+  name: string;
+  hitDie: number;
+  primaryAbility: string;
+  savingThrows: string[];
+  spellcasting: 'full' | 'half' | 'none';
+  description: string;
+  skillChoices: number;
+  skillOptions: string[];
+}
+export interface BackgroundDTO {
+  id: string;
+  name: string;
+  description: string;
+  abilityOptions: string[];
+  skills: string[];
+}
+export interface SpellDTO {
+  id: string;
+  name: string;
+  level: number;
+  school: string;
+  classes: string[];
+  description: string;
+}
+
 // ---------- ApiError ----------
 
 export class ApiError extends Error {
@@ -134,6 +169,13 @@ export interface ApiClient {
   getSnapshot(campaignId: string): Promise<Snapshot>;
   /** Search the curated SRD bestiary; ids match what AddCombatantFromBestiary expects. */
   searchMonsters(query?: string): Promise<MonsterRefDTO[]>;
+  /** Character-creation reference data (curated SRD 2024). */
+  getSpecies(): Promise<SpeciesDTO[]>;
+  getClasses(): Promise<ClassDTO[]>;
+  getBackgrounds(): Promise<BackgroundDTO[]>;
+  getSpells(classId?: string): Promise<SpellDTO[]>;
+  /** Characters in a campaign (member-visible) — for the DM's seat controls. */
+  listCampaignCharacters(campaignId: string): Promise<CharacterDTO[]>;
 }
 
 function defaultBaseUrl(): string {
@@ -245,6 +287,22 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
     searchMonsters(query = '') {
       const qs = query ? `?q=${encodeURIComponent(query)}` : '';
       return request<MonsterRefDTO[]>('GET', `/srd/monsters${qs}`);
+    },
+    getSpecies() {
+      return request<SpeciesDTO[]>('GET', '/srd/species');
+    },
+    getClasses() {
+      return request<ClassDTO[]>('GET', '/srd/classes');
+    },
+    getBackgrounds() {
+      return request<BackgroundDTO[]>('GET', '/srd/backgrounds');
+    },
+    getSpells(classId) {
+      const qs = classId ? `?class=${encodeURIComponent(classId)}` : '';
+      return request<SpellDTO[]>('GET', `/srd/spells${qs}`);
+    },
+    listCampaignCharacters(campaignId) {
+      return request<CharacterDTO[]>('GET', `/campaigns/${campaignId}/characters`);
     },
   };
 }

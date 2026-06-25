@@ -2,8 +2,7 @@ import { Panel, StatNumber } from '../../design';
 import { ABILITIES } from './abilities';
 import type { AbilityScores } from './abilities';
 import { allModifiers, abilityMod, proficiencyBonus } from './derived';
-import type { AttackRow } from './AttacksEditor';
-import { ATTACK_KIND_LABELS } from './AttacksEditor';
+import { skillLabel } from './labels';
 
 export interface SummaryCardProps {
   name: string;
@@ -14,13 +13,16 @@ export interface SummaryCardProps {
   maxHp: number;
   armorClass: number;
   speed: number;
-  attacks: AttackRow[];
+  /** Canonical skill keys the character is proficient in. */
+  proficientSkills: string[];
+  /** Spell names to show (cantrips + level-1). */
+  spellNames: string[];
 }
 
 /**
- * Live summary card (DESIGN_SPEC §4.b): reflects identity, PV/CA/Init, the six
- * ability modifiers, proficiency bonus and the attack list. All previewed
- * client-side; the server returns the canonical sheet on save.
+ * Live summary card: identity, PV/CA/Init, the six ability modifiers, chosen
+ * skills and chosen spells. All previewed client-side; the server returns the
+ * canonical sheet on save.
  */
 export function SummaryCard({
   name,
@@ -31,11 +33,11 @@ export function SummaryCard({
   maxHp,
   armorClass,
   speed,
-  attacks,
+  proficientSkills,
+  spellNames,
 }: SummaryCardProps) {
   const mods = allModifiers(scores);
   const prof = proficiencyBonus(level);
-  // Initiative preview = Dexterity modifier.
   const initiative = abilityMod(scores.dex);
 
   return (
@@ -92,23 +94,27 @@ export function SummaryCard({
         ))}
       </ul>
 
-      <div className="cp-summary__attacks">
-        <p className="eyebrow">Ataques</p>
-        {attacks.length === 0 ? (
-          <p className="cp-summary__empty">Sin ataques todavía.</p>
+      <div className="cp-summary__skills">
+        <p className="eyebrow">Competencias</p>
+        {proficientSkills.length === 0 ? (
+          <p className="cp-summary__empty">Ninguna todavía.</p>
         ) : (
           <ul>
-            {attacks.map((atk) => (
-              <li key={atk.id} className="cp-summary__attack">
-                <span>{atk.name || 'Sin nombre'}</span>
-                <span className="cp-summary__attack-meta tabular-nums">
-                  {ATTACK_KIND_LABELS[atk.kind]}
-                  {atk.bonus !== null
-                    ? ` · ${atk.bonus >= 0 ? '+' : ''}${atk.bonus}`
-                    : ''}
-                  {atk.damage ? ` · ${atk.damage}` : ''}
-                </span>
-              </li>
+            {proficientSkills.map((key) => (
+              <li key={key}>{skillLabel(key)}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="cp-summary__spells">
+        <p className="eyebrow">Conjuros</p>
+        {spellNames.length === 0 ? (
+          <p className="cp-summary__empty">Ninguno.</p>
+        ) : (
+          <ul>
+            {spellNames.map((n) => (
+              <li key={n}>{n}</li>
             ))}
           </ul>
         )}

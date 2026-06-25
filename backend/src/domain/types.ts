@@ -85,6 +85,8 @@ export interface CharacterSheet {
   inventory: InventoryItem[];
   gold: number;
   notes: string; // traits, personality, bonds…
+  /** Chosen spell ids/names (for casters); shown on the sheet and player view. */
+  spells?: string[];
   visibility: Visibility; // typically 'owner' (HP is projected public in combat)
 }
 

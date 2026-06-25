@@ -18,6 +18,7 @@ import { Forbidden, NotActiveTurn } from './errors.js';
 import {
   handleAddCombatantFromBestiary,
   handleAddManualCombatant,
+  handleRemoveCombatant,
   handleApplyDamage,
   handleApplyHealing,
   handleAppendDmNote,
@@ -39,6 +40,7 @@ const DM_ONLY = new Set<Command['type']>([
   'StartCombat',
   'AddCombatantFromBestiary',
   'AddManualCombatant',
+  'RemoveCombatant',
   'SetInitiative',
   'ReorderInitiative',
   'NextTurn',
@@ -58,6 +60,7 @@ type LiveCommand = Extract<
       | 'StartCombat'
       | 'AddCombatantFromBestiary'
       | 'AddManualCombatant'
+      | 'RemoveCombatant'
       | 'SetInitiative'
       | 'ReorderInitiative'
       | 'NextTurn'
@@ -120,6 +123,8 @@ export function dispatchLiveCommand(
       return handleAddCombatantFromBestiary(table, cmd, deps);
     case 'AddManualCombatant':
       return handleAddManualCombatant(table, cmd, deps);
+    case 'RemoveCombatant':
+      return handleRemoveCombatant(table, cmd);
     case 'SetInitiative':
       return handleSetInitiative(table, cmd, deps);
     case 'ReorderInitiative':

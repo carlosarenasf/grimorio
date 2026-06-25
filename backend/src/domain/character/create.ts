@@ -18,6 +18,10 @@ export interface CreateCharacterInput {
   level: number;
   method: 'buy' | 'roll';
   scores?: Record<AbilityKey, number>;
+  /** Chosen skill proficiencies (from background + class), optional. */
+  proficientSkills?: string[];
+  /** Chosen spells (casters), optional. */
+  spells?: string[];
 }
 
 const ABILITIES: AbilityKey[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
@@ -115,11 +119,12 @@ export function createCharacter(input: CreateCharacterInput, rng?: Rng): Charact
     currentHp: maxHp,
     armorClass: 10 + abilityMod(scores.dex),
     speed: 9,
-    proficientSkills: [],
+    proficientSkills: input.proficientSkills ?? [],
     attacks: [],
     inventory: [],
     gold: 0,
     notes: '',
+    spells: input.spells ?? [],
     visibility: 'owner',
   };
 
