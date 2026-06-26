@@ -82,6 +82,30 @@ const CharacterCorePatch = z.object({
   armorClass: z.number().int().optional(),
   speed: z.number().optional(),
   proficientSkills: z.array(z.string()).optional(),
+  attacks: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        kind: z.enum(['weapon', 'spell', 'save']),
+        bonus: z.number().nullable(),
+        damage: z.string().nullable(),
+        damageType: z.string().default(''),
+      }),
+    )
+    .optional(),
+  inventory: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        note: z.string().default(''),
+        qty: z.number().int(),
+        equipped: z.boolean().default(false),
+      }),
+    )
+    .optional(),
+  spells: z.array(z.string()).optional(),
   gold: z.number().min(0).optional(),
   notes: z.string().optional(),
   visibility: Visibility.optional(),

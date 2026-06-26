@@ -1,22 +1,35 @@
+import { useState } from 'react';
+import { Button } from '../../design';
+import type { CampaignDTO } from '../../net';
+import { InviteModal } from '../Campanas/InviteModal';
 import type { MasterSnapshot } from './types';
 
 export interface SessionBarProps {
   snapshot: MasterSnapshot;
   activeName: string | null;
+  /** The campaign (with join code) — enables the "Invitar" button. */
+  campaign?: CampaignDTO;
 }
 
 /**
  * Top session bar (DESIGN_SPEC.md §5/§6): room/round on the left, the
- * always-visible turn indicator ("Turno de X") and the "Vista de máster" badge.
+ * always-visible turn indicator ("Turno de X"), an Invitar button and the
+ * "Vista de máster" badge.
  */
-export function SessionBar({ snapshot, activeName }: SessionBarProps) {
+export function SessionBar({ snapshot, activeName, campaign }: SessionBarProps) {
   const { combat } = snapshot;
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const origin =
+    typeof window !== 'undefined' && window.location?.origin
+      ? window.location.origin
+      : 'https://grimorio.app';
+
   return (
     <header className="vm-session-bar" aria-label="Barra de sesión">
       <div className="vm-session-bar__room">
         <p className="eyebrow">Sala</p>
         <p className="vm-session-bar__room-name font-display">
-          {snapshot.campaignId}
+          {campaign?.name ?? snapshot.campaignId}
         </p>
       </div>
       <div className="vm-session-bar__turn" aria-live="polite">
@@ -29,9 +42,20 @@ export function SessionBar({ snapshot, activeName }: SessionBarProps) {
           <span className="vm-session-bar__active-turn">Esperando combate</span>
         )}
       </div>
-      <span className="vm-session-bar__badge" aria-label="Vista de máster">
-        Vista de máster
-      </span>
+      <div className="vm-session-bar__actions">
+        {campaign ? (
+          <Button variant="secondary" size="sm" onClick={() => setInviteOpen(true)}>
+            🔗 Invitar
+          </Button>
+        ) : null}
+        <span className="vm-session-bar__badge" aria-label="Vista de máster">
+          Vista de máster
+        </span>
+      </div>
+
+      {inviteOpen && campaign ? (
+        <InviteModal campaign={campaign} origin={origin} onClose={() => setInviteOpen(false)} />
+      ) : null}
     </header>
   );
 }

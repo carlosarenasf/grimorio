@@ -538,3 +538,9 @@
   color: var(--faint, rgba(232, 226, 208, 0.34));
   font-size: 13px;
 }
+
+.vm-session-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

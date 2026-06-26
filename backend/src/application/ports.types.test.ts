@@ -64,6 +64,7 @@ const srd = {
   classes: () => [],
   backgrounds: () => [],
   spells: () => [],
+  weapons: () => [],
 } satisfies SrdProvider;
 
 test('ports are implementable by minimal dummies (type-level contract)', () => {

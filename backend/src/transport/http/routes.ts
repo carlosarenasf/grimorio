@@ -311,6 +311,10 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     },
   );
 
+  app.get('/srd/weapons', { preHandler: auth }, async (_req, reply) => {
+    reply.send(deps.srd.weapons());
+  });
+
   // ---------- Live table snapshot ----------
 
   app.get(

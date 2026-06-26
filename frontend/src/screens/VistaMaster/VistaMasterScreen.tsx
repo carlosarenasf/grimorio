@@ -16,7 +16,7 @@ import { HistoryPanel } from './HistoryPanel';
 import { DmNotesPanel } from './DmNotesPanel';
 import { ActionBar } from './ActionBar';
 import { CharacterSheetModal } from './CharacterSheetModal';
-import type { ApiClient, SpellDTO } from '../../net/http';
+import type { ApiClient, CampaignDTO, SpellDTO } from '../../net/http';
 import './vista-master.css';
 
 export interface VistaMasterScreenProps {
@@ -31,6 +31,8 @@ export interface VistaMasterScreenProps {
   /** API client + SRD spell map enable the DM to open a player's character sheet. */
   api?: ApiClient;
   spellsById?: Record<string, SpellDTO>;
+  /** The campaign (with join code) — enables the SessionBar "Invitar" button. */
+  campaign?: CampaignDTO;
 }
 
 function toRailTokens(snapshot: MasterSnapshot): InitiativeToken[] {
@@ -62,6 +64,7 @@ export function VistaMasterScreen({
   campaignCharacters = [],
   api,
   spellsById = {},
+  campaign,
 }: VistaMasterScreenProps) {
   const [sheetCharacterId, setSheetCharacterId] = useState<string | null>(null);
   const seatedCharacterIds = snapshot.combatants
@@ -88,7 +91,7 @@ export function VistaMasterScreen({
 
   return (
     <div className="vm-screen">
-      <SessionBar snapshot={snapshot} activeName={active?.name ?? null} />
+      <SessionBar snapshot={snapshot} activeName={active?.name ?? null} campaign={campaign} />
 
       <div className="vm-grid">
         <aside className="vm-col vm-col--left" aria-label="Paneles izquierda">

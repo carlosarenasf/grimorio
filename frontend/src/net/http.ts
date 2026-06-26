@@ -134,6 +134,15 @@ export interface SpellDTO {
   description: string;
   damage?: string | null;
 }
+export interface WeaponDTO {
+  id: string;
+  name: string;
+  category: 'simple' | 'martial';
+  damage: string;
+  damageType: string;
+  properties: string[];
+  ability: 'str' | 'dex' | 'finesse';
+}
 
 // ---------- ApiError ----------
 
@@ -177,6 +186,7 @@ export interface ApiClient {
   getClasses(): Promise<ClassDTO[]>;
   getBackgrounds(): Promise<BackgroundDTO[]>;
   getSpells(classId?: string): Promise<SpellDTO[]>;
+  getWeapons(): Promise<WeaponDTO[]>;
   /** Characters in a campaign (member-visible) — for the DM's seat controls. */
   listCampaignCharacters(campaignId: string): Promise<CharacterDTO[]>;
 }
@@ -303,6 +313,9 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
     getSpells(classId) {
       const qs = classId ? `?class=${encodeURIComponent(classId)}` : '';
       return request<SpellDTO[]>('GET', `/srd/spells${qs}`);
+    },
+    getWeapons() {
+      return request<WeaponDTO[]>('GET', '/srd/weapons');
     },
     listCampaignCharacters(campaignId) {
       return request<CharacterDTO[]>('GET', `/campaigns/${campaignId}/characters`);

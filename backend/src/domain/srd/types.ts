@@ -79,6 +79,17 @@ export interface SpellDef {
   damage?: string | null;
 }
 
+export interface WeaponDef {
+  id: string;
+  name: string;
+  category: 'simple' | 'martial';
+  damage: string; // dice, e.g. "1d8"
+  damageType: string; // "cortante", "perforante"…
+  properties: string[]; // "Sutil", "A distancia", "Versátil (1d10)"…
+  /** Attack/damage ability: str, dex, or finesse (best of str/dex). */
+  ability: 'str' | 'dex' | 'finesse';
+}
+
 /** Curated SRD 5.2 data source (conditions, rules, bestiary, creation reference). */
 export interface SrdProvider {
   searchMonsters(query: string): MonsterRef[];
@@ -90,4 +101,5 @@ export interface SrdProvider {
   backgrounds(): BackgroundDef[];
   /** All spells, or those available to a given class id. */
   spells(classId?: string): SpellDef[];
+  weapons(): WeaponDef[];
 }

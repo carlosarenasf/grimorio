@@ -21,6 +21,12 @@ export interface VistaJugadorScreenProps {
   you: YouCharacter;
   /** Command sink — the screen's only side effect. */
   send: Send;
+  /** Weapon catalogue + persisting equip callbacks (wired in production). */
+  weapons?: import('../../net/http').WeaponDTO[];
+  onAddWeapon?: (weapon: import('../../net/http').WeaponDTO) => void;
+  onAddItem?: (name: string) => void;
+  onRemoveItem?: (id: string) => void;
+  onAdjustItem?: (id: string, delta: number) => void;
 }
 
 /**
@@ -30,7 +36,16 @@ export interface VistaJugadorScreenProps {
  * Initiative Rail, Dados and the public roll log on the right; "Tirar d20" +
  * "Terminar turno →" in the bottom bar.
  */
-export function VistaJugadorScreen({ snapshot, you, send }: VistaJugadorScreenProps) {
+export function VistaJugadorScreen({
+  snapshot,
+  you,
+  send,
+  weapons,
+  onAddWeapon,
+  onAddItem,
+  onRemoveItem,
+  onAdjustItem,
+}: VistaJugadorScreenProps) {
   const active = getActiveCombatant(snapshot);
   const isYourTurn =
     snapshot.combat.active && active !== null && active.id === you.combatantId;
@@ -52,7 +67,15 @@ export function VistaJugadorScreen({ snapshot, you, send }: VistaJugadorScreenPr
           <SheetPanel you={you} send={send} />
           <ActionEconomy you={you} send={send} isYourTurn={isYourTurn} />
           <MonsterTargetsPanel snapshot={snapshot} send={send} />
-          <InventoryPanel you={you} send={send} />
+          <InventoryPanel
+            you={you}
+            send={send}
+            weapons={weapons}
+            onAddWeapon={onAddWeapon}
+            onAddItem={onAddItem}
+            onRemoveItem={onRemoveItem}
+            onAdjustItem={onAdjustItem}
+          />
           <RulesPanel />
         </main>
 

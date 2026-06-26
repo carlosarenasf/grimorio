@@ -152,6 +152,16 @@ export interface SpellDef {
   damage?: string | null;
 }
 
+export interface WeaponDef {
+  id: string;
+  name: string;
+  category: 'simple' | 'martial';
+  damage: string;
+  damageType: string;
+  properties: string[];
+  ability: 'str' | 'dex' | 'finesse';
+}
+
 /** Curated SRD 5.2 data source (conditions, rules, bestiary, creation reference). */
 export interface SrdProvider {
   searchMonsters(query: string): MonsterRef[];
@@ -162,4 +172,5 @@ export interface SrdProvider {
   classes(): ClassDef[];
   backgrounds(): BackgroundDef[];
   spells(classId?: string): SpellDef[];
+  weapons(): WeaponDef[];
 }

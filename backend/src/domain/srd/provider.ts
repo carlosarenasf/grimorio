@@ -12,6 +12,7 @@ import { SPECIES } from './data/species.js';
 import { CLASSES } from './data/classes.js';
 import { BACKGROUNDS } from './data/backgrounds.js';
 import { SPELLS } from './data/spells.js';
+import { WEAPONS } from './data/weapons.js';
 import type {
   BackgroundDef,
   ClassDef,
@@ -21,6 +22,7 @@ import type {
   SpeciesDef,
   SpellDef,
   SrdProvider,
+  WeaponDef,
 } from './types.js';
 
 /** Cap on results from an unfiltered/empty bestiary search. */
@@ -67,5 +69,9 @@ export class StaticSrdProvider implements SrdProvider {
   spells(classId?: string): SpellDef[] {
     if (!classId) return SPELLS;
     return SPELLS.filter((s) => s.classes.includes(classId));
+  }
+
+  weapons(): WeaponDef[] {
+    return WEAPONS;
   }
 }

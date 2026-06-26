@@ -22,7 +22,7 @@ import { VistaMasterScreen } from './screens/VistaMaster/index.js';
 import type { MonsterSummary, SrdSource } from './screens/VistaMaster/index.js';
 import { VistaJugadorScreen } from './screens/VistaJugador/index.js';
 import type { YouCharacter } from './screens/VistaJugador/index.js';
-import type { CharacterDTO, SpellDTO } from './net/http.js';
+import type { CampaignDTO, CharacterDTO, SpellDTO } from './net/http.js';
 import { Button } from './design/index.js';
 
 const abilityMod = (score: number) => Math.floor((score - 10) / 2);
@@ -34,6 +34,15 @@ function toYouCharacter(
   combatantId: string | null,
   spellsById: Record<string, SpellDTO>,
 ): YouCharacter {
+  // Every character can make a basic unarmed strike.
+  const strMod = abilityMod(sheet.scores.str);
+  const unarmed = {
+    id: 'basic-unarmed',
+    name: 'Golpe sin armas',
+    kind: 'weapon' as const,
+    bonus: profBonus(sheet.level) + strMod,
+    damage: '1d4',
+  };
   // Weapon attacks from the sheet + the spells chosen during creation, both as
   // "attacks" so the action economy shows them (weapon → Atacar, spell → Conjuro).
   const weaponAttacks = (sheet.attacks ?? []).map((a) => ({
@@ -64,7 +73,7 @@ function toYouCharacter(
     speed: sheet.speed,
     proficiencyBonus: profBonus(sheet.level),
     initiative: abilityMod(sheet.scores.dex),
-    attacks: [...weaponAttacks, ...spellAttacks],
+    attacks: [unarmed, ...weaponAttacks, ...spellAttacks],
     inventory: sheet.inventory ?? [],
     gold: sheet.gold,
   };
@@ -222,11 +231,25 @@ function TableView(props: {
 }) {
   const { api, campaignId } = props;
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const [you, setYou] = useState<YouCharacter | null>(null);
+  const [sheet, setSheet] = useState<CharacterDTO | null>(null);
   const [monsters, setMonsters] = useState<MonsterSummary[]>([]);
   const [campaignCharacters, setCampaignCharacters] = useState<{ id: string; name: string }[]>([]);
+  const [campaign, setCampaign] = useState<CampaignDTO | null>(null);
   const [spellsById, setSpellsById] = useState<Record<string, SpellDTO>>({});
+  const [weaponCatalog, setWeaponCatalog] = useState<import('./net/http.js').WeaponDTO[]>([]);
   const connection = useMemo(() => createLiveConnection({ campaignId }), [campaignId]);
+
+  // Weapon catalogue (for the player's "Añadir arma").
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .getWeapons()
+      .then((list) => !cancelled && setWeaponCatalog(list))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [api]);
 
   // Load the SRD spell list once so chosen spells resolve to names + damage
   // (player action economy, and the DM's character-sheet view).
@@ -291,6 +314,21 @@ function TableView(props: {
     };
   }, [isDm, api, campaignId, combatantCount]);
 
+  // Load the campaign (with its join code) so the DM can invite from the table.
+  useEffect(() => {
+    if (!isDm) return;
+    let cancelled = false;
+    api
+      .listCampaigns()
+      .then((list) => {
+        if (!cancelled) setCampaign(list.find((c) => c.id === campaignId) ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isDm, api, campaignId]);
+
   useEffect(() => {
     const off = connection.onSnapshot((s) => setSnapshot(s));
     connection.connect();
@@ -304,28 +342,76 @@ function TableView(props: {
   const ownCharacterId = snapshot?.viewerRole === 'player' ? snapshot.ownCharacterId : null;
   useEffect(() => {
     if (!ownCharacterId) {
-      setYou(null);
+      setSheet(null);
       return;
     }
     let cancelled = false;
-    const combatantId =
-      snapshot && snapshot.viewerRole === 'player'
-        ? (snapshot.combatants.find(
-            (c) => c.type === 'pc' && c.characterId === ownCharacterId,
-          )?.id ?? null)
-        : null;
     api
       .getCharacter(ownCharacterId)
-      .then((sheet) => {
-        if (!cancelled) setYou(toYouCharacter(sheet, combatantId, spellsById));
+      .then((s) => {
+        if (!cancelled) setSheet(s);
       })
       .catch(() => {
-        /* leave `you` null; the player view shows a waiting state */
+        /* leave sheet null; the player view shows a waiting state */
       });
     return () => {
       cancelled = true;
     };
-  }, [ownCharacterId, api, snapshot, spellsById]);
+  }, [ownCharacterId, api]);
+
+  const ownCombatantId =
+    snapshot && snapshot.viewerRole === 'player'
+      ? (snapshot.combatants.find((c) => c.type === 'pc' && c.characterId === ownCharacterId)?.id ??
+        null)
+      : null;
+  const you = useMemo(
+    () => (sheet ? toYouCharacter(sheet, ownCombatantId, spellsById) : null),
+    [sheet, ownCombatantId, spellsById],
+  );
+
+  // Persist an equip/inventory change to the character sheet.
+  const patchSheet = async (patch: Partial<CharacterDTO>) => {
+    if (!sheet) return;
+    try {
+      const updated = await api.updateCharacter(sheet.id, patch);
+      setSheet(updated);
+    } catch {
+      /* ignore — the player can retry */
+    }
+  };
+  const addWeapon = (w: import('./net/http.js').WeaponDTO) => {
+    if (!sheet) return;
+    const useDex =
+      w.ability === 'dex' ||
+      (w.ability === 'finesse' &&
+        abilityMod(sheet.scores.dex) > abilityMod(sheet.scores.str));
+    const mod = useDex ? abilityMod(sheet.scores.dex) : abilityMod(sheet.scores.str);
+    const modStr = mod > 0 ? `+${mod}` : mod < 0 ? `${mod}` : '';
+    const attack = {
+      id: `wpn_${Date.now()}`,
+      name: w.name,
+      kind: 'weapon' as const,
+      bonus: profBonus(sheet.level) + mod,
+      damage: `${w.damage}${modStr}`,
+      damageType: w.damageType,
+    };
+    void patchSheet({ attacks: [...(sheet.attacks ?? []), attack] });
+  };
+  const addItem = (name: string) =>
+    void patchSheet({
+      inventory: [
+        ...(sheet?.inventory ?? []),
+        { id: `itm_${Date.now()}`, name, note: '', qty: 1, equipped: false },
+      ],
+    });
+  const removeItem = (id: string) =>
+    void patchSheet({ inventory: (sheet?.inventory ?? []).filter((i) => i.id !== id) });
+  const adjustItem = (id: string, delta: number) =>
+    void patchSheet({
+      inventory: (sheet?.inventory ?? []).map((i) =>
+        i.id === id ? { ...i, qty: Math.max(0, i.qty + delta) } : i,
+      ),
+    });
 
   const send = (command: Command) => connection.send(command);
 
@@ -352,6 +438,7 @@ function TableView(props: {
         campaignCharacters={campaignCharacters}
         api={api}
         spellsById={spellsById}
+        campaign={campaign ?? undefined}
       />
     );
   }
@@ -379,5 +466,16 @@ function TableView(props: {
       </main>
     );
   }
-  return <VistaJugadorScreen snapshot={snapshot} you={you} send={send} />;
+  return (
+    <VistaJugadorScreen
+      snapshot={snapshot}
+      you={you}
+      send={send}
+      weapons={weaponCatalog}
+      onAddWeapon={addWeapon}
+      onAddItem={addItem}
+      onRemoveItem={removeItem}
+      onAdjustItem={adjustItem}
+    />
+  );
 }
