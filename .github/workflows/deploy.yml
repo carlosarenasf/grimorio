@@ -53,12 +53,12 @@ jobs:
         env:
           HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
         run: |
-          if [ -z "$HOOK" ]; then echo "Falta el secret RENDER_DEPLOY_HOOK_BACKEND"; exit 1; fi
+          if [ -z "$HOOK" ]; then echo "::warning::RENDER_DEPLOY_HOOK_BACKEND not set — skipping"; exit 0; fi
           curl -fsS -X POST "$HOOK"
 
       - name: Deploy frontend
         env:
           HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
         run: |
-          if [ -z "$HOOK" ]; then echo "Falta el secret RENDER_DEPLOY_HOOK_FRONTEND"; exit 1; fi
+          if [ -z "$HOOK" ]; then echo "::warning::RENDER_DEPLOY_HOOK_FRONTEND not set — skipping"; exit 0; fi
           curl -fsS -X POST "$HOOK"

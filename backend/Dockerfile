@@ -22,7 +22,10 @@ COPY frontend/package.json frontend/package.json
 
 RUN pnpm install --frozen-lockfile
 
-# Now copy the actual source.
+# Now copy the actual source. The root tsconfig.base.json is required: both
+# backend/ and shared/ tsconfigs `extends` it, and without it tsc falls back to
+# unsafe defaults (wrong moduleResolution/target) and the build fails.
+COPY tsconfig.base.json ./
 COPY shared ./shared
 COPY backend ./backend
 
