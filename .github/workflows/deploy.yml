@@ -1,0 +1,64 @@
+name: CI & Deploy
+
+# Al mergear/push a main: primero CI (tests + typecheck + lint + build) y, solo si
+# pasa, se disparan los deploys en Render mediante sus Deploy Hooks. Así nunca se
+# despliega una versión que no compila o con tests en rojo.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  ci:
+    name: Tests, typecheck, lint, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm -r --if-present typecheck
+
+      - name: Test
+        run: pnpm -r --if-present test
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build frontend
+        run: pnpm -C frontend build
+
+  deploy:
+    name: Trigger Render deploys
+    needs: ci
+    runs-on: ubuntu-latest
+    # Solo en pushes reales a main (no en otras ramas vía workflow_dispatch).
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy backend
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "Falta el secret RENDER_DEPLOY_HOOK_BACKEND"; exit 1; fi
+          curl -fsS -X POST "$HOOK"
+
+      - name: Deploy frontend
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "Falta el secret RENDER_DEPLOY_HOOK_FRONTEND"; exit 1; fi
+          curl -fsS -X POST "$HOOK"

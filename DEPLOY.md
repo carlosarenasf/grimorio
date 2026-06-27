@@ -122,6 +122,27 @@ No hay que crear tablas a mano: el backend ejecuta las migraciones solo al arran
 
 ---
 
+## Deploy automático al mergear a main (GitHub Actions)
+
+El workflow `.github/workflows/deploy.yml` corre CI (typecheck + tests + lint + build) en
+cada push a `main` y, **solo si pasa**, dispara los deploys en Render vía *Deploy Hooks*.
+
+Para activarlo, una vez creados los dos servicios en Render:
+
+1. **Render → cada servicio → Settings → Auto-Deploy → `No`.**
+   (Si lo dejas en `Yes`, Render desplegaría en cada push *sin* esperar a los tests; el
+   Action ya se encarga de desplegar tras el CI.)
+2. **Render → cada servicio → Settings → Deploy Hook** → copia la URL (una para el backend
+   y otra para el frontend). Son URLs tipo
+   `https://api.render.com/deploy/srv-xxxx?key=yyyy`.
+3. **GitHub → repo → Settings → Secrets and variables → Actions → New repository secret**:
+   - `RENDER_DEPLOY_HOOK_BACKEND` = hook del backend
+   - `RENDER_DEPLOY_HOOK_FRONTEND` = hook del frontend
+4. Listo. A partir del próximo merge a `main`: si el CI está verde, ambos servicios se
+   redepliegan solos. Si algún test falla, **no se despliega nada**.
+
+> El hook lanza un deploy del **último commit de `main`** (Render sigue clonando del repo).
+
 ## Notas
 
 - **Dominio propio** (opcional): si añades p. ej. `grimorio.app` (front) y `api.grimorio.app`
