@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toJsonbParam, toSnapshot, toSnapshots } from './rows.js';
+import { toSnapshot, toSnapshots } from './rows.js';
 
 interface Dummy {
   id: string;
@@ -27,17 +27,5 @@ describe('toSnapshots', () => {
 
   it('returns an empty array for an empty list', () => {
     expect(toSnapshots<Dummy>([])).toEqual([]);
-  });
-});
-
-describe('toJsonbParam', () => {
-  it('serializes an object to a JSON string', () => {
-    const dummy: Dummy = { id: 'x', nested: { count: 1 } };
-    expect(toJsonbParam(dummy)).toBe(JSON.stringify(dummy));
-  });
-
-  it('round-trips through JSON.parse back to a deep-equal value', () => {
-    const dummy: Dummy = { id: 'x', nested: { count: 1 } };
-    expect(JSON.parse(toJsonbParam(dummy))).toEqual(dummy);
   });
 });

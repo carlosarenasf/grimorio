@@ -2,7 +2,7 @@ import type { Sql } from 'postgres';
 import type { CharacterRepository } from '../../application/ports.js';
 import type { CampaignId, CharacterId } from '../../domain/ids.js';
 import type { CharacterSheet } from '../../domain/types.js';
-import { toJsonbParam, toSnapshot, toSnapshots } from './rows.js';
+import { toSnapshot, toSnapshots } from './rows.js';
 
 /** Postgres-backed `CharacterRepository`: JSONB snapshot in `characters`, keyed by id, listed by campaign. */
 export class PostgresCharacterRepository implements CharacterRepository {
@@ -11,7 +11,7 @@ export class PostgresCharacterRepository implements CharacterRepository {
   async save(character: CharacterSheet): Promise<void> {
     await this.sql`
       INSERT INTO characters (id, campaign_id, data)
-      VALUES (${character.id}, ${character.campaignId}, ${toJsonbParam(character)}::jsonb)
+      VALUES (${character.id}, ${character.campaignId}, ${this.sql.json(JSON.parse(JSON.stringify(character)))})
       ON CONFLICT (id) DO UPDATE SET campaign_id = EXCLUDED.campaign_id, data = EXCLUDED.data
     `;
   }

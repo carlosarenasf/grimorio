@@ -2,7 +2,7 @@ import type { Sql } from 'postgres';
 import type { CampaignRepository } from '../../application/ports.js';
 import type { CampaignId, UserId } from '../../domain/ids.js';
 import type { Campaign } from '../../domain/types.js';
-import { toJsonbParam, toSnapshot, toSnapshots } from './rows.js';
+import { toSnapshot, toSnapshots } from './rows.js';
 
 /**
  * Postgres-backed `CampaignRepository`: JSONB snapshot in `campaigns`, keyed
@@ -20,7 +20,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
   async save(campaign: Campaign): Promise<void> {
     await this.sql`
       INSERT INTO campaigns (id, join_code, data)
-      VALUES (${campaign.id}, ${campaign.joinCode}, ${toJsonbParam(campaign)}::jsonb)
+      VALUES (${campaign.id}, ${campaign.joinCode}, ${this.sql.json(JSON.parse(JSON.stringify(campaign)))})
       ON CONFLICT (id) DO UPDATE SET join_code = EXCLUDED.join_code, data = EXCLUDED.data
     `;
   }
@@ -42,7 +42,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
   async listForUser(userId: UserId): Promise<Campaign[]> {
     const rows = await this.sql<{ data: Campaign }[]>`
       SELECT data FROM campaigns
-      WHERE data -> 'members' @> ${toJsonbParam([{ userId }])}::jsonb
+      WHERE data -> 'members' @> ${this.sql.json([{ userId }])}
     `;
     return toSnapshots(rows);
   }

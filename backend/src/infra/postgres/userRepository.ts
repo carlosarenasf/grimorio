@@ -2,7 +2,7 @@ import type { Sql } from 'postgres';
 import type { UserRepository } from '../../application/ports.js';
 import type { UserId } from '../../domain/ids.js';
 import type { User } from '../../domain/types.js';
-import { toJsonbParam, toSnapshot } from './rows.js';
+import { toSnapshot } from './rows.js';
 
 /** Postgres-backed `UserRepository`: JSONB snapshot in `users`, keyed by id, looked up by email. */
 export class PostgresUserRepository implements UserRepository {
@@ -11,7 +11,7 @@ export class PostgresUserRepository implements UserRepository {
   async save(user: User): Promise<void> {
     await this.sql`
       INSERT INTO users (id, email, data)
-      VALUES (${user.id}, ${user.email}, ${toJsonbParam(user)}::jsonb)
+      VALUES (${user.id}, ${user.email}, ${this.sql.json(JSON.parse(JSON.stringify(user)))})
       ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, data = EXCLUDED.data
     `;
   }

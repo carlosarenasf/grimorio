@@ -25,13 +25,3 @@ export function toSnapshot<T>(row: SnapshotRow<T> | undefined): T | null {
 export function toSnapshots<T>(rows: readonly SnapshotRow<T>[]): T[] {
   return rows.map((row) => row.data);
 }
-
-/**
- * Serialize an aggregate for storage as a JSONB column. postgres.js requires
- * JSONB parameters to be wrapped so they aren't sent as a bare string; this
- * centralises that `JSON.stringify` boundary so every repository's `save`
- * does the same thing.
- */
-export function toJsonbParam<T>(value: T): string {
-  return JSON.stringify(value);
-}

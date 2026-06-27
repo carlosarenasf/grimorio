@@ -2,7 +2,7 @@ import type { Sql } from 'postgres';
 import type { LiveTableRepository } from '../../application/ports.js';
 import type { CampaignId, LiveTableId } from '../../domain/ids.js';
 import type { LiveTable } from '../../domain/types.js';
-import { toJsonbParam, toSnapshot } from './rows.js';
+import { toSnapshot } from './rows.js';
 
 /** Postgres-backed `LiveTableRepository`: JSONB snapshot in `live_tables`, one room per campaign. */
 export class PostgresLiveTableRepository implements LiveTableRepository {
@@ -11,7 +11,7 @@ export class PostgresLiveTableRepository implements LiveTableRepository {
   async save(table: LiveTable): Promise<void> {
     await this.sql`
       INSERT INTO live_tables (id, campaign_id, data)
-      VALUES (${table.id}, ${table.campaignId}, ${toJsonbParam(table)}::jsonb)
+      VALUES (${table.id}, ${table.campaignId}, ${this.sql.json(JSON.parse(JSON.stringify(table)))})
       ON CONFLICT (id) DO UPDATE SET campaign_id = EXCLUDED.campaign_id, data = EXCLUDED.data
     `;
   }
