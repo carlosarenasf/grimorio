@@ -33,6 +33,7 @@ function toYouCharacter(
   sheet: CharacterDTO,
   combatantId: string | null,
   spellsById: Record<string, SpellDTO>,
+  snapshot: Snapshot | null,
 ): YouCharacter {
   // Every character can make a basic unarmed strike.
   const strMod = abilityMod(sheet.scores.str);
@@ -62,13 +63,21 @@ function toYouCharacter(
       bonus: null,
       damage: s.damage ?? null,
     }));
+  
+  // Use live HP from snapshot if available, otherwise fall back to sheet HP
+  const ownCombatant = snapshot && combatantId
+    ? snapshot.combatants.find((c) => c.id === combatantId)
+    : null;
+  const currentHp = ownCombatant?.currentHp ?? sheet.currentHp;
+  const maxHp = ownCombatant?.maxHp ?? sheet.maxHp;
+  
   return {
     combatantId,
     characterId: sheet.id,
     name: sheet.name,
     scores: sheet.scores,
-    maxHp: sheet.maxHp,
-    currentHp: sheet.currentHp,
+    maxHp,
+    currentHp,
     armorClass: sheet.armorClass,
     speed: sheet.speed,
     proficiencyBonus: profBonus(sheet.level),
@@ -376,8 +385,8 @@ function TableView(props: {
         null)
       : null;
   const you = useMemo(
-    () => (sheet ? toYouCharacter(sheet, ownCombatantId, spellsById) : null),
-    [sheet, ownCombatantId, spellsById],
+    () => (sheet ? toYouCharacter(sheet, ownCombatantId, spellsById, snapshot) : null),
+    [sheet, ownCombatantId, spellsById, snapshot],
   );
 
   // Persist an equip/inventory change to the character sheet.
