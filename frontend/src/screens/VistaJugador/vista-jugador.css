@@ -161,6 +161,71 @@
   margin: 0;
 }
 
+/* ---------- Skills list ---------- */
+
+.vj-sheet__skills {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.vj-sheet__skills-title {
+  margin: 0;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.vj-sheet__skills-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.vj-sheet__skill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: var(--raised);
+}
+
+.vj-sheet__skill-name {
+  flex: 1;
+  font-size: 14px;
+}
+
+.vj-sheet__skill-mod {
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 2em;
+  text-align: right;
+}
+
+.vj-sheet__skill-roll {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.vj-sheet__skill-roll:hover {
+  background: var(--hairline);
+}
+
+.vj-sheet__skill-roll:active {
+  transform: scale(0.95);
+}
+
 /* ---------- Action economy ---------- */
 
 .vj-actions {

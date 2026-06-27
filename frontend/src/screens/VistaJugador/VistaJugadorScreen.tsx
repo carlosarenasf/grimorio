@@ -64,7 +64,7 @@ export function VistaJugadorScreen({
 
       <div className="vj-screen__body">
         <main className="vj-screen__main">
-          <SheetPanel you={you} send={send} />
+          <SheetPanel you={you} send={send} latestRoll={latestRoll} />
           <ActionEconomy you={you} send={send} isYourTurn={isYourTurn} />
           <MonsterTargetsPanel snapshot={snapshot} send={send} />
           <InventoryPanel

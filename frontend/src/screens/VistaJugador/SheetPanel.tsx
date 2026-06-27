@@ -1,26 +1,41 @@
 import { useState } from 'react';
-import { Button, Panel, StatNumber } from '../../design';
-import { ABILITY_LABELS, ABILITY_ORDER, allModifiers } from './derived';
+import { Button, DiceModal, Panel, StatNumber } from '../../design';
+import type { DiceRollView } from '../../design';
+import { ABILITY_LABELS, ABILITY_ORDER, abilityMod, allModifiers } from './derived';
+import { SKILLS } from './skills';
 import type { Send, YouCharacter } from './types';
 
 export interface SheetPanelProps {
   you: YouCharacter;
   /** Lets the player heal or damage their OWN character (any time). */
   send?: Send;
+  /** Latest public roll from the snapshot — drives the dice animation. */
+  latestRoll?: DiceRollView | null;
 }
 
 /**
- * TU FICHA (DESIGN_SPEC.md §5): HP bar, the 6 ability modifiers, and the
- * CA/Vel/Comp/Init quartet. Read-only here — HP changes arrive via the
+ * TU FICHA (DESIGN_SPEC.md §5): HP bar, the 6 ability modifiers, skills list,
+ * and the CA/Vel/Comp/Init quartet. Read-only here — HP changes arrive via the
  * server snapshot, this panel only renders the viewer's own character.
  */
-export function SheetPanel({ you, send }: SheetPanelProps) {
+export function SheetPanel({ you, send, latestRoll }: SheetPanelProps) {
   const mods = allModifiers(you.scores);
   const hpRatio = you.maxHp > 0 ? you.currentHp / you.maxHp : 1;
   const hpRole = hpRatio <= 0.25 ? 'damage' : undefined;
   const [amount, setAmount] = useState('1');
   const amt = Math.max(0, Math.round(Number(amount) || 0));
   const canAdjust = Boolean(send && you.combatantId);
+  const [skillModalOpen, setSkillModalOpen] = useState(false);
+
+  function rollSkill() {
+    setSkillModalOpen(true);
+  }
+
+  function handleSkillRoll(notation: string) {
+    if (send) {
+      send({ type: 'RollDice', notation, visibility: 'public' });
+    }
+  }
 
   return (
     <Panel eyebrow="Tu ficha" title={you.name}>
@@ -95,6 +110,41 @@ export function SheetPanel({ you, send }: SheetPanelProps) {
             </li>
           ))}
         </ul>
+
+        <div className="vj-sheet__skills">
+          <h3 className="eyebrow vj-sheet__skills-title">Habilidades</h3>
+          <ul className="vj-sheet__skills-list" aria-label="Habilidades">
+            {SKILLS.map((skill) => {
+              const mod = abilityMod(you.scores[skill.ability]);
+              const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
+              return (
+                <li key={skill.key} className="vj-sheet__skill">
+                  <span className="vj-sheet__skill-name">{skill.name}</span>
+                  <span className="vj-sheet__skill-mod tabular-nums">{modStr}</span>
+                  {send ? (
+                    <button
+                      type="button"
+                      className="vj-sheet__skill-roll"
+                      aria-label={`Tirar ${skill.name}`}
+                      onClick={() => rollSkill()}
+                    >
+                      🎲
+                    </button>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        {send ? (
+          <DiceModal
+            open={skillModalOpen}
+            onClose={() => setSkillModalOpen(false)}
+            onRoll={handleSkillRoll}
+            latestRoll={latestRoll}
+          />
+        ) : null}
 
         <dl className="vj-sheet__stats">
           <div className="vj-sheet__stat">
