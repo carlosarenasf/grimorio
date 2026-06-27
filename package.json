@@ -4,6 +4,7 @@
   "private": true,
   "description": "Grimorio — real-time D&D 5e (2024 / SRD 5.2) virtual tabletop",
   "type": "module",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "test": "pnpm -r --if-present test",
     "lint": "eslint .",
