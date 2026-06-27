@@ -39,6 +39,8 @@ export interface DiceModalProps {
   /** Selected die colour + a setter (lifted so the inline tray shares it). */
   color?: string;
   onColorChange?: (color: string) => void;
+  /** Initial modifier value when the modal opens (e.g. for skill checks). */
+  initialModifier?: number;
 }
 
 /**
@@ -52,14 +54,22 @@ export function DiceModal({
   latestRoll,
   color = DICE_PALETTE[0],
   onColorChange,
+  initialModifier = 0,
 }: DiceModalProps) {
   const [faces, setFaces] = useState(20);
   const [count, setCount] = useState(1);
-  const [modifier, setModifier] = useState(0);
+  const [modifier, setModifier] = useState(initialModifier);
   const [rolling, setRolling] = useState(false);
   // The roll id present when we pressed "Tirar", so we can detect OUR result.
   const startId = useRef<string | null>(null);
   const [settled, setSettled] = useState<DiceRollView | null>(null);
+
+  // Reset modifier when modal opens with a new initial value
+  useEffect(() => {
+    if (open) {
+      setModifier(initialModifier);
+    }
+  }, [open, initialModifier]);
 
   const dieType = (DIE_TYPES.find((d) => d.faces === faces)?.type ?? 'd20') as DieType;
   const modStr = modifier > 0 ? `+${modifier}` : modifier < 0 ? `${modifier}` : '';

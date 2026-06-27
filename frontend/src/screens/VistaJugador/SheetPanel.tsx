@@ -26,8 +26,11 @@ export function SheetPanel({ you, send, latestRoll }: SheetPanelProps) {
   const amt = Math.max(0, Math.round(Number(amount) || 0));
   const canAdjust = Boolean(send && you.combatantId);
   const [skillModalOpen, setSkillModalOpen] = useState(false);
+  const [skillModifier, setSkillModifier] = useState(0);
+  const [skillsExpanded, setSkillsExpanded] = useState(false);
 
-  function rollSkill() {
+  function rollSkill(modifier: number) {
+    setSkillModifier(modifier);
     setSkillModalOpen(true);
   }
 
@@ -112,29 +115,39 @@ export function SheetPanel({ you, send, latestRoll }: SheetPanelProps) {
         </ul>
 
         <div className="vj-sheet__skills">
-          <h3 className="eyebrow vj-sheet__skills-title">Habilidades</h3>
-          <ul className="vj-sheet__skills-list" aria-label="Habilidades">
-            {SKILLS.map((skill) => {
-              const mod = abilityMod(you.scores[skill.ability]);
-              const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
-              return (
-                <li key={skill.key} className="vj-sheet__skill">
-                  <span className="vj-sheet__skill-name">{skill.name}</span>
-                  <span className="vj-sheet__skill-mod tabular-nums">{modStr}</span>
-                  {send ? (
-                    <button
-                      type="button"
-                      className="vj-sheet__skill-roll"
-                      aria-label={`Tirar ${skill.name}`}
-                      onClick={() => rollSkill()}
-                    >
-                      🎲
-                    </button>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
+          <button
+            type="button"
+            className="vj-sheet__skills-header"
+            onClick={() => setSkillsExpanded(!skillsExpanded)}
+            aria-expanded={skillsExpanded}
+          >
+            <h3 className="eyebrow vj-sheet__skills-title">Habilidades</h3>
+            <span className="vj-sheet__skills-toggle">{skillsExpanded ? '▼' : '▶'}</span>
+          </button>
+          {skillsExpanded ? (
+            <ul className="vj-sheet__skills-list" aria-label="Habilidades">
+              {SKILLS.map((skill) => {
+                const mod = abilityMod(you.scores[skill.ability]);
+                const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
+                return (
+                  <li key={skill.key} className="vj-sheet__skill">
+                    <span className="vj-sheet__skill-name">{skill.name}</span>
+                    <span className="vj-sheet__skill-mod tabular-nums">{modStr}</span>
+                    {send ? (
+                      <button
+                        type="button"
+                        className="vj-sheet__skill-roll"
+                        aria-label={`Tirar ${skill.name}`}
+                        onClick={() => rollSkill(mod)}
+                      >
+                        🎲
+                      </button>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
         </div>
 
         {send ? (
@@ -143,6 +156,7 @@ export function SheetPanel({ you, send, latestRoll }: SheetPanelProps) {
             onClose={() => setSkillModalOpen(false)}
             onRoll={handleSkillRoll}
             latestRoll={latestRoll}
+            initialModifier={skillModifier}
           />
         ) : null}
 
