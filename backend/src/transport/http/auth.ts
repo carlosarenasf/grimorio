@@ -39,9 +39,15 @@ export function clearSessionCookie(reply: FastifyReply, config: Config): void {
   });
 }
 
-/** Resolve the session principal from the request's cookie, or null. */
+/** Resolve the session principal from the request's cookie or Authorization header, or null. */
 export function readSession(req: FastifyRequest, config: Config): SessionPrincipal | null {
-  const token = req.cookies[config.cookieName];
+  let token = req.cookies[config.cookieName];
+  if (!token && req.headers.authorization) {
+    const parts = req.headers.authorization.split(' ');
+    if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
+      token = parts[1];
+    }
+  }
   return verifySession(token, config.sessionSecret);
 }
 

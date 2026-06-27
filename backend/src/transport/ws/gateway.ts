@@ -52,7 +52,11 @@ export function registerWsGateway(app: FastifyInstance, deps: WsGatewayDeps): vo
     const campaignId = params.campaignId as CampaignId;
 
     const cookies = request.cookies as Record<string, string | undefined> | undefined;
-    const token = cookies?.[deps.config.cookieName];
+    let token = cookies?.[deps.config.cookieName];
+    if (!token) {
+      const query = request.query as { token?: string };
+      token = query.token;
+    }
     const session = verifySession(token, deps.config.sessionSecret);
     if (!session) {
       socket.close(4401, 'Unauthorized');

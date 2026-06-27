@@ -30,6 +30,7 @@ import { projectLiveTable } from '../../domain/visibility/index.js';
 import type { CampaignId, CharacterId, UserId } from '../../domain/ids.js';
 import type { HttpDeps } from './index.js';
 import { clearSessionCookie, requireSession, setSessionCookie } from './auth.js';
+import { signSession } from '../auth/session.js';
 import { bodyForError, statusForError, NotCampaignMemberError } from './errors.js';
 import { resolveRole } from './membership.js';
 
@@ -78,8 +79,9 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
         { email: cmd.email, password: cmd.password, displayName: cmd.displayName },
         deps,
       );
+      const token = signSession(principal, deps.config.sessionSecret);
       setSessionCookie(reply, principal, deps.config);
-      reply.send(principal);
+      reply.send({ ...principal, token });
     } catch (err) {
       handleError(err, reply);
     }
@@ -90,8 +92,9 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     if (!cmd) return;
     try {
       const principal = await login({ email: cmd.email, password: cmd.password }, deps);
+      const token = signSession(principal, deps.config.sessionSecret);
       setSessionCookie(reply, principal, deps.config);
-      reply.send(principal);
+      reply.send({ ...principal, token });
     } catch (err) {
       handleError(err, reply);
     }

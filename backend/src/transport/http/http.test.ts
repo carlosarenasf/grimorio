@@ -89,7 +89,7 @@ describe('HTTP transport', () => {
       });
       expect(loginRes.statusCode).toBe(200);
       const loginBody = loginRes.json();
-      expect(loginBody).toEqual({ userId: registerBody.userId, displayName: 'Lyra' });
+      expect(loginBody).toMatchObject({ userId: registerBody.userId, displayName: 'Lyra', token: expect.any(String) });
 
       const cookie = cookieFromResponse(loginRes, config.cookieName);
       expect(cookie).toBeDefined();

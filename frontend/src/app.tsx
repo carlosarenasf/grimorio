@@ -237,7 +237,11 @@ function TableView(props: {
   const [campaign, setCampaign] = useState<CampaignDTO | null>(null);
   const [spellsById, setSpellsById] = useState<Record<string, SpellDTO>>({});
   const [weaponCatalog, setWeaponCatalog] = useState<import('./net/http.js').WeaponDTO[]>([]);
-  const connection = useMemo(() => createLiveConnection({ campaignId }), [campaignId]);
+  const [wsError, setWsError] = useState<string | null>(null);
+  const connection = useMemo(() => {
+    const token = api.getToken();
+    return createLiveConnection({ campaignId, token });
+  }, [campaignId, api]);
 
   // Weapon catalogue (for the player's "Añadir arma").
   useEffect(() => {
@@ -330,10 +334,17 @@ function TableView(props: {
   }, [isDm, api, campaignId]);
 
   useEffect(() => {
-    const off = connection.onSnapshot((s) => setSnapshot(s));
+    const offSnap = connection.onSnapshot((s) => {
+      setWsError(null);
+      setSnapshot(s);
+    });
+    const offErr = connection.onError((e) => {
+      setWsError(e.message || 'No se ha podido conectar con la sala.');
+    });
     connection.connect();
     return () => {
-      off();
+      offSnap();
+      offErr();
       connection.close();
     };
   }, [connection]);
@@ -437,9 +448,18 @@ function TableView(props: {
     return (
       <main className="gx-loading" role="status" aria-live="polite">
         <p>Entrando a la sala…</p>
-        <p className="gx-loading-sub">
-          El servidor puede tardar ~1 minuto en despertar la primera vez.
-        </p>
+        {wsError ? (
+          <>
+            <p className="gx-loading-sub">{wsError}</p>
+            <Button onClick={() => { setWsError(null); connection.connect(); }}>
+              Reintentar
+            </Button>
+          </>
+        ) : (
+          <p className="gx-loading-sub">
+            El servidor puede tardar ~1 minuto en despertar la primera vez.
+          </p>
+        )}
         <Button variant="ghost" onClick={props.onLeave}>
           ← Volver a campañas
         </Button>

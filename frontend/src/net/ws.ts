@@ -33,6 +33,8 @@ export interface LiveConnectionOptions {
   baseReconnectDelayMs?: number;
   /** Max backoff delay in ms. Default 30000. */
   maxReconnectDelayMs?: number;
+  /** Signed session token to pass as a query parameter for cross-origin WebSocket auth. */
+  token?: string | null;
 }
 
 export interface LiveConnection {
@@ -75,7 +77,8 @@ export function createLiveConnection(options: LiveConnectionOptions): LiveConnec
   let sendQueue: Command[] = [];
 
   function url(): string {
-    return `${baseUrl}/ws/${options.campaignId}`;
+    const wsUrl = `${baseUrl}/ws/${options.campaignId}`;
+    return options.token ? `${wsUrl}?token=${encodeURIComponent(options.token)}` : wsUrl;
   }
 
   function clearReconnectTimer(): void {
@@ -127,10 +130,20 @@ export function createLiveConnection(options: LiveConnectionOptions): LiveConnec
       }
     };
 
-    ws.onclose = () => {
+    ws.onclose = (event: { code: number; reason: string }) => {
       socket = null;
       if (!explicitlyClosed) {
-        scheduleReconnect();
+        if (event.code === 4401) {
+          for (const cb of errorListeners) {
+            cb({ code: 'Unauthorized', message: 'Sesión no válida. Inicia sesión de nuevo.' });
+          }
+        } else if (event.code === 4403) {
+          for (const cb of errorListeners) {
+            cb({ code: 'Forbidden', message: 'No eres miembro de esta campaña.' });
+          }
+        } else {
+          scheduleReconnect();
+        }
       }
     };
 

@@ -40,10 +40,6 @@ export class PostgresCampaignRepository implements CampaignRepository {
   }
 
   async listForUser(userId: UserId): Promise<Campaign[]> {
-    // Match `save`: pass the JSONB param as a JSON string + an explicit `::jsonb`
-    // cast. `sql.json(...)` without the cast yields a `json` operand, and
-    // `jsonb @> json` is not a valid operator — so the membership query failed
-    // and the user's campaigns never showed up.
     const rows = await this.sql<{ data: Campaign }[]>`
       SELECT data FROM campaigns
       WHERE data -> 'members' @> ${toJsonbParam([{ userId }])}::jsonb

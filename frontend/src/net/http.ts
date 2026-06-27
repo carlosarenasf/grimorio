@@ -166,6 +166,7 @@ export interface ApiClientOptions {
 }
 
 export interface ApiClient {
+  getToken(): string | null;
   register(payload: RegisterPayload): Promise<Principal>;
   login(payload: LoginPayload): Promise<Principal>;
   logout(): Promise<void>;
@@ -217,6 +218,7 @@ function messageFromErrorBody(body: unknown, fallback: string): string {
 export function createApiClient(options: ApiClientOptions = {}): ApiClient {
   const baseUrl = options.baseUrl ?? defaultBaseUrl();
   const fetchImpl = options.fetch ?? fetch;
+  let token = typeof window !== 'undefined' ? localStorage.getItem('grimorio_token') : null;
 
   async function request<T>(
     method: string,
@@ -227,10 +229,18 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
       method,
       credentials: 'include',
     };
+    if (token) {
+      init.headers = {
+        'authorization': `Bearer ${token}`,
+      };
+    }
     // Only declare a JSON content-type when we actually send a body — otherwise
     // Fastify rejects a bodyless POST (e.g. logout) with "Body cannot be empty".
     if (body !== undefined) {
-      init.headers = { 'content-type': 'application/json' };
+      init.headers = {
+        ...init.headers,
+        'content-type': 'application/json',
+      };
       init.body = JSON.stringify(body);
     }
 
@@ -258,14 +268,32 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
   }
 
   return {
+    getToken() {
+      return token;
+    },
     register(payload) {
-      return request<Principal>('POST', '/auth/register', payload);
+      return request<Principal & { token?: string }>('POST', '/auth/register', payload).then((p) => {
+        if (p.token) {
+          token = p.token;
+          localStorage.setItem('grimorio_token', p.token);
+        }
+        return p;
+      });
     },
     login(payload) {
-      return request<Principal>('POST', '/auth/login', payload);
+      return request<Principal & { token?: string }>('POST', '/auth/login', payload).then((p) => {
+        if (p.token) {
+          token = p.token;
+          localStorage.setItem('grimorio_token', p.token);
+        }
+        return p;
+      });
     },
     logout() {
-      return request<void>('POST', '/auth/logout');
+      return request<void>('POST', '/auth/logout').then(() => {
+        token = null;
+        localStorage.removeItem('grimorio_token');
+      });
     },
     me() {
       return request<Principal>('GET', '/auth/me');

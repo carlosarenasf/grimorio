@@ -54,6 +54,7 @@ export function CampanasScreen({
   const [inviteCampaign, setInviteCampaign] = useState<CampaignDTO | null>(null);
   const [joinCode, setJoinCode] = useState('');
   const resolvedOrigin = origin ?? defaultOrigin();
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,7 +73,7 @@ export function CampanasScreen({
     return () => {
       cancelled = true;
     };
-  }, [api]);
+  }, [api, retryCount]);
 
   function handleCreated(campaign: CampaignDTO) {
     setCampaigns((prev) => (prev ? [campaign, ...prev] : [campaign]));
@@ -93,8 +94,15 @@ export function CampanasScreen({
     }
   }
 
+  function handleRetry() {
+    setCampaigns(null);
+    setLoadError(null);
+    setRetryCount((prev) => prev + 1);
+  }
+
   const isLoading = campaigns === null;
-  const isEmpty = campaigns !== null && campaigns.length === 0;
+  const hasError = loadError !== null;
+  const isEmpty = campaigns !== null && campaigns.length === 0 && !hasError;
 
   return (
     <div className="campanas-screen">
@@ -134,6 +142,15 @@ export function CampanasScreen({
           <p className="campanas-loading" role="status">
             Cargando tus campañas…
           </p>
+        ) : hasError ? (
+          <div className="campanas-empty">
+            <p className="campanas-error" role="alert">
+              {loadError}
+            </p>
+            <Button type="button" onClick={handleRetry}>
+              Reintentar
+            </Button>
+          </div>
         ) : isEmpty ? (
           <div className="campanas-empty">
             <p className="campanas-empty__title">
@@ -145,7 +162,6 @@ export function CampanasScreen({
           </div>
         ) : (
           <>
-            {loadError ? <p className="campanas-error">{loadError}</p> : null}
             <ul className="campanas-grid">
               {campaigns?.map((campaign) => (
                 <li key={campaign.id} className="campaign-card">
