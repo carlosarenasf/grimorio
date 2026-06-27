@@ -387,15 +387,29 @@ function TableView(props: {
         abilityMod(sheet.scores.dex) > abilityMod(sheet.scores.str));
     const mod = useDex ? abilityMod(sheet.scores.dex) : abilityMod(sheet.scores.str);
     const modStr = mod > 0 ? `+${mod}` : mod < 0 ? `${mod}` : '';
+    const id = `wpn_${Date.now()}`;
+    const toHit = profBonus(sheet.level) + mod;
+    const damage = `${w.damage}${modStr}`;
     const attack = {
-      id: `wpn_${Date.now()}`,
+      id,
       name: w.name,
       kind: 'weapon' as const,
-      bonus: profBonus(sheet.level) + mod,
-      damage: `${w.damage}${modStr}`,
+      bonus: toHit,
+      damage,
       damageType: w.damageType,
     };
-    void patchSheet({ attacks: [...(sheet.attacks ?? []), attack] });
+    // Add it as a usable attack AND as an equipped item so it shows in Equipo.
+    const item = {
+      id,
+      name: w.name,
+      note: `${toHit >= 0 ? '+' : ''}${toHit} al ataque · ${damage} ${w.damageType}`,
+      qty: 1,
+      equipped: true,
+    };
+    void patchSheet({
+      attacks: [...(sheet.attacks ?? []), attack],
+      inventory: [...(sheet.inventory ?? []), item],
+    });
   };
   const addItem = (name: string) =>
     void patchSheet({
@@ -405,7 +419,11 @@ function TableView(props: {
       ],
     });
   const removeItem = (id: string) =>
-    void patchSheet({ inventory: (sheet?.inventory ?? []).filter((i) => i.id !== id) });
+    void patchSheet({
+      inventory: (sheet?.inventory ?? []).filter((i) => i.id !== id),
+      // A weapon's item + attack share the same id — drop the attack too.
+      attacks: (sheet?.attacks ?? []).filter((a) => a.id !== id),
+    });
   const adjustItem = (id: string, delta: number) =>
     void patchSheet({
       inventory: (sheet?.inventory ?? []).map((i) =>
