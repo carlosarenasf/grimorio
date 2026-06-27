@@ -12,17 +12,32 @@ export interface Config {
   cookieName: string;
   /** Render free tier sleeps; the frontend origin is allowed for CORS. */
   corsOrigin: string;
+  /**
+   * SameSite for the session cookie. Must be 'none' (+ secure) when the frontend
+   * and backend are on different sites, e.g. vercel.app + onrender.com — otherwise
+   * the browser won't send the cookie on cross-site requests.
+   */
+  cookieSameSite: 'lax' | 'strict' | 'none';
+  /** Secure cookie (HTTPS only). Required by browsers when SameSite='none'. */
+  cookieSecure: boolean;
 }
 
 export const DEFAULT_SESSION_SECRET = 'dev-insecure-secret-change-me';
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
+  const isProd = env.NODE_ENV === 'production';
   return {
     port: env.PORT ? Number(env.PORT) : 3000,
     databaseUrl: env.DATABASE_URL,
     sessionSecret: env.SESSION_SECRET ?? DEFAULT_SESSION_SECRET,
     cookieName: env.COOKIE_NAME ?? 'grimorio_session',
     corsOrigin: env.CORS_ORIGIN ?? '*',
+    // Cross-site by default in production (frontend on a different host); 'lax'
+    // for same-origin local dev. Override with COOKIE_SAMESITE if co-hosted.
+    cookieSameSite:
+      (env.COOKIE_SAMESITE as 'lax' | 'strict' | 'none' | undefined) ??
+      (isProd ? 'none' : 'lax'),
+    cookieSecure: env.COOKIE_SECURE ? env.COOKIE_SECURE === 'true' : isProd,
   };
 }
 

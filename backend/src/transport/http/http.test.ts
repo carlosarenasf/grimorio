@@ -20,6 +20,8 @@ function makeConfig(overrides: Partial<Config> = {}): Config {
     sessionSecret: 'test-secret',
     cookieName: 'grimorio_session',
     corsOrigin: '*',
+    cookieSameSite: 'lax',
+    cookieSecure: false,
     ...overrides,
   };
 }

@@ -24,14 +24,19 @@ export function setSessionCookie(
   const token = signSession(principal, config.sessionSecret);
   reply.setCookie(config.cookieName, token, {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: config.cookieSameSite,
+    secure: config.cookieSecure,
     path: '/',
   });
 }
 
-/** Clear the session cookie on the reply (logout). */
+/** Clear the session cookie on the reply (logout). Attributes must match to clear. */
 export function clearSessionCookie(reply: FastifyReply, config: Config): void {
-  reply.clearCookie(config.cookieName, { path: '/' });
+  reply.clearCookie(config.cookieName, {
+    sameSite: config.cookieSameSite,
+    secure: config.cookieSecure,
+    path: '/',
+  });
 }
 
 /** Resolve the session principal from the request's cookie, or null. */
