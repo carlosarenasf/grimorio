@@ -70,6 +70,11 @@ export const JoinCampaignSchema = z.object({
   joinCode: z.string().min(1),
 });
 
+export const DeleteCampaignSchema = z.object({
+  type: z.literal('DeleteCampaign'),
+  campaignId: z.string().min(1),
+});
+
 const CharacterCorePatch = z.object({
   name: z.string().min(1).optional(),
   species: z.string().optional(),
@@ -266,6 +271,7 @@ export const CommandSchema = z.discriminatedUnion('type', [
   LoginSchema,
   CreateCampaignSchema,
   UpdateCampaignSchema,
+  DeleteCampaignSchema,
   InviteToCampaignSchema,
   JoinCampaignSchema,
   CreateCharacterSchema,
@@ -300,6 +306,7 @@ export type RegisterCommand = z.infer<typeof RegisterSchema>;
 export type LoginCommand = z.infer<typeof LoginSchema>;
 export type CreateCampaignCommand = z.infer<typeof CreateCampaignSchema>;
 export type UpdateCampaignCommand = z.infer<typeof UpdateCampaignSchema>;
+export type DeleteCampaignCommand = z.infer<typeof DeleteCampaignSchema>;
 export type InviteToCampaignCommand = z.infer<typeof InviteToCampaignSchema>;
 export type JoinCampaignCommand = z.infer<typeof JoinCampaignSchema>;
 export type CreateCharacterCommand = z.infer<typeof CreateCharacterSchema>;
