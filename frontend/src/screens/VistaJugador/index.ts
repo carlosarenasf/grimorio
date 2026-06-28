@@ -11,8 +11,13 @@ export type {
   AbilityScores,
   AttackDef,
   AttackKind,
+  CharacterTrait,
   InventoryItem,
   PlayerSnapshot,
   Send,
+  SpellEntry,
+  TraitSource,
   YouCharacter,
 } from './types';
+
+export type { NewAttackData } from './AddAttackModal';
