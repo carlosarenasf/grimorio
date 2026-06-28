@@ -37,18 +37,21 @@ const campaignRepo = {
   findById: async () => null,
   findByJoinCode: async () => null,
   listForUser: async () => [],
+  delete: async () => {},
 } satisfies CampaignRepository;
 
 const characterRepo = {
   save: async () => {},
   findById: async () => null,
   listByCampaign: async () => [],
+  deleteByCampaign: async () => {},
 } satisfies CharacterRepository;
 
 const liveTableRepo = {
   save: async () => {},
   findById: async () => null,
   findByCampaignId: async () => null,
+  deleteByCampaign: async () => {},
 } satisfies LiveTableRepository;
 
 const broadcaster = {

@@ -45,6 +45,7 @@ export interface CampaignRepository {
   findByJoinCode(joinCode: string): Promise<Campaign | null>;
   /** Campaigns the user is a member of (for the Campañas list). */
   listForUser(userId: UserId): Promise<Campaign[]>;
+  delete(id: CampaignId): Promise<void>;
 }
 
 export interface CharacterRepository {
@@ -52,6 +53,7 @@ export interface CharacterRepository {
   findById(id: CharacterId): Promise<CharacterSheet | null>;
   /** Sheets linked to a campaign. */
   listByCampaign(campaignId: CampaignId): Promise<CharacterSheet[]>;
+  deleteByCampaign(campaignId: CampaignId): Promise<void>;
 }
 
 export interface LiveTableRepository {
@@ -59,6 +61,7 @@ export interface LiveTableRepository {
   findById(id: LiveTableId): Promise<LiveTable | null>;
   /** The live table for a campaign (one room per campaign); used to rehydrate. */
   findByCampaignId(campaignId: CampaignId): Promise<LiveTable | null>;
+  deleteByCampaign(campaignId: CampaignId): Promise<void>;
 }
 
 // ---------- Broadcaster ----------

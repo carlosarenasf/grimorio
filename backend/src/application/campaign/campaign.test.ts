@@ -4,10 +4,13 @@ import type { UserId } from '../../domain/ids.js';
 import { newUserId } from '../../domain/ids.js';
 import {
   createCampaign,
+  deleteCampaign,
   Forbidden,
   issueInvite,
   joinByCode,
   listCampaignsForUser,
+  NotFound,
+  NotOwner,
   UnknownCode,
   updateCampaign,
 } from './index.js';
@@ -194,5 +197,104 @@ describe('listCampaignsForUser', () => {
 
     expect(listA.map((c) => c.id)).toEqual([campaignA.id]);
     expect(listB.map((c) => c.id)).toEqual([campaignB.id]);
+  });
+});
+
+describe('deleteCampaign', () => {
+  it('throws NotFound for a non-existent campaign', async () => {
+    const { repos } = makeDeps();
+    await expect(
+      deleteCampaign(
+        { campaignId: 'cmp-nonexistent' as any, actorId: newUserId() },
+        { campaigns: repos.campaigns, characters: repos.characters, tables: repos.liveTables },
+      ),
+    ).rejects.toBeInstanceOf(NotFound);
+  });
+
+  it('throws NotOwner when a non-owner tries to delete', async () => {
+    const { repos, clock, rng } = makeDeps();
+    const ownerId: UserId = newUserId();
+    const intruderId: UserId = newUserId();
+
+    const campaign = await createCampaign(
+      { ownerId, name: 'Original', tagline: 'tag' },
+      { campaigns: repos.campaigns, clock, rng },
+    );
+
+    await expect(
+      deleteCampaign(
+        { campaignId: campaign.id, actorId: intruderId },
+        { campaigns: repos.campaigns, characters: repos.characters, tables: repos.liveTables },
+      ),
+    ).rejects.toBeInstanceOf(NotOwner);
+  });
+
+  it('deletes the campaign when the owner calls it', async () => {
+    const { repos, clock, rng } = makeDeps();
+    const ownerId: UserId = newUserId();
+
+    const campaign = await createCampaign(
+      { ownerId, name: 'A borrar', tagline: 'tag' },
+      { campaigns: repos.campaigns, clock, rng },
+    );
+
+    await deleteCampaign(
+      { campaignId: campaign.id, actorId: ownerId },
+      { campaigns: repos.campaigns, characters: repos.characters, tables: repos.liveTables },
+    );
+
+    expect(await repos.campaigns.findById(campaign.id)).toBeNull();
+  });
+
+  it('also deletes characters and live table associated with the campaign', async () => {
+    const { repos, clock, rng } = makeDeps();
+    const ownerId: UserId = newUserId();
+
+    const campaign = await createCampaign(
+      { ownerId, name: 'A borrar', tagline: 'tag' },
+      { campaigns: repos.campaigns, clock, rng },
+    );
+
+    await repos.characters.save({
+      id: 'chr-1' as any,
+      campaignId: campaign.id,
+      ownerId,
+      name: 'Brom',
+      species: 'Elfo',
+      className: 'Explorador',
+      background: 'Forastero',
+      level: 1,
+      scores: { str: 10, dex: 14, con: 12, int: 10, wis: 12, cha: 8 },
+      maxHp: 10,
+      currentHp: 10,
+      armorClass: 14,
+      speed: 9,
+      proficientSkills: [],
+      attacks: [],
+      inventory: [],
+      gold: 0,
+      notes: '',
+      visibility: 'owner',
+    });
+
+    await repos.liveTables.save({
+      id: 'tbl-1' as any,
+      campaignId: campaign.id,
+      combatants: [],
+      combat: { active: false, round: 0, order: [], currentTurnIndex: 0 },
+      rollLog: [],
+      eventLog: [],
+      dmNotes: '',
+      version: 0,
+    });
+
+    await deleteCampaign(
+      { campaignId: campaign.id, actorId: ownerId },
+      { campaigns: repos.campaigns, characters: repos.characters, tables: repos.liveTables },
+    );
+
+    expect(await repos.characters.listByCampaign(campaign.id)).toEqual([]);
+    expect(await repos.liveTables.findByCampaignId(campaign.id)).toBeNull();
+    expect(await repos.campaigns.findById(campaign.id)).toBeNull();
   });
 });

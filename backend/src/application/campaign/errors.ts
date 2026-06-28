@@ -5,7 +5,7 @@
  * can map to the right wire status without inspecting message strings.
  */
 
-export type CampaignErrorCode = 'NotFound' | 'Forbidden' | 'UnknownCode';
+export type CampaignErrorCode = 'NotFound' | 'Forbidden' | 'NotOwner' | 'UnknownCode';
 
 export class CampaignError extends Error {
   readonly code: CampaignErrorCode;
@@ -38,5 +38,13 @@ export class UnknownCode extends CampaignError {
   constructor(joinCode: string) {
     super('UnknownCode', `Unknown join code: ${joinCode}`);
     this.name = 'UnknownCode';
+  }
+}
+
+/** Actor is not the owner of the campaign (required for destructive operations). */
+export class NotOwner extends CampaignError {
+  constructor(message = 'Only the campaign owner may perform this action') {
+    super('NotOwner', message);
+    this.name = 'NotOwner';
   }
 }
