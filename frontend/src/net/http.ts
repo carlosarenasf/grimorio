@@ -57,6 +57,7 @@ export interface CharacterDTO {
   spells?: string[];
   gold: number;
   notes: string;
+  traits?: Array<{ id: string; name: string; description: string; source: 'species' | 'class' }>;
   [key: string]: unknown;
 }
 
