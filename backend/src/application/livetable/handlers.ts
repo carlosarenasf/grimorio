@@ -152,6 +152,9 @@ export function handleAddManualCombatant(
     currentHp: cmd.maxHp,
     conditions: [],
     hpVisibility: cmd.hpVisibility,
+    ac: cmd.ac,
+    speed: cmd.speed,
+    attacks: cmd.attacks,
   };
 
   const next = bump({ ...table, combatants: [...table.combatants, combatant] });

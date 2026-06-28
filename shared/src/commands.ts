@@ -177,6 +177,18 @@ export const AddManualCombatantSchema = z.object({
   combatantType: CombatantType,
   hpVisibility: Visibility.default('public'),
   refId: z.string().nullable().default(null),
+  ac: z.number().int().min(0).optional(),
+  speed: z.string().optional(),
+  attacks: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        bonus: z.number().nullable(),
+        damage: z.string().nullable(),
+        damageType: z.string().default(''),
+      }),
+    )
+    .optional(),
 });
 
 export const RemoveCombatantSchema = z.object({
