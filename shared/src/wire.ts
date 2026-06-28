@@ -64,6 +64,8 @@ export interface PublicCombatantDTO {
   initiative: number;
   /** For a PC combatant, the CharacterId it represents (so clients can match it). */
   characterId?: string;
+  /** For a monster combatant, the bestiary entry id (so clients can fetch the sheet). */
+  refId?: string;
   conditions: ConditionDTO[];
   /** Present only when the viewer may see numeric HP. */
   currentHp?: number;
@@ -71,6 +73,9 @@ export interface PublicCombatantDTO {
   maxHp?: number;
   /** Present only when HP is hidden from this viewer (dm_only projected to player). */
   statusLabel?: HpStatusLabel;
+  ac?: number;
+  speed?: string;
+  attacks?: Array<{ name: string; bonus: number | null; damage: string | null; damageType: string }>;
 }
 
 interface BaseSnapshot {

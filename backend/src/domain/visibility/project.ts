@@ -29,7 +29,13 @@ export function projectCombatant(combatant: Combatant, viewer: Viewer): PublicCo
     // For PCs, refId holds the CharacterId — expose it so clients can match a
     // combatant to its character (not secret). Monsters keep it undefined.
     characterId: combatant.type === 'pc' ? (combatant.refId ?? undefined) : undefined,
+    // For monsters, refId holds the bestiary entry id — expose it so clients can
+    // fetch the full stat block for the sheet view.
+    refId: combatant.type === 'monster' ? (combatant.refId ?? undefined) : undefined,
     conditions: combatant.conditions,
+    ac: combatant.ac,
+    speed: combatant.speed,
+    attacks: combatant.attacks,
   };
 
   if (canSeeNumericHp(combatant, viewer)) {

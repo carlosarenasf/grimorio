@@ -108,6 +108,13 @@ export interface Condition {
   color: string; // colour token (chip/dot)
 }
 
+export interface CombatantAttack {
+  name: string;
+  bonus: number | null;
+  damage: string | null;
+  damageType: string;
+}
+
 export interface Combatant {
   id: CombatantId;
   refId: string | null; // PC: the CharacterId; monster: the bestiary entry id; else null
@@ -124,6 +131,9 @@ export interface Combatant {
   hpVisibility: Visibility; // 'public' for PCs, 'dm_only' for hidden monsters
   // If hpVisibility === 'dm_only', the server projects to players ONLY a derived
   // label (statusLabel), never the real HP.
+  ac?: number;
+  speed?: string;
+  attacks?: CombatantAttack[];
 }
 
 export interface CombatState {
