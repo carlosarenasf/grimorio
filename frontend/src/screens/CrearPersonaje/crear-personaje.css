@@ -158,11 +158,6 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 11px;
 }
-@media (max-width: 560px) {
-  .cp-abilities {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
 .cp-ability {
   background: var(--ink-void, #14121c);
   border: 1px solid var(--hairline2, rgba(232, 226, 208, 0.18));
@@ -199,6 +194,68 @@
   justify-content: center;
   gap: 6px;
   margin-top: 8px;
+}
+
+@media (max-width: 560px) {
+  .cp-caracteristicas {
+    gap: 10px;
+  }
+  .cp-abilities {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .cp-ability {
+    padding: var(--space-2) var(--space-2);
+    border-radius: var(--radius-sm);
+  }
+  .cp-ability__name {
+    margin-bottom: var(--space-1);
+    font-size: 10px;
+  }
+  .cp-ability__score {
+    font-size: 20px;
+    gap: 2px 6px;
+  }
+  .cp-ability__mod {
+    font-size: 12px;
+  }
+  .cp-stepper {
+    gap: var(--space-1);
+    margin-top: var(--space-1);
+  }
+  .cp-stepper .button--sm {
+    padding: 2px var(--space-2);
+    font-size: 12px;
+    min-width: 28px;
+  }
+  .cp-method .button--sm {
+    padding: var(--space-1) var(--space-2);
+    font-size: 12px;
+  }
+  .cp-caracteristicas .field__control {
+    padding: var(--space-1) var(--space-2);
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 400px) {
+  .cp-abilities {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .cp-ability {
+    padding: 6px var(--space-1);
+  }
+  .cp-ability__score {
+    font-size: 18px;
+  }
+  .cp-method {
+    gap: 6px;
+  }
+  .cp-method .button--sm {
+    font-size: 11px;
+    padding: 3px var(--space-1);
+  }
 }
 
 /* ----- skills ----- */
