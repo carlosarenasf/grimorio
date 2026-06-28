@@ -111,6 +111,26 @@
   display: flex;
   flex-direction: column;
 }
+.vm-bestiary__name {
+  font-weight: 600;
+}
+.vm-bestiary__name-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  transition: color var(--transition-fast);
+}
+.vm-bestiary__name-btn:hover {
+  color: var(--arcane, #c9a227);
+}
+.vm-bestiary__name-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
 .vm-bestiary__meta {
   color: rgba(232, 226, 208, 0.55);
 }
@@ -635,5 +655,70 @@
   }
   .amm__footer .btn {
     width: 100%;
+  }
+}
+
+/* Monster Sheet Modal */
+.msm {
+  width: min(560px, 100%);
+}
+.msm__head {
+  border-top-color: var(--frost, #5e84a6) !important;
+}
+.msm__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.msm__core {
+  grid-template-columns: repeat(3, 1fr);
+}
+.msm__speed {
+  font-size: 14px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.msm__abilities {
+  grid-template-columns: repeat(6, 1fr);
+}
+.msm__traits,
+.msm__actions {
+  gap: 10px;
+}
+.msm__trait,
+.msm__action {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.msm__trait strong,
+.msm__action-header strong {
+  color: var(--parchment, #e8e2d0);
+  font-size: 14px;
+}
+.msm__trait-desc,
+.msm__action-desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted, rgba(232, 226, 208, 0.7));
+  line-height: 1.5;
+}
+.msm__action-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+.msm__action-stats {
+  font-size: 12px;
+  color: var(--arcane, #c9a227);
+  font-weight: 600;
+}
+
+@media (max-width: 680px) {
+  .msm__core {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .msm__abilities {
+    grid-template-columns: repeat(3, 1fr);
   }
 }

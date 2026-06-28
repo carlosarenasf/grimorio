@@ -342,6 +342,20 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
     },
   );
 
+  app.get(
+    '/srd/monsters/:id',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { id } = req.params as { id: string };
+      const monster = deps.srd.getMonster(id);
+      if (!monster) {
+        reply.code(404).send({ error: 'NotFound', message: `Monster not found: ${id}` });
+        return;
+      }
+      reply.send(monster);
+    },
+  );
+
   app.get('/srd/species', { preHandler: auth }, async (_req, reply) => {
     reply.send(deps.srd.species());
   });

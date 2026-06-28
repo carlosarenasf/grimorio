@@ -101,6 +101,18 @@ export interface MonsterAttack {
   bonus: number | null;
   damage: string | null; // "1d8+2"
   damageType: string;
+  description?: string;
+}
+
+export interface MonsterTrait {
+  name: string;
+  description: string;
+}
+
+export interface MonsterAction {
+  name: string;
+  description: string;
+  attack?: MonsterAttack;
 }
 
 export interface Monster extends MonsterRef {
@@ -108,6 +120,27 @@ export interface Monster extends MonsterRef {
   hp: number;
   speed: string; // "9 m"
   attacks: MonsterAttack[];
+  // Stats completos (D&D 2024)
+  abilities?: {
+    str: number;
+    dex: number;
+    con: number;
+    int: number;
+    wis: number;
+    cha: number;
+  };
+  savingThrows?: string[]; // ej: ["DES", "CON"]
+  skills?: string[]; // ej: ["Percepción", "Sigilo"]
+  damageResistances?: string[]; // ej: ["fuego"]
+  damageImmunities?: string[];
+  damageVulnerabilities?: string[];
+  conditionImmunities?: string[];
+  senses?: string[]; // ej: ["visión en la oscuridad 18m"]
+  languages?: string[];
+  traits?: MonsterTrait[];
+  actions?: MonsterAction[];
+  reactions?: MonsterAction[];
+  legendaryActions?: MonsterAction[];
 }
 
 export interface RuleSection {

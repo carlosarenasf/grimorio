@@ -9,7 +9,7 @@
  */
 import type { Monster } from '../types.js';
 
-/** ~40 common SRD monsters, simplified for the Vista Máster bestiary panel. */
+/** ~40 common SRD monsters with full stat blocks (D&D 2024 / SRD 5.2). */
 export const BESTIARY: Monster[] = [
   {
     id: 'goblin',
@@ -19,7 +19,17 @@ export const BESTIARY: Monster[] = [
     ac: 15,
     hp: 7,
     speed: '9 m',
+    abilities: { str: 8, dex: 14, con: 10, int: 10, wis: 8, cha: 8 },
+    skills: ['Sigilo'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común', 'Goblin'],
+    traits: [
+      { name: 'Agilidad de goblin', description: 'Puede moverse a través del espacio de cualquier criatura que sea de un tamaño mayor que el suyo.' },
+    ],
     attacks: [{ name: 'Cimitarra', bonus: 4, damage: '1d6+2', damageType: 'cortante' }],
+    actions: [
+      { name: 'Cimitarra', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 3 (1d6+2) de daño cortante.', attack: { name: 'Cimitarra', bonus: 4, damage: '1d6+2', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'orco',
@@ -29,7 +39,17 @@ export const BESTIARY: Monster[] = [
     ac: 12,
     hp: 15,
     speed: '9 m',
+    abilities: { str: 16, dex: 10, con: 13, int: 7, wis: 11, cha: 10 },
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común', 'Orco'],
+    traits: [
+      { name: 'Embate adrenalínico', description: 'Como acción adicional, puede avanzar hasta su velocidad hacia un enemigo hostil que pueda ver.' },
+      { name: 'Aguante implacable', description: 'Cuando reduce a 0 PG pero no muere de forma instantánea, puede caer a 1 PG en su lugar. Una vez usado, debe completar un descanso largo para usarlo de nuevo.' },
+    ],
     attacks: [{ name: 'Hacha de mano', bonus: 5, damage: '1d6+3', damageType: 'cortante' }],
+    actions: [
+      { name: 'Hacha de mano', description: 'Ataque de arma cuerpo a cuerpo: +5 al ataque, alcance 1,5 m. Impacto: 7 (1d6+3) de daño cortante.', attack: { name: 'Hacha de mano', bonus: 5, damage: '1d6+3', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'orco-guerrero',
@@ -39,7 +59,16 @@ export const BESTIARY: Monster[] = [
     ac: 13,
     hp: 30,
     speed: '9 m',
+    abilities: { str: 16, dex: 10, con: 13, int: 7, wis: 11, cha: 10 },
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común', 'Orco'],
+    traits: [
+      { name: 'Embate adrenalínico', description: 'Como acción adicional, puede avanzar hasta su velocidad hacia un enemigo hostil que pueda ver.' },
+    ],
     attacks: [{ name: 'Hacha de guerra', bonus: 5, damage: '1d8+3', damageType: 'cortante' }],
+    actions: [
+      { name: 'Hacha de guerra', description: 'Ataque de arma cuerpo a cuerpo: +5 al ataque, alcance 1,5 m. Impacto: 7 (1d8+3) de daño cortante.', attack: { name: 'Hacha de guerra', bonus: 5, damage: '1d8+3', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'jefe-orco',
@@ -49,9 +78,21 @@ export const BESTIARY: Monster[] = [
     ac: 14,
     hp: 45,
     speed: '9 m',
+    abilities: { str: 17, dex: 10, con: 14, int: 8, wis: 11, cha: 12 },
+    savingThrows: ['CON'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común', 'Orco'],
+    traits: [
+      { name: 'Aguante implacable', description: 'Cuando reduce a 0 PG pero no muere de forma instantánea, puede caer a 1 PG en su lugar.' },
+      { name: 'Embate adrenalínico', description: 'Como acción adicional, puede avanzar hasta su velocidad hacia un enemigo hostil que pueda ver.' },
+    ],
     attacks: [
       { name: 'Hacha de guerra mayor', bonus: 6, damage: '2d8+4', damageType: 'cortante' },
       { name: 'Jabalina', bonus: 6, damage: '1d6+4', damageType: 'perforante' },
+    ],
+    actions: [
+      { name: 'Hacha de guerra mayor', description: 'Ataque de arma cuerpo a cuerpo: +6 al ataque, alcance 1,5 m. Impacto: 13 (2d8+4) de daño cortante.', attack: { name: 'Hacha de guerra mayor', bonus: 6, damage: '2d8+4', damageType: 'cortante' } },
+      { name: 'Jabalina', description: 'Ataque de arma cuerpo a cuerpo o a distancia: +6 al ataque, alcance 1,5 m o 9/27 m. Impacto: 7 (1d6+4) de daño perforante.', attack: { name: 'Jabalina', bonus: 6, damage: '1d6+4', damageType: 'perforante' } },
     ],
   },
   {
@@ -62,7 +103,16 @@ export const BESTIARY: Monster[] = [
     ac: 13,
     hp: 11,
     speed: '12 m',
+    abilities: { str: 12, dex: 15, con: 12, int: 3, wis: 12, cha: 6 },
+    skills: ['Percepción', 'Sigilo'],
+    senses: ['visión en la oscuridad 9m'],
+    traits: [
+      { name: 'Táctica de manada', description: 'El lobo tiene ventaja en una tirada de ataque contra una criatura si al menos un aliado del lobo que no esté incapacitado está a 1,5 m de la criatura.' },
+    ],
     attacks: [{ name: 'Mordisco', bonus: 4, damage: '2d4+2', damageType: 'perforante' }],
+    actions: [
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 7 (2d4+2) de daño perforante. Si la criatura es Grande o menor, debe superar una salvación de FUE CD 11 o queda derribada.', attack: { name: 'Mordisco', bonus: 4, damage: '2d4+2', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'esqueleto',
@@ -72,7 +122,16 @@ export const BESTIARY: Monster[] = [
     ac: 13,
     hp: 13,
     speed: '9 m',
+    abilities: { str: 10, dex: 14, con: 13, int: 6, wis: 8, cha: 5 },
+    damageVulnerabilities: ['contundente'],
+    damageImmunities: ['veneno'],
+    conditionImmunities: ['envenenado'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común'],
     attacks: [{ name: 'Espada corta', bonus: 4, damage: '1d6+2', damageType: 'perforante' }],
+    actions: [
+      { name: 'Espada corta', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 5 (1d6+2) de daño perforante.', attack: { name: 'Espada corta', bonus: 4, damage: '1d6+2', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'zombi',
@@ -82,7 +141,19 @@ export const BESTIARY: Monster[] = [
     ac: 8,
     hp: 22,
     speed: '6 m',
+    abilities: { str: 13, dex: 6, con: 16, int: 3, wis: 6, cha: 5 },
+    savingThrows: ['SAB'],
+    damageImmunities: ['veneno'],
+    conditionImmunities: ['envenenado'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común'],
+    traits: [
+      { name: 'Fortaleza impía', description: 'Si un ataque reduce al zombi a 0 PG, el zombi puede hacer una salvación de CON CD 5 + el daño recibido. Si tiene éxito, cae a 1 PG en su lugar.' },
+    ],
     attacks: [{ name: 'Golpe', bonus: 3, damage: '1d6+1', damageType: 'contundente' }],
+    actions: [
+      { name: 'Golpe', description: 'Ataque de arma cuerpo a cuerpo: +3 al ataque, alcance 1,5 m. Impacto: 4 (1d6+1) de daño contundente.', attack: { name: 'Golpe', bonus: 3, damage: '1d6+1', damageType: 'contundente' } },
+    ],
   },
   {
     id: 'bandido',
@@ -92,7 +163,11 @@ export const BESTIARY: Monster[] = [
     ac: 12,
     hp: 11,
     speed: '9 m',
+    abilities: { str: 11, dex: 12, con: 12, int: 10, wis: 10, cha: 10 },
     attacks: [{ name: 'Cimitarra', bonus: 3, damage: '1d6+1', damageType: 'cortante' }],
+    actions: [
+      { name: 'Cimitarra', description: 'Ataque de arma cuerpo a cuerpo: +3 al ataque, alcance 1,5 m. Impacto: 4 (1d6+1) de daño cortante.', attack: { name: 'Cimitarra', bonus: 3, damage: '1d6+1', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'capitan-bandidos',
@@ -102,7 +177,13 @@ export const BESTIARY: Monster[] = [
     ac: 15,
     hp: 65,
     speed: '9 m',
+    abilities: { str: 15, dex: 14, con: 14, int: 14, wis: 11, cha: 14 },
+    savingThrows: ['FUE', 'DES', 'SAB'],
+    skills: ['Atletismo', 'Engaño'],
     attacks: [{ name: 'Cimitarra', bonus: 5, damage: '1d6+3', damageType: 'cortante' }],
+    actions: [
+      { name: 'Cimitarra', description: 'Ataque de arma cuerpo a cuerpo: +5 al ataque, alcance 1,5 m. Impacto: 5 (1d6+3) de daño cortante.', attack: { name: 'Cimitarra', bonus: 5, damage: '1d6+3', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'kobold',
@@ -112,7 +193,16 @@ export const BESTIARY: Monster[] = [
     ac: 12,
     hp: 5,
     speed: '6 m',
+    abilities: { str: 7, dex: 15, con: 9, int: 8, wis: 7, cha: 8 },
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común', 'Dracónico'],
+    traits: [
+      { name: 'Táctica de mecha', description: 'El kobold tiene ventaja en la tirada de ataque si un aliado está a 1,5 m del objetivo.' },
+    ],
     attacks: [{ name: 'Daga', bonus: 4, damage: '1d4+2', damageType: 'perforante' }],
+    actions: [
+      { name: 'Daga', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 4 (1d4+2) de daño perforante.', attack: { name: 'Daga', bonus: 4, damage: '1d4+2', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'oso-pardo',
@@ -122,9 +212,20 @@ export const BESTIARY: Monster[] = [
     ac: 11,
     hp: 34,
     speed: '12 m',
+    abilities: { str: 19, dex: 10, con: 16, int: 2, wis: 13, cha: 7 },
+    skills: ['Percepción'],
+    senses: ['visión en la oscuridad 18m'],
+    traits: [
+      { name: 'Olfato agudo', description: 'El oso tiene ventaja en tiradas de característica (Percepción) que dependan del olfato.' },
+    ],
     attacks: [
       { name: 'Garra', bonus: 5, damage: '2d6+4', damageType: 'cortante' },
       { name: 'Mordisco', bonus: 5, damage: '1d8+4', damageType: 'perforante' },
+    ],
+    actions: [
+      { name: 'Multiataque', description: 'El oso realiza dos ataques: uno con mordisco y otro con garra.' },
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +5 al ataque, alcance 1,5 m. Impacto: 9 (1d8+4) de daño perforante.', attack: { name: 'Mordisco', bonus: 5, damage: '1d8+4', damageType: 'perforante' } },
+      { name: 'Garra', description: 'Ataque de arma cuerpo a cuerpo: +5 al ataque, alcance 1,5 m. Impacto: 11 (2d6+4) de daño cortante.', attack: { name: 'Garra', bonus: 5, damage: '2d6+4', damageType: 'cortante' } },
     ],
   },
   {
@@ -135,7 +236,13 @@ export const BESTIARY: Monster[] = [
     ac: 11,
     hp: 59,
     speed: '12 m',
+    abilities: { str: 19, dex: 8, con: 16, int: 5, wis: 7, cha: 7 },
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común', 'Gigante'],
     attacks: [{ name: 'Garrote', bonus: 6, damage: '2d8+4', damageType: 'contundente' }],
+    actions: [
+      { name: 'Garrote', description: 'Ataque de arma cuerpo a cuerpo: +6 al ataque, alcance 3 m. Impacto: 13 (2d8+4) de daño contundente.', attack: { name: 'Garrote', bonus: 6, damage: '2d8+4', damageType: 'contundente' } },
+    ],
   },
   {
     id: 'hobgoblin',
@@ -145,7 +252,15 @@ export const BESTIARY: Monster[] = [
     ac: 18,
     hp: 11,
     speed: '9 m',
+    abilities: { str: 13, dex: 12, con: 12, int: 10, wis: 10, cha: 9 },
+    languages: ['Común', 'Goblin'],
+    traits: [
+      { name: 'Disciplina marcial', description: 'El hobgoblin tiene ventaja en tiradas de salvación contra ser encantado o aterrado.' },
+    ],
     attacks: [{ name: 'Espada larga', bonus: 3, damage: '1d8+1', damageType: 'cortante' }],
+    actions: [
+      { name: 'Espada larga', description: 'Ataque de arma cuerpo a cuerpo: +3 al ataque, alcance 1,5 m. Impacto: 5 (1d8+1) de daño cortante, o 6 (1d10+1) si se usa a dos manos.', attack: { name: 'Espada larga', bonus: 3, damage: '1d8+1', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'gnoll',
@@ -155,7 +270,16 @@ export const BESTIARY: Monster[] = [
     ac: 15,
     hp: 22,
     speed: '9 m',
+    abilities: { str: 14, dex: 12, con: 11, int: 6, wis: 10, cha: 7 },
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Gnoll'],
+    traits: [
+      { name: 'Furia sanguinaria', description: 'Cuando el gnoll reduce a una criatura a 0 PG con un ataque cuerpo a cuerpo, puede usar su reacción para hacer un ataque de mordisco contra otra criatura a 1,5 m.' },
+    ],
     attacks: [{ name: 'Mordisco', bonus: 4, damage: '1d4+2', damageType: 'perforante' }],
+    actions: [
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 4 (1d4+2) de daño perforante.', attack: { name: 'Mordisco', bonus: 4, damage: '1d4+2', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'arana-gigante',
@@ -165,7 +289,17 @@ export const BESTIARY: Monster[] = [
     ac: 14,
     hp: 26,
     speed: '9 m (trepar 9 m)',
+    abilities: { str: 14, dex: 16, con: 12, int: 2, wis: 11, cha: 4 },
+    skills: ['Sigilo'],
+    senses: ['visión ciega 3m', 'visión en la oscuridad 18m'],
+    traits: [
+      { name: 'Caminar por paredes y techos', description: 'La araña puede trepar por paredes y techos sin necesidad de hacer tiradas de característica.' },
+      { name: 'Telaraña', description: 'La araña puede lanzar telarañas. Una criatura Grande o menor debe superar una salvación de DES CD 13 o queda restringida.' },
+    ],
     attacks: [{ name: 'Mordisco', bonus: 5, damage: '1d8+3', damageType: 'perforante' }],
+    actions: [
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +5 al ataque, alcance 1,5 m. Impacto: 7 (1d8+3) de daño perforante más 4 (1d8) de daño de veneno. Si reduce a 0 PG, la araña no inyecta veneno.', attack: { name: 'Mordisco', bonus: 5, damage: '1d8+3', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'dragon-joven-rojo',
@@ -175,9 +309,24 @@ export const BESTIARY: Monster[] = [
     ac: 18,
     hp: 178,
     speed: '12 m (volar 24 m)',
+    abilities: { str: 23, dex: 10, con: 21, int: 14, wis: 11, cha: 19 },
+    savingThrows: ['DES', 'CON', 'SAB', 'CAR'],
+    skills: ['Percepción', 'Sigilo'],
+    damageImmunities: ['fuego'],
+    senses: ['visión ciega 9m', 'visión en la oscuridad 36m'],
+    languages: ['Común', 'Dracónico'],
+    traits: [
+      { name: 'Presencia aterradora', description: 'Cuando una criatura comienza su turno a 9m del dragón, debe superar una salvación de SAB CD 15 o queda aterrada.' },
+    ],
     attacks: [
       { name: 'Mordisco', bonus: 10, damage: '2d10+6', damageType: 'perforante' },
       { name: 'Garra', bonus: 10, damage: '2d6+6', damageType: 'cortante' },
+    ],
+    actions: [
+      { name: 'Multiataque', description: 'El dragón realiza tres ataques: uno con mordisco y dos con garras.' },
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +10 al ataque, alcance 3 m. Impacto: 17 (2d10+6) de daño perforante.', attack: { name: 'Mordisco', bonus: 10, damage: '2d10+6', damageType: 'perforante' } },
+      { name: 'Garra', description: 'Ataque de arma cuerpo a cuerpo: +10 al ataque, alcance 1,5 m. Impacto: 13 (2d6+6) de daño cortante.', attack: { name: 'Garra', bonus: 10, damage: '2d6+6', damageType: 'cortante' } },
+      { name: 'Aliento de fuego (Recarga 5-6)', description: 'El dragón exhala fuego en un cono de 6m. Cada criatura debe hacer una salvación de DES CD 17, recibiendo 56 (16d6) de daño de fuego en caso de fallo, o la mitad en caso de éxito.' },
     ],
   },
   {
@@ -188,7 +337,15 @@ export const BESTIARY: Monster[] = [
     ac: 12,
     hp: 7,
     speed: '9 m',
+    abilities: { str: 7, dex: 15, con: 11, int: 2, wis: 10, cha: 4 },
+    senses: ['visión en la oscuridad 9m'],
+    traits: [
+      { name: 'Táctica de manada', description: 'La rata tiene ventaja en la tirada de ataque si un aliado está a 1,5 m del objetivo.' },
+    ],
     attacks: [{ name: 'Mordisco', bonus: 4, damage: '1d4+2', damageType: 'perforante' }],
+    actions: [
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 4 (1d4+2) de daño perforante.', attack: { name: 'Mordisco', bonus: 4, damage: '1d4+2', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'murcielago',
@@ -198,7 +355,12 @@ export const BESTIARY: Monster[] = [
     ac: 12,
     hp: 1,
     speed: '3 m (volar 18 m)',
+    abilities: { str: 2, dex: 15, con: 8, int: 2, wis: 12, cha: 4 },
+    senses: ['visión ciega 18m'],
     attacks: [{ name: 'Mordisco', bonus: 0, damage: '1', damageType: 'perforante' }],
+    actions: [
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +0 al ataque, alcance 1,5 m. Impacto: 1 de daño perforante.', attack: { name: 'Mordisco', bonus: 0, damage: '1', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'cuervo',
@@ -208,7 +370,13 @@ export const BESTIARY: Monster[] = [
     ac: 12,
     hp: 1,
     speed: '3 m (volar 15 m)',
+    abilities: { str: 2, dex: 14, con: 8, int: 2, wis: 12, cha: 6 },
+    skills: ['Percepción'],
+    senses: ['visión en la oscuridad 9m'],
     attacks: [{ name: 'Pico', bonus: 4, damage: '1', damageType: 'perforante' }],
+    actions: [
+      { name: 'Pico', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 1 de daño perforante.', attack: { name: 'Pico', bonus: 4, damage: '1', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'mastin',
@@ -218,7 +386,16 @@ export const BESTIARY: Monster[] = [
     ac: 12,
     hp: 5,
     speed: '12 m',
+    abilities: { str: 13, dex: 14, con: 11, int: 3, wis: 12, cha: 7 },
+    skills: ['Percepción'],
+    senses: ['visión en la oscuridad 18m'],
+    traits: [
+      { name: 'Olfato y oído agudos', description: 'El mastín tiene ventaja en tiradas de característica (Percepción) que dependan del olfato o el oído.' },
+    ],
     attacks: [{ name: 'Mordisco', bonus: 3, damage: '1d4+1', damageType: 'perforante' }],
+    actions: [
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +3 al ataque, alcance 1,5 m. Impacto: 3 (1d4+1) de daño perforante.', attack: { name: 'Mordisco', bonus: 3, damage: '1d4+1', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'aguila-gigante',
@@ -228,7 +405,17 @@ export const BESTIARY: Monster[] = [
     ac: 13,
     hp: 26,
     speed: '3 m (volar 24 m)',
+    abilities: { str: 16, dex: 18, con: 13, int: 8, wis: 14, cha: 10 },
+    skills: ['Percepción'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Aquila'],
+    traits: [
+      { name: 'Vista aguda', description: 'El águila tiene ventaja en tiradas de característica (Percepción) que dependan de la vista.' },
+    ],
     attacks: [{ name: 'Garra', bonus: 5, damage: '2d6+3', damageType: 'cortante' }],
+    actions: [
+      { name: 'Garra', description: 'Ataque de arma cuerpo a cuerpo: +5 al ataque, alcance 1,5 m. Impacto: 10 (2d6+3) de daño cortante.', attack: { name: 'Garra', bonus: 5, damage: '2d6+3', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'lobo-terrible',
@@ -238,7 +425,16 @@ export const BESTIARY: Monster[] = [
     ac: 14,
     hp: 37,
     speed: '15 m',
+    abilities: { str: 17, dex: 15, con: 15, int: 3, wis: 12, cha: 8 },
+    skills: ['Percepción', 'Sigilo'],
+    senses: ['visión en la oscuridad 18m'],
+    traits: [
+      { name: 'Táctica de manada', description: 'El lobo tiene ventaja en una tirada de ataque contra una criatura si al menos un aliado del lobo que no esté incapacitado está a 1,5 m de la criatura.' },
+    ],
     attacks: [{ name: 'Mordisco', bonus: 6, damage: '2d6+4', damageType: 'perforante' }],
+    actions: [
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +6 al ataque, alcance 1,5 m. Impacto: 11 (2d6+4) de daño perforante. Si la criatura es Grande o menor, debe superar una salvación de FUE CD 13 o queda derribada.', attack: { name: 'Mordisco', bonus: 6, damage: '2d6+4', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'elemental-agua',
@@ -248,7 +444,21 @@ export const BESTIARY: Monster[] = [
     ac: 14,
     hp: 114,
     speed: '9 m (nadar 27 m)',
+    abilities: { str: 18, dex: 14, con: 18, int: 5, wis: 10, cha: 8 },
+    damageResistances: ['ácido', 'fuego'],
+    damageImmunities: ['veneno'],
+    conditionImmunities: ['agotamiento', 'derribado', 'encantado', 'frightened', 'grappled', 'inmovilizado', 'paralizado', 'petrificado', 'envenenado', 'restringido', 'aturdido', 'inconsciente'],
+    senses: ['visión en la oscuridad 36m'],
+    languages: ['Aqua'],
+    traits: [
+      { name: 'Forma de agua', description: 'El elemental puede entrar en el espacio de una criatura hostil y detenerse allí. Puede moverse a través de un espacio de 2,5 cm sin apretarse.' },
+      { name: 'Congelación', description: 'Si el elemental sufre daño de frío, se congela parcialmente y su velocidad se reduce a la mitad hasta el final de su siguiente turno.' },
+    ],
     attacks: [{ name: 'Latigazo', bonus: 7, damage: '2d8+4', damageType: 'contundente' }],
+    actions: [
+      { name: 'Multiataque', description: 'El elemental realiza dos ataques de latigazo.' },
+      { name: 'Latigazo', description: 'Ataque de arma cuerpo a cuerpo: +7 al ataque, alcance 3 m. Impacto: 13 (2d8+4) de daño contundente.', attack: { name: 'Latigazo', bonus: 7, damage: '2d8+4', damageType: 'contundente' } },
+    ],
   },
   {
     id: 'elemental-fuego',
@@ -258,7 +468,21 @@ export const BESTIARY: Monster[] = [
     ac: 13,
     hp: 102,
     speed: '15 m',
+    abilities: { str: 10, dex: 17, con: 16, int: 6, wis: 10, cha: 7 },
+    damageResistances: ['contundente', 'cortante', 'perforante de ataques no mágicos'],
+    damageImmunities: ['fuego', 'veneno'],
+    conditionImmunities: ['agotamiento', 'encantado', 'frightened', 'grappled', 'inmovilizado', 'paralizado', 'petrificado', 'envenenado', 'restringido', 'aturdido', 'inconsciente'],
+    senses: ['visión en la oscuridad 36m'],
+    languages: ['Ignan'],
+    traits: [
+      { name: 'Forma de fuego', description: 'El elemental puede entrar en el espacio de una criatura hostil y detenerse allí. La primera vez que lo hace, la criatura recibe 5 (1d10) de daño de fuego.' },
+      { name: 'Iluminación', description: 'El elemental emite luz brillante en un radio de 9m y luz tenue 9m más allá.' },
+    ],
     attacks: [{ name: 'Toque', bonus: 6, damage: '2d6+3', damageType: 'fuego' }],
+    actions: [
+      { name: 'Multiataque', description: 'El elemental realiza dos ataques de toque.' },
+      { name: 'Toque', description: 'Ataque de arma cuerpo a cuerpo: +6 al ataque, alcance 3 m. Impacto: 10 (2d6+3) de daño de fuego.', attack: { name: 'Toque', bonus: 6, damage: '2d6+3', damageType: 'fuego' } },
+    ],
   },
   {
     id: 'ghoul',
@@ -268,7 +492,17 @@ export const BESTIARY: Monster[] = [
     ac: 12,
     hp: 22,
     speed: '9 m',
+    abilities: { str: 13, dex: 15, con: 10, int: 7, wis: 10, cha: 6 },
+    damageImmunities: ['veneno'],
+    conditionImmunities: ['envenenado'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común'],
+    traits: [],
     attacks: [{ name: 'Garra', bonus: 2, damage: '2d6', damageType: 'cortante' }],
+    actions: [
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 4 (1d4+2) de daño perforante.', attack: { name: 'Mordisco', bonus: 4, damage: '1d4+2', damageType: 'perforante' } },
+      { name: 'Garra', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 7 (2d4+2) de daño cortante. Si el objetivo es una criatura que no sea no-muerta o un constructo, debe superar una salvación de CON CD 10 o queda paralizado durante 1 minuto.', attack: { name: 'Garra', bonus: 4, damage: '2d6', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'espantapajaros',
@@ -278,7 +512,19 @@ export const BESTIARY: Monster[] = [
     ac: 11,
     hp: 36,
     speed: '9 m',
+    abilities: { str: 16, dex: 11, con: 13, int: 5, wis: 9, cha: 6 },
+    damageResistances: ['contundente', 'cortante', 'perforante de ataques no mágicos'],
+    damageImmunities: ['veneno'],
+    conditionImmunities: ['envenenado'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común'],
+    traits: [
+      { name: 'Presencia aterradora', description: 'Cuando una criatura comienza su turno a 9m del espantapájaros, debe superar una salvación de SAB CD 10 o queda aterrada.' },
+    ],
     attacks: [{ name: 'Garra aterradora', bonus: 5, damage: '2d8+3', damageType: 'cortante' }],
+    actions: [
+      { name: 'Garra aterradora', description: 'Ataque de arma cuerpo a cuerpo: +5 al ataque, alcance 1,5 m. Impacto: 12 (2d8+3) de daño cortante.', attack: { name: 'Garra aterradora', bonus: 5, damage: '2d8+3', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'troll',
@@ -288,9 +534,22 @@ export const BESTIARY: Monster[] = [
     ac: 15,
     hp: 84,
     speed: '12 m',
+    abilities: { str: 18, dex: 13, con: 20, int: 7, wis: 9, cha: 7 },
+    skills: ['Percepción'],
+    senses: ['visión en la oscuridad 18m', 'olfato ciego 9m'],
+    languages: ['Gigante'],
+    traits: [
+      { name: 'Regeneración', description: 'El troll recupera 10 PG al inicio de su turno. Si recibe daño de ácido o fuego, esta característica no funciona al inicio de su siguiente turno.' },
+      { name: 'Olfato agudo', description: 'El troll tiene ventaja en tiradas de característica (Percepción) que dependan del olfato.' },
+    ],
     attacks: [
       { name: 'Mordisco', bonus: 7, damage: '1d6+4', damageType: 'perforante' },
       { name: 'Garra', bonus: 7, damage: '2d6+4', damageType: 'cortante' },
+    ],
+    actions: [
+      { name: 'Multiataque', description: 'El troll realiza tres ataques: uno con mordisco y dos con garras.' },
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +7 al ataque, alcance 1,5 m. Impacto: 7 (1d6+4) de daño perforante.', attack: { name: 'Mordisco', bonus: 7, damage: '1d6+4', damageType: 'perforante' } },
+      { name: 'Garra', description: 'Ataque de arma cuerpo a cuerpo: +7 al ataque, alcance 1,5 m. Impacto: 11 (2d6+4) de daño cortante.', attack: { name: 'Garra', bonus: 7, damage: '2d6+4', damageType: 'cortante' } },
     ],
   },
   {
@@ -301,9 +560,22 @@ export const BESTIARY: Monster[] = [
     ac: 14,
     hp: 76,
     speed: '12 m',
+    abilities: { str: 18, dex: 11, con: 16, int: 6, wis: 16, cha: 9 },
+    savingThrows: ['CON'],
+    skills: ['Percepción'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Abisal'],
+    traits: [
+      { name: 'Carga', description: 'Si el minotauro se mueve al menos 3m en línea recta hacia una criatura y luego la golpea con un ataque de cornada en el mismo turno, el objetivo recibe 7 (2d6) de daño perforante extra.' },
+      { name: 'Laberíntico', description: 'El minotauro no puede perderse y no puede ser rastreado.' },
+    ],
     attacks: [
       { name: 'Cornada', bonus: 6, damage: '2d8+4', damageType: 'perforante' },
       { name: 'Hacha de guerra mayor', bonus: 6, damage: '2d8+4', damageType: 'cortante' },
+    ],
+    actions: [
+      { name: 'Cornada', description: 'Ataque de arma cuerpo a cuerpo: +6 al ataque, alcance 1,5 m. Impacto: 13 (2d8+4) de daño perforante.', attack: { name: 'Cornada', bonus: 6, damage: '2d8+4', damageType: 'perforante' } },
+      { name: 'Hacha de guerra mayor', description: 'Ataque de arma cuerpo a cuerpo: +6 al ataque, alcance 1,5 m. Impacto: 13 (2d8+4) de daño cortante.', attack: { name: 'Hacha de guerra mayor', bonus: 6, damage: '2d8+4', damageType: 'cortante' } },
     ],
   },
   {
@@ -314,9 +586,17 @@ export const BESTIARY: Monster[] = [
     ac: 11,
     hp: 38,
     speed: '6 m (volar 18 m)',
+    abilities: { str: 12, dex: 13, con: 12, int: 7, wis: 10, cha: 14 },
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común'],
+    traits: [],
     attacks: [
       { name: 'Garra', bonus: 4, damage: '2d4+2', damageType: 'cortante' },
-      { name: 'Garra (x2)', bonus: 4, damage: '2d4+2', damageType: 'cortante' },
+    ],
+    actions: [
+      { name: 'Multiataque', description: 'El arpía realiza dos ataques de garra.' },
+      { name: 'Garra', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 6 (2d4+2) de daño cortante.', attack: { name: 'Garra', bonus: 4, damage: '2d4+2', damageType: 'cortante' } },
+      { name: 'Canto encantador', description: 'El arpía canta. Cada humanoide o gigante a 90m que pueda oír el canto debe superar una salvación de SAB CD 11 o queda encantado.' },
     ],
   },
   {
@@ -327,9 +607,20 @@ export const BESTIARY: Monster[] = [
     ac: 12,
     hp: 45,
     speed: '15 m',
+    abilities: { str: 16, dex: 14, con: 14, int: 9, wis: 13, cha: 11 },
+    skills: ['Atletismo', 'Percepción', 'Supervivencia'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Élfico', 'Sylvano'],
+    traits: [
+      { name: 'Carga', description: 'Si el centauro se mueve al menos 9m en línea recta hacia una criatura y luego la golpea con un ataque de pisotón en el mismo turno, el objetivo recibe 7 (2d6) de daño contundente extra.' },
+    ],
     attacks: [
       { name: 'Pica', bonus: 5, damage: '1d6+3', damageType: 'perforante' },
       { name: 'Pisotón', bonus: 5, damage: '2d6+3', damageType: 'contundente' },
+    ],
+    actions: [
+      { name: 'Pica', description: 'Ataque de arma cuerpo a cuerpo: +5 al ataque, alcance 3 m. Impacto: 6 (1d6+3) de daño perforante.', attack: { name: 'Pica', bonus: 5, damage: '1d6+3', damageType: 'perforante' } },
+      { name: 'Pisotón', description: 'Ataque de arma cuerpo a cuerpo: +5 al ataque, alcance 1,5 m. Impacto: 10 (2d6+3) de daño contundente.', attack: { name: 'Pisotón', bonus: 5, damage: '2d6+3', damageType: 'contundente' } },
     ],
   },
   {
@@ -340,9 +631,23 @@ export const BESTIARY: Monster[] = [
     ac: 15,
     hp: 52,
     speed: '9 m (volar 18 m)',
+    abilities: { str: 15, dex: 11, con: 16, int: 3, wis: 11, cha: 6 },
+    damageResistances: ['contundente', 'cortante', 'perforante de ataques no mágicos'],
+    damageImmunities: ['veneno'],
+    conditionImmunities: ['envenenado', 'petrificado'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Terran'],
+    traits: [
+      { name: 'Falsa apariencia', description: 'Mientras la gárgola permanece inmóvil, es indistinguible de una estatua inanimada.' },
+    ],
     attacks: [
       { name: 'Mordisco', bonus: 4, damage: '1d6+2', damageType: 'perforante' },
       { name: 'Garra', bonus: 4, damage: '1d6+2', damageType: 'cortante' },
+    ],
+    actions: [
+      { name: 'Multiataque', description: 'La gárgola realiza dos ataques: uno con mordisco y uno con garra.' },
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 5 (1d6+2) de daño perforante.', attack: { name: 'Mordisco', bonus: 4, damage: '1d6+2', damageType: 'perforante' } },
+      { name: 'Garra', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 5 (1d6+2) de daño cortante.', attack: { name: 'Garra', bonus: 4, damage: '1d6+2', damageType: 'cortante' } },
     ],
   },
   {
@@ -353,7 +658,21 @@ export const BESTIARY: Monster[] = [
     ac: 20,
     hp: 180,
     speed: '9 m',
+    abilities: { str: 20, dex: 14, con: 18, int: 16, wis: 18, cha: 18 },
+    savingThrows: ['CON', 'SAB', 'CAR'],
+    damageResistances: ['frío', 'necrótico'],
+    damageImmunities: ['veneno'],
+    conditionImmunities: ['envenenado'],
+    senses: ['visión en la oscuridad 36m'],
+    languages: ['Abisal', 'Común', 'Infernal'],
+    traits: [
+      { name: 'Resistencia mágica', description: 'El caballero tiene ventaja en tiradas de salvación contra conjuros y otros efectos mágicos.' },
+    ],
     attacks: [{ name: 'Espada profana', bonus: 10, damage: '3d8+6', damageType: 'cortante' }],
+    actions: [
+      { name: 'Multiataque', description: 'El caballero realiza dos ataques con su espada profana.' },
+      { name: 'Espada profana', description: 'Ataque de arma cuerpo a cuerpo: +10 al ataque, alcance 1,5 m. Impacto: 20 (3d8+6) de daño cortante más 18 (4d8) de daño necrótico.', attack: { name: 'Espada profana', bonus: 10, damage: '3d8+6', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'mefita-fuego',
@@ -363,7 +682,20 @@ export const BESTIARY: Monster[] = [
     ac: 11,
     hp: 21,
     speed: '9 m (volar 9 m)',
+    abilities: { str: 7, dex: 13, con: 10, int: 7, wis: 10, cha: 12 },
+    skills: ['Percepción'],
+    damageVulnerabilities: ['frío'],
+    damageImmunities: ['fuego', 'veneno'],
+    conditionImmunities: ['envenenado'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Ignan', 'Primordial'],
+    traits: [
+      { name: 'Explosión de muerte', description: 'Cuando la mefita muere, explota en una ráfaga de llamas. Cada criatura a 1,5 m debe superar una salvación de DES CD 11 o recibe 5 (2d4) de daño de fuego.' },
+    ],
     attacks: [{ name: 'Garra', bonus: 4, damage: '1d4+2', damageType: 'cortante' }],
+    actions: [
+      { name: 'Garra', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 4 (1d4+2) de daño cortante más 2 (1d4) de daño de fuego.', attack: { name: 'Garra', bonus: 4, damage: '1d4+2', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'mefita-hielo',
@@ -373,7 +705,20 @@ export const BESTIARY: Monster[] = [
     ac: 11,
     hp: 21,
     speed: '9 m (volar 9 m)',
+    abilities: { str: 7, dex: 13, con: 10, int: 7, wis: 10, cha: 12 },
+    skills: ['Percepción'],
+    damageVulnerabilities: ['fuego'],
+    damageImmunities: ['frío', 'veneno'],
+    conditionImmunities: ['envenenado'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Auran', 'Primordial'],
+    traits: [
+      { name: 'Explosión de muerte', description: 'Cuando la mefita muere, explota en una ráfaga de hielo. Cada criatura a 1,5 m debe superar una salvación de DES CD 11 o recibe 5 (2d4) de daño de frío.' },
+    ],
     attacks: [{ name: 'Garra', bonus: 4, damage: '1d4+2', damageType: 'cortante' }],
+    actions: [
+      { name: 'Garra', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 4 (1d4+2) de daño cortante más 2 (1d4) de daño de frío.', attack: { name: 'Garra', bonus: 4, damage: '1d4+2', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'cocodrilo-gigante',
@@ -383,7 +728,15 @@ export const BESTIARY: Monster[] = [
     ac: 14,
     hp: 85,
     speed: '9 m (nadar 9 m)',
+    abilities: { str: 21, dex: 9, con: 17, int: 2, wis: 10, cha: 7 },
+    senses: ['visión en la oscuridad 18m'],
+    traits: [
+      { name: 'Aguantar la respiración', description: 'El cocodrilo puede aguantar la respiración durante 25 minutos.' },
+    ],
     attacks: [{ name: 'Mordisco', bonus: 8, damage: '3d10+5', damageType: 'perforante' }],
+    actions: [
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +8 al ataque, alcance 3 m. Impacto: 21 (3d10+5) de daño perforante. Si el objetivo es una criatura Grande o menor, queda agarrada (CD 16 para escapar).', attack: { name: 'Mordisco', bonus: 8, damage: '3d10+5', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'oso-cueva',
@@ -393,9 +746,20 @@ export const BESTIARY: Monster[] = [
     ac: 12,
     hp: 42,
     speed: '12 m (nadar 9 m)',
+    abilities: { str: 20, dex: 10, con: 16, int: 2, wis: 13, cha: 7 },
+    skills: ['Percepción'],
+    senses: ['visión en la oscuridad 18m'],
+    traits: [
+      { name: 'Olfato agudo', description: 'El oso tiene ventaja en tiradas de característica (Percepción) que dependan del olfato.' },
+    ],
     attacks: [
       { name: 'Garra', bonus: 7, damage: '2d6+5', damageType: 'cortante' },
       { name: 'Mordisco', bonus: 7, damage: '1d8+5', damageType: 'perforante' },
+    ],
+    actions: [
+      { name: 'Multiataque', description: 'El oso realiza dos ataques: uno con mordisco y uno con garra.' },
+      { name: 'Mordisco', description: 'Ataque de arma cuerpo a cuerpo: +7 al ataque, alcance 1,5 m. Impacto: 9 (1d8+5) de daño perforante.', attack: { name: 'Mordisco', bonus: 7, damage: '1d8+5', damageType: 'perforante' } },
+      { name: 'Garra', description: 'Ataque de arma cuerpo a cuerpo: +7 al ataque, alcance 1,5 m. Impacto: 12 (2d6+5) de daño cortante.', attack: { name: 'Garra', bonus: 7, damage: '2d6+5', damageType: 'cortante' } },
     ],
   },
   {
@@ -406,7 +770,16 @@ export const BESTIARY: Monster[] = [
     ac: 11,
     hp: 15,
     speed: '9 m',
+    abilities: { str: 14, dex: 10, con: 13, int: 7, wis: 11, cha: 10 },
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común', 'Orco'],
+    traits: [
+      { name: 'Embate adrenalínico', description: 'Como acción adicional, puede avanzar hasta su velocidad hacia un enemigo hostil que pueda ver.' },
+    ],
     attacks: [{ name: 'Lanza', bonus: 5, damage: '1d6+3', damageType: 'perforante' }],
+    actions: [
+      { name: 'Lanza', description: 'Ataque de arma cuerpo a cuerpo o a distancia: +5 al ataque, alcance 1,5 m o 6/18 m. Impacto: 6 (1d6+3) de daño perforante.', attack: { name: 'Lanza', bonus: 5, damage: '1d6+3', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'cultista',
@@ -416,7 +789,16 @@ export const BESTIARY: Monster[] = [
     ac: 12,
     hp: 9,
     speed: '9 m',
+    abilities: { str: 11, dex: 12, con: 10, int: 10, wis: 11, cha: 10 },
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común'],
+    traits: [
+      { name: 'Devoción oscura', description: 'El cultista tiene ventaja en tiradas de salvación contra ser encantado o aterrado.' },
+    ],
     attacks: [{ name: 'Cimitarra', bonus: 3, damage: '1d6+1', damageType: 'cortante' }],
+    actions: [
+      { name: 'Cimitarra', description: 'Ataque de arma cuerpo a cuerpo: +3 al ataque, alcance 1,5 m. Impacto: 4 (1d6+1) de daño cortante.', attack: { name: 'Cimitarra', bonus: 3, damage: '1d6+1', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'sacerdote-malvado',
@@ -426,7 +808,18 @@ export const BESTIARY: Monster[] = [
     ac: 13,
     hp: 38,
     speed: '9 m',
+    abilities: { str: 10, dex: 10, con: 12, int: 13, wis: 16, cha: 13 },
+    savingThrows: ['SAB'],
+    skills: ['Religión', 'Engaño'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común'],
+    traits: [
+      { name: 'Lanzador de conjuros', description: 'El sacerdote es un lanzador de conjuros de nivel 5. Su característica de lanzamiento es Sabiduría.' },
+    ],
     attacks: [{ name: 'Maza', bonus: 3, damage: '1d6+1', damageType: 'contundente' }],
+    actions: [
+      { name: 'Maza', description: 'Ataque de arma cuerpo a cuerpo: +3 al ataque, alcance 1,5 m. Impacto: 4 (1d6+1) de daño contundente.', attack: { name: 'Maza', bonus: 3, damage: '1d6+1', damageType: 'contundente' } },
+    ],
   },
   {
     id: 'guardia',
@@ -436,7 +829,12 @@ export const BESTIARY: Monster[] = [
     ac: 16,
     hp: 11,
     speed: '9 m',
+    abilities: { str: 13, dex: 12, con: 12, int: 10, wis: 11, cha: 10 },
+    skills: ['Percepción'],
     attacks: [{ name: 'Lanza', bonus: 3, damage: '1d6+1', damageType: 'perforante' }],
+    actions: [
+      { name: 'Lanza', description: 'Ataque de arma cuerpo a cuerpo o a distancia: +3 al ataque, alcance 1,5 m o 6/18 m. Impacto: 4 (1d6+1) de daño perforante.', attack: { name: 'Lanza', bonus: 3, damage: '1d6+1', damageType: 'perforante' } },
+    ],
   },
   {
     id: 'caballero',
@@ -446,7 +844,16 @@ export const BESTIARY: Monster[] = [
     ac: 18,
     hp: 52,
     speed: '6 m',
+    abilities: { str: 16, dex: 13, con: 14, int: 10, wis: 11, cha: 15 },
+    savingThrows: ['CON', 'SAB'],
+    skills: ['Atletismo', 'Perspicacia'],
+    traits: [
+      { name: 'Valiente', description: 'El caballero tiene ventaja en tiradas de salvación contra ser aterrado.' },
+    ],
     attacks: [{ name: 'Espada larga mayor', bonus: 5, damage: '2d6+3', damageType: 'cortante' }],
+    actions: [
+      { name: 'Espada larga mayor', description: 'Ataque de arma cuerpo a cuerpo: +5 al ataque, alcance 1,5 m. Impacto: 10 (2d6+3) de daño cortante.', attack: { name: 'Espada larga mayor', bonus: 5, damage: '2d6+3', damageType: 'cortante' } },
+    ],
   },
   {
     id: 'mago-aprendiz',
@@ -456,6 +863,15 @@ export const BESTIARY: Monster[] = [
     ac: 12,
     hp: 9,
     speed: '9 m',
+    abilities: { str: 9, dex: 14, con: 11, int: 15, wis: 12, cha: 11 },
+    savingThrows: ['INT'],
+    skills: ['Arcano'],
+    traits: [
+      { name: 'Lanzador de conjuros', description: 'El mago aprendiz es un lanzador de conjuros de nivel 2. Su característica de lanzamiento es Inteligencia.' },
+    ],
     attacks: [{ name: 'Dardo de fuego', bonus: 4, damage: '1d10', damageType: 'fuego' }],
+    actions: [
+      { name: 'Dardo de fuego', description: 'Ataque de conjuro a distancia: +4 al ataque, alcance 36m. Impacto: 5 (1d10) de daño de fuego.', attack: { name: 'Dardo de fuego', bonus: 4, damage: '1d10', damageType: 'fuego' } },
+    ],
   },
 ];

@@ -15,4 +15,4 @@ export { HistoryPanel } from './HistoryPanel';
 export { DmNotesPanel } from './DmNotesPanel';
 
 export { makeMasterSnapshot, makeSrdSource } from './fixture';
-export type { MonsterSummary, SrdSource, Send } from './types';
+export type { MonsterSummary, Monster, SrdSource, Send } from './types';

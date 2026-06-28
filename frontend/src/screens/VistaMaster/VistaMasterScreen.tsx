@@ -108,7 +108,7 @@ export function VistaMasterScreen({
             seatedCharacterIds={seatedCharacterIds}
             onSeat={(characterId) => send({ type: 'SeatPlayer', characterId })}
           />
-          <BestiaryPanel srd={srd} send={send} />
+          <BestiaryPanel srd={srd} send={send} getMonster={api?.getMonster} />
           <QuickReferencePanel />
         </aside>
 

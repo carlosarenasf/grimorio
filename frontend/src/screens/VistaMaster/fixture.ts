@@ -1,5 +1,5 @@
 import type { MasterSnapshot } from '@grimorio/shared/wire';
-import type { MonsterSummary, SrdSource } from './types';
+import type { Monster, MonsterSummary, SrdSource } from './types';
 
 /**
  * A representative MasterSnapshot for tests/stories: a PC, a dm_only monster
@@ -95,5 +95,29 @@ export function makeSrdSource(monsters: MonsterSummary[] = SAMPLE_MONSTERS): Srd
       if (!q) return monsters;
       return monsters.filter((m) => m.name.toLowerCase().includes(q));
     },
+  };
+}
+
+/** A full monster stat block for tests. */
+export function makeMonster(overrides: Partial<Monster> = {}): Monster {
+  return {
+    id: 'goblin',
+    name: 'Goblin',
+    cr: '1/4',
+    meta: 'Humanoide Pequeño',
+    ac: 15,
+    hp: 7,
+    speed: '9 m',
+    abilities: { str: 8, dex: 14, con: 10, int: 10, wis: 8, cha: 8 },
+    skills: ['Sigilo'],
+    senses: ['visión en la oscuridad 18m'],
+    languages: ['Común', 'Goblin'],
+    traits: [
+      { name: 'Agilidad de goblin', description: 'Puede moverse a través del espacio de cualquier criatura que sea de un tamaño mayor que el suyo.' },
+    ],
+    actions: [
+      { name: 'Cimitarra', description: 'Ataque de arma cuerpo a cuerpo: +4 al ataque, alcance 1,5 m. Impacto: 3 (1d6+2) de daño cortante.', attack: { name: 'Cimitarra', bonus: 4, damage: '1d6+2', damageType: 'cortante' } },
+    ],
+    ...overrides,
   };
 }

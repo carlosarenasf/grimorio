@@ -100,6 +100,38 @@ export interface MonsterRefDTO {
   meta: string;
 }
 
+/** Full monster stat block from the SRD. */
+export interface Monster {
+  id: string;
+  name: string;
+  cr: string;
+  meta: string;
+  ac: number;
+  hp: number;
+  speed: string;
+  abilities?: {
+    str: number;
+    dex: number;
+    con: number;
+    int: number;
+    wis: number;
+    cha: number;
+  };
+  savingThrows?: string[];
+  skills?: string[];
+  damageResistances?: string[];
+  damageImmunities?: string[];
+  damageVulnerabilities?: string[];
+  conditionImmunities?: string[];
+  senses?: string[];
+  languages?: string[];
+  traits?: Array<{ name: string; description: string }>;
+  actions?: Array<{ name: string; description: string; attack?: { name: string; bonus: number | null; damage: string | null; damageType: string } }>;
+  reactions?: Array<{ name: string; description: string }>;
+  legendaryActions?: Array<{ name: string; description: string }>;
+  attacks?: Array<{ name: string; bonus: number | null; damage: string | null; damageType: string }>;
+}
+
 export interface SpeciesDTO {
   id: string;
   name: string;
@@ -185,6 +217,8 @@ export interface ApiClient {
   getSnapshot(campaignId: string): Promise<Snapshot>;
   /** Search the curated SRD bestiary; ids match what AddCombatantFromBestiary expects. */
   searchMonsters(query?: string): Promise<MonsterRefDTO[]>;
+  /** Get full monster stat block by id. */
+  getMonster(monsterId: string): Promise<Monster | null>;
   /** Character-creation reference data (curated SRD 2024). */
   getSpecies(): Promise<SpeciesDTO[]>;
   getClasses(): Promise<ClassDTO[]>;
@@ -334,6 +368,9 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
     searchMonsters(query = '') {
       const qs = query ? `?q=${encodeURIComponent(query)}` : '';
       return request<MonsterRefDTO[]>('GET', `/srd/monsters${qs}`);
+    },
+    getMonster(monsterId) {
+      return request<Monster | null>('GET', `/srd/monsters/${monsterId}`);
     },
     getSpecies() {
       return request<SpeciesDTO[]>('GET', '/srd/species');
