@@ -115,6 +115,17 @@
   margin-top: auto;
 }
 
+.campaign-card__delete {
+  margin-left: auto;
+  color: var(--ember);
+  border-color: transparent;
+}
+
+.campaign-card__delete:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ember) 14%, transparent);
+  border-color: color-mix(in srgb, var(--ember) 40%, transparent);
+}
+
 .status-chip {
   font-size: 11px;
   font-weight: 600;

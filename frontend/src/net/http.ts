@@ -175,6 +175,7 @@ export interface ApiClient {
   me(): Promise<Principal>;
   listCampaigns(): Promise<CampaignDTO[]>;
   createCampaign(payload: CreateCampaignPayload): Promise<CampaignDTO>;
+  deleteCampaign(campaignId: string): Promise<void>;
   invite(campaignId: string): Promise<CampaignDTO>;
   joinByCode(joinCode: string): Promise<CampaignDTO>;
   createCharacter(payload: CreateCharacterPayload): Promise<CharacterDTO>;
@@ -307,6 +308,9 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
         name: payload.name,
         tagline: payload.tagline ?? '',
       });
+    },
+    deleteCampaign(campaignId) {
+      return request<void>('DELETE', `/campaigns/${campaignId}`);
     },
     invite(campaignId) {
       return request<CampaignDTO>('POST', `/campaigns/${campaignId}/invite`, {});

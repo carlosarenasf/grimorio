@@ -53,6 +53,7 @@ export function CampanasScreen({
   const [showCreate, setShowCreate] = useState(false);
   const [inviteCampaign, setInviteCampaign] = useState<CampaignDTO | null>(null);
   const [joinCode, setJoinCode] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const resolvedOrigin = origin ?? defaultOrigin();
   const [retryCount, setRetryCount] = useState(0);
 
@@ -98,6 +99,22 @@ export function CampanasScreen({
     setCampaigns(null);
     setLoadError(null);
     setRetryCount((prev) => prev + 1);
+  }
+
+  async function handleDelete(campaign: CampaignDTO) {
+    const confirmed = window.confirm(
+      `¿Seguro que quieres borrar "${campaign.name}"? Esta acción no se puede deshacer.`,
+    );
+    if (!confirmed) return;
+    setDeletingId(campaign.id);
+    try {
+      await api.deleteCampaign(campaign.id);
+      setCampaigns((prev) => (prev ? prev.filter((c) => c.id !== campaign.id) : prev));
+    } catch {
+      // Silently ignore; the campaign stays in the list.
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   const isLoading = campaigns === null;
@@ -206,6 +223,18 @@ export function CampanasScreen({
                     <Button type="button" onClick={() => onEnter(campaign.id)}>
                       Entrar
                     </Button>
+                    {principal && campaign.ownerId === principal.userId ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="campaign-card__delete"
+                        disabled={deletingId === campaign.id}
+                        onClick={() => handleDelete(campaign)}
+                      >
+                        Borrar
+                      </Button>
+                    ) : null}
                   </div>
                 </li>
               ))}
