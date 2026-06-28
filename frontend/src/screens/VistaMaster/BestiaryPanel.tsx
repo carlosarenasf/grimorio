@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Field, Panel } from '../../design';
-import type { Send, SrdSource } from './types';
+import type { MonsterSummary, Send, SrdSource } from './types';
+import { AddMonsterModal } from './AddMonsterModal';
 
 export interface BestiaryPanelProps {
   srd: SrdSource;
@@ -9,11 +10,11 @@ export interface BestiaryPanelProps {
 
 /**
  * Bestiario SRD panel (LEFT column): a search box filters the curated SRD
- * monster list; the "+" on a row sends AddCombatantFromBestiary (HP hidden by
- * default — the server defaults hpVisibility to dm_only).
+ * monster list; clicking "+" opens a modal to edit stats before adding.
  */
 export function BestiaryPanel({ srd, send }: BestiaryPanelProps) {
   const [query, setQuery] = useState('');
+  const [addingMonster, setAddingMonster] = useState<MonsterSummary | null>(null);
   const results = srd.searchMonsters(query);
 
   return (
@@ -49,13 +50,7 @@ export function BestiaryPanel({ srd, send }: BestiaryPanelProps) {
                   variant="secondary"
                   size="sm"
                   aria-label={`Añadir ${m.name} al combate`}
-                  onClick={() =>
-                    send({
-                      type: 'AddCombatantFromBestiary',
-                      monsterId: m.id,
-                      hpVisibility: 'dm_only',
-                    })
-                  }
+                  onClick={() => setAddingMonster(m)}
                 >
                   +
                 </Button>
@@ -64,6 +59,14 @@ export function BestiaryPanel({ srd, send }: BestiaryPanelProps) {
           </ul>
         ) : null}
       </div>
+
+      {addingMonster ? (
+        <AddMonsterModal
+          monster={addingMonster}
+          send={send}
+          onClose={() => setAddingMonster(null)}
+        />
+      ) : null}
     </Panel>
   );
 }

@@ -85,15 +85,20 @@ describe('VistaMasterScreen', () => {
     });
   });
 
-  it('bestiary "+" sends AddCombatantFromBestiary', async () => {
+  it('bestiary "+" opens modal and sends AddManualCombatant on confirm', async () => {
     const { send } = setup();
     const search = screen.getByLabelText(/buscar en el bestiario/i);
     await userEvent.type(search, 'orco');
     await userEvent.click(screen.getByRole('button', { name: /añadir orco/i }));
+    await userEvent.click(screen.getByRole('button', { name: /añadir al combate/i }));
     expect(send).toHaveBeenCalledWith({
-      type: 'AddCombatantFromBestiary',
-      monsterId: 'orc',
+      type: 'AddManualCombatant',
+      name: 'Orco',
+      maxHp: 15,
+      initiative: 10,
+      combatantType: 'monster',
       hpVisibility: 'dm_only',
+      refId: 'orc',
     });
   });
 
