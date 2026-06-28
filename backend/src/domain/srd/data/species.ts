@@ -11,7 +11,10 @@ export const SPECIES: SpeciesDef[] = [
     size: 'Mediano',
     speed: 9,
     description: 'Versátiles y ambiciosos. Una dote extra y competencia adicional al empezar.',
-    traits: ['Ingenioso (dote de origen)', 'Hábil (competencia en una habilidad)'],
+    traits: [
+      { name: 'Ingenioso', description: 'Obtienes una dote de origen al empezar.' },
+      { name: 'Hábil', description: 'Competencia en una habilidad a elegir.' },
+    ],
   },
   {
     id: 'elf',
@@ -19,7 +22,11 @@ export const SPECIES: SpeciesDef[] = [
     size: 'Mediano',
     speed: 9,
     description: 'Gráciles y longevos, con afinidad por la magia y los sentidos agudos.',
-    traits: ['Visión en la oscuridad', 'Linaje feérico (ventaja contra hechizado)', 'Trance'],
+    traits: [
+      { name: 'Visión en la oscuridad', description: 'Puedes ver en la oscuridad hasta 18 m.' },
+      { name: 'Ancestro (Trance)', description: 'No necesitas dormir; meditas durante 4 horas.' },
+      { name: 'Sentidos agudos', description: 'Competencia en la habilidad de Percepción.' },
+    ],
   },
   {
     id: 'dwarf',
@@ -27,7 +34,11 @@ export const SPECIES: SpeciesDef[] = [
     size: 'Mediano',
     speed: 9,
     description: 'Resistentes y tenaces, forjados bajo la montaña.',
-    traits: ['Visión en la oscuridad', 'Resistencia enana (a veneno)', 'Sentido de la piedra'],
+    traits: [
+      { name: 'Visión en la oscuridad', description: 'Puedes ver en la oscuridad hasta 18 m.' },
+      { name: 'Resistencia enana', description: 'Ventaja en salvaciones contra veneno y resistencia al daño por veneno.' },
+      { name: 'Entrenamiento con armas', description: 'Competencia con hachas de batalla, hachas manuales, mazas ligeras y mazas de guerra.' },
+    ],
   },
   {
     id: 'halfling',
@@ -35,7 +46,11 @@ export const SPECIES: SpeciesDef[] = [
     size: 'Pequeño',
     speed: 7.5,
     description: 'Pequeños, afortunados y difíciles de asustar.',
-    traits: ['Suerte (repite el 1 natural)', 'Valiente (ventaja contra miedo)', 'Sigiloso'],
+    traits: [
+      { name: 'Suerte', description: 'Cuando sacas un 1 natural en una tirada de ataque, prueba de característica o salvación, puedes repetir el dado.' },
+      { name: 'Valentía', description: 'Ventaja en salvaciones contra la condición de aterrado.' },
+      { name: 'Agilidad de mediano', description: 'Puedes moverte a través del espacio de una criatura grande o mediana.' },
+    ],
   },
   {
     id: 'dragonborn',
@@ -43,7 +58,10 @@ export const SPECIES: SpeciesDef[] = [
     size: 'Mediano',
     speed: 9,
     description: 'Herederos de la sangre de dragón, con un aliento elemental.',
-    traits: ['Arma de aliento', 'Resistencia al daño de su linaje', 'Alas dracónicas (nivel 5)'],
+    traits: [
+      { name: 'Aliento de dragón', description: 'Como acción, exhalas un cono o línea de energía elemental. Salvación para reducir el daño.' },
+      { name: 'Resistencia al daño', description: 'Resistencia al tipo de daño asociado con tu linaje dracónico.' },
+    ],
   },
   {
     id: 'gnome',
@@ -51,7 +69,10 @@ export const SPECIES: SpeciesDef[] = [
     size: 'Pequeño',
     speed: 7.5,
     description: 'Curiosos e inventivos, con una mente difícil de doblegar.',
-    traits: ['Visión en la oscuridad', 'Astucia gnoma (ventaja en salv. mentales)'],
+    traits: [
+      { name: 'Visión en la oscuridad', description: 'Puedes ver en la oscuridad hasta 18 m.' },
+      { name: 'Astucia gnómica', description: 'Ventaja en todas las salvaciones de Inteligencia, Sabiduría y Carisma contra la magia.' },
+    ],
   },
   {
     id: 'orc',
@@ -59,7 +80,11 @@ export const SPECIES: SpeciesDef[] = [
     size: 'Mediano',
     speed: 9,
     description: 'Fuertes y incansables, capaces de aguantar el castigo.',
-    traits: ['Visión en la oscuridad', 'Embate adrenalínico', 'Aguante implacable'],
+    traits: [
+      { name: 'Visión en la oscuridad', description: 'Puedes ver en la oscuridad hasta 18 m.' },
+      { name: 'Embate adrenalínico', description: 'Como acción adicional, puedes avanzar hasta tu velocidad hacia un enemigo hostil.' },
+      { name: 'Aguante implacable', description: 'Cuando reduces a 0 PG pero no mueres de forma instantánea, puedes caer a 1 PG en su lugar.' },
+    ],
   },
   {
     id: 'tiefling',
@@ -67,7 +92,10 @@ export const SPECIES: SpeciesDef[] = [
     size: 'Mediano',
     speed: 9,
     description: 'Marcados por un legado infernal, con dones arcanos innatos.',
-    traits: ['Visión en la oscuridad', 'Resistencia (según linaje)', 'Legado arcano'],
+    traits: [
+      { name: 'Visión en la oscuridad', description: 'Puedes ver en la oscuridad hasta 18 m.' },
+      { name: 'Herencia infernal', description: 'Resistencia al daño de fuego.' },
+    ],
   },
   {
     id: 'goliath',
@@ -75,6 +103,21 @@ export const SPECIES: SpeciesDef[] = [
     size: 'Mediano',
     speed: 10.5,
     description: 'Descendientes de gigantes, enormes y de poderosa zancada.',
-    traits: ['Constitución de gigante', 'Acarreo poderoso', 'Zancada larga'],
+    traits: [
+      { name: 'Constitución de gigante', description: 'Tu máximo de PG aumenta en 1 por cada nivel que tengas.' },
+      { name: 'Acarreo poderoso', description: 'Tu capacidad de carga se considera una categoría de tamaño mayor.' },
+      { name: 'Zancada larga', description: 'Tu velocidad aumenta 3 m.' },
+    ],
+  },
+  {
+    id: 'aasimar',
+    name: 'Aasimar',
+    size: 'Mediano',
+    speed: 9,
+    description: 'Tocados por el poder celestial, con una luz interior que brilla contra la oscuridad.',
+    traits: [
+      { name: 'Visión en la oscuridad', description: 'Puedes ver en la oscuridad hasta 18 m.' },
+      { name: 'Herencia celestial', description: 'Resistencia al daño necrótico y al daño radiante.' },
+    ],
   },
 ];

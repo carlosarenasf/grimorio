@@ -15,6 +15,11 @@ export const CLASSES: ClassDef[] = [
     description: 'Maestro de las armas y la armadura. Sencillo, resistente y fiable.',
     skillChoices: 2,
     skillOptions: ['acrobatics', 'animal', 'athletics', 'history', 'insight', 'intimidation', 'perception', 'survival'],
+    features: [
+      { level: 1, name: 'Estilo de combate', description: 'Eliges un estilo de combate que mejora tu forma de luchar.' },
+      { level: 1, name: 'Segundo viento', description: 'Una vez por descanso corto o largo, puedes usar una acción adicional para recuperar 1d10 + tu nivel de guerrero en PG.' },
+      { level: 2, name: 'Acción adicional', description: 'Puedes realizar una acción adicional en tu turno.' },
+    ],
   },
   {
     id: 'barbarian',
@@ -26,6 +31,11 @@ export const CLASSES: ClassDef[] = [
     description: 'Furia desatada y enorme aguante. El que más vida tiene.',
     skillChoices: 2,
     skillOptions: ['animal', 'athletics', 'intimidation', 'nature', 'perception', 'survival'],
+    features: [
+      { level: 1, name: 'Ira', description: 'Puedes entrar en ira como acción adicional. Obtienes ventaja en pruebas y daño de Fuerza, resistencia al daño cortante, perforante y contundente.' },
+      { level: 1, name: 'Defensa sin armadura', description: 'Mientras no lleves armadura, tu CA es 10 + modificador de Destreza + modificador de Constitución.' },
+      { level: 2, name: 'Ataque temerario', description: 'Cuando realizas un ataque con Fuerza, puedes atacar con imprudencia: tienes ventaja pero los ataques contra ti también tienen ventaja hasta tu siguiente turno.' },
+    ],
   },
   {
     id: 'rogue',
@@ -37,6 +47,11 @@ export const CLASSES: ClassDef[] = [
     description: 'Sigilo, trampas y ataque furtivo. Experto en habilidades.',
     skillChoices: 4,
     skillOptions: ['acrobatics', 'athletics', 'deception', 'insight', 'intimidation', 'investigation', 'perception', 'performance', 'persuasion', 'sleight', 'stealth'],
+    features: [
+      { level: 1, name: 'Ataque furtivo', description: 'Una vez por turno, puedes infligir daño extra a una criatura que esté dentro del alcance de tu arma si tienes ventaja o si el objetivo está a 1,5 m de un aliado.' },
+      { level: 1, name: 'Jerga de ladrones', description: 'Un lenguaje secreto que permite comunicar mensajes ocultos en conversaciones aparentemente normales.' },
+      { level: 2, name: 'Acción adicional', description: 'Puedes realizar una acción adicional en tu turno: Dash, Disengage, Hide o Use an Object.' },
+    ],
   },
   {
     id: 'monk',
@@ -48,6 +63,10 @@ export const CLASSES: ClassDef[] = [
     description: 'Artes marciales y ki. Rápido y móvil sin armadura.',
     skillChoices: 2,
     skillOptions: ['acrobatics', 'athletics', 'history', 'insight', 'stealth'],
+    features: [
+      { level: 1, name: 'Artes marciales', description: 'Tus golpes desarmados usan tu modificador de Destreza y causan 1d4 de daño. Puedes usar Destreza en lugar de Fuerza para ataques desarmados.' },
+      { level: 1, name: 'Ki', description: 'Tienes un pool de puntos de ki igual a tu nivel de monje. Gasta puntos para realizar acciones especiales como Ráfaga de golpes, Paciencia del paciente o Paso del viento.' },
+    ],
   },
   {
     id: 'cleric',
@@ -59,6 +78,11 @@ export const CLASSES: ClassDef[] = [
     description: 'Canaliza el poder divino: cura, protege y castiga.',
     skillChoices: 2,
     skillOptions: ['history', 'insight', 'medicine', 'persuasion'],
+    features: [
+      { level: 1, name: 'Lanzamiento de conjuros', description: 'Puedes lanzar conjuros de clérigo usando Sabiduría como tu característica de lanzamiento de conjuros.' },
+      { level: 1, name: 'Dominio divino', description: 'Eliges un dominio divino que otorga conjuros adicionales y habilidades especiales.' },
+      { level: 2, name: 'Canalizar divinidad', description: 'Puedes canalizar energía divina directamente para producir efectos mágicos según tu dominio.' },
+    ],
   },
   {
     id: 'druid',
@@ -70,6 +94,10 @@ export const CLASSES: ClassDef[] = [
     description: 'Magia de la naturaleza y forma salvaje.',
     skillChoices: 2,
     skillOptions: ['arcana', 'animal', 'insight', 'medicine', 'nature', 'perception', 'survival'],
+    features: [
+      { level: 1, name: 'Druidismo', description: 'Puedes lanzar el truco druídico (Produce Flame, Shillelagh, etc.) y conoces el lenguaje druídico secreto.' },
+      { level: 2, name: 'Forma salvaje', description: 'Puedes usar una acción para transformarte en una bestia que hayas visto, asumiendo sus PG y habilidades manteniendo tu alineamiento y personalidad.' },
+    ],
   },
   {
     id: 'wizard',
@@ -81,6 +109,10 @@ export const CLASSES: ClassDef[] = [
     description: 'Estudioso de la magia arcana, con un grimorio versátil.',
     skillChoices: 2,
     skillOptions: ['arcana', 'history', 'insight', 'investigation', 'medicine', 'nature'],
+    features: [
+      { level: 1, name: 'Lanzamiento de conjuros', description: 'Puedes lanzar conjuros de mago usando Inteligencia como tu característica de lanzamiento de conjuros. Tu grimorio contiene 6 trucos y 6 conjuros de nivel 1.' },
+      { level: 2, name: 'Recuperación arcana', description: 'Una vez al día, durante un descanso corto, puedes recuperar espacios de conjuro de un nivel combinado igual a la mitad de tu nivel de mago (redondeado hacia arriba).' },
+    ],
   },
   {
     id: 'sorcerer',
@@ -92,6 +124,10 @@ export const CLASSES: ClassDef[] = [
     description: 'Magia innata en la sangre, explosiva y flexible.',
     skillChoices: 2,
     skillOptions: ['arcana', 'deception', 'insight', 'intimidation', 'persuasion'],
+    features: [
+      { level: 1, name: 'Lanzamiento de conjuros', description: 'Puedes lanzar conjuros de hechicero usando Carisma como tu característica de lanzamiento de conjuros.' },
+      { level: 1, name: 'Origen de hechicería', description: 'Eliges un origen de hechicería (linaje dracónico, magia salvaje, etc.) que otorga habilidades y conjuros únicos.' },
+    ],
   },
   {
     id: 'warlock',
@@ -103,6 +139,10 @@ export const CLASSES: ClassDef[] = [
     description: 'Poder de un pacto sobrenatural. Descarga sobrenatural a discreción.',
     skillChoices: 2,
     skillOptions: ['arcana', 'deception', 'history', 'intimidation', 'investigation', 'nature'],
+    features: [
+      { level: 1, name: 'Pacto sobrenatural', description: 'Has hecho un pacto con un patrón sobrenatural (archifey, fiend, gran antiguo) que te otorga poderes mágicos.' },
+      { level: 2, name: 'Invocaciones místicas', description: 'Aprendes invocaciones místicas que otorgan habilidades permanentes o mejoran tus conjuros.' },
+    ],
   },
   {
     id: 'bard',
@@ -114,6 +154,10 @@ export const CLASSES: ClassDef[] = [
     description: 'Magia a través del arte. Apoya al grupo y domina muchas habilidades.',
     skillChoices: 3,
     skillOptions: ['acrobatics', 'arcana', 'deception', 'history', 'insight', 'intimidation', 'investigation', 'medicine', 'nature', 'perception', 'performance', 'persuasion', 'sleight', 'stealth', 'survival'],
+    features: [
+      { level: 1, name: 'Lanzamiento de conjuros', description: 'Puedes lanzar conjuros de bardo usando Carisma como tu característica de lanzamiento de conjuros.' },
+      { level: 1, name: 'Inspiración bárdica', description: 'Puedes inspirar a otros con palabras o música. Gastas una de tus inspiraciones (d6) para que otro jugador sume el resultado a una prueba de característica, ataque o salvación.' },
+    ],
   },
   {
     id: 'paladin',
@@ -125,6 +169,10 @@ export const CLASSES: ClassDef[] = [
     description: 'Guerrero sagrado: castigo divino, curación y juramentos.',
     skillChoices: 2,
     skillOptions: ['athletics', 'insight', 'intimidation', 'medicine', 'persuasion'],
+    features: [
+      { level: 1, name: 'Detección de malignidad', description: 'Como acción, puedes detectar la presencia de aberraciones, celestiales, elementales, feas, fiends o no-muertos en un radio de 18 m.' },
+      { level: 1, name: 'Imposición de manos', description: 'Tienes un pool de curación igual a tu nivel de paladín × 5. Como acción, puedes tocar una criatura para restaurar PG de ese pool.' },
+    ],
   },
   {
     id: 'ranger',
@@ -136,5 +184,9 @@ export const CLASSES: ClassDef[] = [
     description: 'Cazador y rastreador, mezcla de combate y magia natural.',
     skillChoices: 3,
     skillOptions: ['animal', 'athletics', 'insight', 'investigation', 'nature', 'perception', 'stealth', 'survival'],
+    features: [
+      { level: 1, name: 'Enemigo favorito', description: 'Eleges un tipo de enemigo favorito (aberraciones, celestiales, etc.). Obtienes ventajas en pruebas de Sabiduría (Supervivencia) para rastrearlos y en pruebas de Inteligencia para recordar información sobre ellos.' },
+      { level: 1, name: 'Explorador natural', description: 'Eres un experto en viajar y sobrevivir en la naturaleza. Puedes moverte sigilosamente a velocidad normal y encuentras el doble de comida cuando forrajeas.' },
+    ],
   },
 ];

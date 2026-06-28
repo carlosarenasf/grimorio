@@ -22,7 +22,7 @@ export function StepEspecie({ species, selectedId, onSelect }: StepEspecieProps)
           >
             {s.traits.length > 0 ? (
               <span className="cp-card__detail">
-                Rasgos: {s.traits.slice(0, 2).join(', ')}
+                Rasgos: {s.traits.slice(0, 2).map((t) => t.name).join(', ')}
               </span>
             ) : null}
           </SelectableCard>

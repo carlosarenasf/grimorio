@@ -38,13 +38,24 @@ export interface RuleSection {
 
 export type Spellcasting = 'full' | 'half' | 'none';
 
+export interface SpeciesTrait {
+  name: string;
+  description: string;
+}
+
 export interface SpeciesDef {
   id: string;
   name: string;
   size: string; // "Mediano", "Pequeño"
   speed: number; // metres
   description: string;
-  traits: string[];
+  traits: SpeciesTrait[];
+}
+
+export interface ClassFeature {
+  level: number;
+  name: string;
+  description: string;
 }
 
 export interface ClassDef {
@@ -57,6 +68,7 @@ export interface ClassDef {
   description: string;
   skillChoices: number;
   skillOptions: string[]; // skill keys
+  features: ClassFeature[];
 }
 
 export interface BackgroundDef {

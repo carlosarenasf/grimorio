@@ -105,7 +105,7 @@ export interface SpeciesDTO {
   size: string;
   speed: number;
   description: string;
-  traits: string[];
+  traits: Array<{ name: string; description: string }>;
 }
 export interface ClassDTO {
   id: string;
@@ -117,6 +117,7 @@ export interface ClassDTO {
   description: string;
   skillChoices: number;
   skillOptions: string[];
+  features: Array<{ level: number; name: string; description: string }>;
 }
 export interface BackgroundDTO {
   id: string;

@@ -113,13 +113,24 @@ export interface RuleSection {
   body: string;
 }
 
+export interface SpeciesTrait {
+  name: string;
+  description: string;
+}
+
 export interface SpeciesDef {
   id: string;
   name: string;
   size: string;
   speed: number;
   description: string;
-  traits: string[];
+  traits: SpeciesTrait[];
+}
+
+export interface ClassFeature {
+  level: number;
+  name: string;
+  description: string;
 }
 
 export interface ClassDef {
@@ -132,6 +143,7 @@ export interface ClassDef {
   description: string;
   skillChoices: number;
   skillOptions: string[];
+  features: ClassFeature[];
 }
 
 export interface BackgroundDef {

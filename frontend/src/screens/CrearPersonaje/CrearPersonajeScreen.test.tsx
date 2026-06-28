@@ -22,6 +22,11 @@ const CLASSES: ClassDTO[] = [
     description: 'Maestro del combate marcial.',
     skillChoices: 2,
     skillOptions: ['athletics', 'intimidation', 'perception', 'survival'],
+    features: [
+      { level: 1, name: 'Estilo de combate', description: 'Eliges un estilo de combate.' },
+      { level: 1, name: 'Segundo viento', description: 'Recuperas PG una vez por descanso.' },
+      { level: 2, name: 'Acción adicional', description: 'Puedes realizar una acción adicional.' },
+    ],
   },
   {
     id: 'wizard',
@@ -33,6 +38,10 @@ const CLASSES: ClassDTO[] = [
     description: 'Erudito de la magia arcana.',
     skillChoices: 2,
     skillOptions: ['arcana', 'history', 'investigation', 'insight'],
+    features: [
+      { level: 1, name: 'Lanzamiento de conjuros', description: 'Puedes lanzar conjuros de mago.' },
+      { level: 2, name: 'Recuperación arcana', description: 'Recuperas espacios de conjuro en un descanso corto.' },
+    ],
   },
 ];
 
@@ -43,7 +52,10 @@ const SPECIES: SpeciesDTO[] = [
     size: 'Mediano',
     speed: 9,
     description: 'Versátil y ambicioso.',
-    traits: ['Versátil', 'Hábil'],
+    traits: [
+      { name: 'Versátil', description: 'Sin rasgos especiales.' },
+      { name: 'Hábil', description: 'Competencia en una habilidad.' },
+    ],
   },
   {
     id: 'elf',
@@ -51,7 +63,10 @@ const SPECIES: SpeciesDTO[] = [
     size: 'Mediano',
     speed: 9,
     description: 'Grácil y longevo.',
-    traits: ['Visión en la oscuridad', 'Linaje feérico'],
+    traits: [
+      { name: 'Visión en la oscuridad', description: 'Puedes ver en la oscuridad hasta 18 m.' },
+      { name: 'Linaje feérico', description: 'Ventaja contra ser hechizado.' },
+    ],
   },
 ];
 
