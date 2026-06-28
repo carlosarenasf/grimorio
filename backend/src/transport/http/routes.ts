@@ -17,6 +17,7 @@ import {
 import { registerUser, login } from '../../application/auth/index.js';
 import {
   createCampaign,
+  deleteCampaign,
   issueInvite,
   joinByCode,
   listCampaignsForUser,
@@ -144,6 +145,23 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
           deps,
         );
         reply.send(campaign);
+      } catch (err) {
+        handleError(err, reply);
+      }
+    },
+  );
+
+  app.delete(
+    '/campaigns/:id',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { id } = req.params as { id: string };
+      try {
+        await deleteCampaign(
+          { campaignId: id as CampaignId, actorId: req.principal!.userId as UserId },
+          deps,
+        );
+        reply.code(204).send();
       } catch (err) {
         handleError(err, reply);
       }

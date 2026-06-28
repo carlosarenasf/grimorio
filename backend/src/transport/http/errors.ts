@@ -34,6 +34,7 @@ const AUTH_STATUS: Record<AuthError['code'], number> = {
 const CAMPAIGN_STATUS: Record<import('../../application/campaign/index.js').CampaignErrorCode, number> = {
   NotFound: 404,
   Forbidden: 403,
+  NotOwner: 403,
   UnknownCode: 404,
 };
 
