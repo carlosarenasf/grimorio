@@ -119,4 +119,20 @@ describe('VistaMasterScreen', () => {
     const lastCall = send.mock.calls.at(-1)?.[0];
     expect(lastCall.notes).toMatch(/Cuidado\.$/);
   });
+
+  it('"Terminar combate" requires confirmation before sending EndCombat', async () => {
+    const { send } = setup();
+    const endBtn = screen.getByRole('button', { name: /terminar combate/i });
+    await userEvent.click(endBtn);
+    expect(send).not.toHaveBeenCalledWith({ type: 'EndCombat' });
+    expect(screen.getByText(/¿seguro/i)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /¿seguro/i }));
+    expect(send).toHaveBeenCalledWith({ type: 'EndCombat' });
+  });
+
+  it('"Terminar combate" is disabled when combat is not active', () => {
+    setup({ combat: { active: false, round: 0, order: [], currentTurnIndex: 0 } });
+    const endBtn = screen.getByRole('button', { name: /terminar combate/i });
+    expect(endBtn).toBeDisabled();
+  });
 });

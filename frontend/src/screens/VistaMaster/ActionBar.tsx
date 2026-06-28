@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '../../design';
 import type { MasterSnapshot, Send } from './types';
 
@@ -28,10 +29,20 @@ export function ActionBar({
   const validAmount = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
   const canAdjust = !!targetId && validAmount > 0;
   const combatActive = snapshot.combat.active;
+  const [confirmEnd, setConfirmEnd] = useState(false);
 
   function adjust(type: 'ApplyDamage' | 'ApplyHealing') {
     if (!targetId || validAmount <= 0) return;
     send({ type, combatantId: targetId, amount: validAmount });
+  }
+
+  function handleEndCombat() {
+    if (!confirmEnd) {
+      setConfirmEnd(true);
+      return;
+    }
+    send({ type: 'EndCombat' });
+    setConfirmEnd(false);
   }
 
   return (
@@ -79,6 +90,14 @@ export function ActionBar({
           onClick={() => send({ type: 'NextTurn' })}
         >
           Siguiente turno
+        </Button>
+        <Button
+          variant="secondary"
+          disabled={!combatActive}
+          onClick={handleEndCombat}
+          onBlur={() => setConfirmEnd(false)}
+        >
+          {confirmEnd ? '¿Seguro? Clic de nuevo' : 'Terminar combate'}
         </Button>
       </div>
     </footer>
