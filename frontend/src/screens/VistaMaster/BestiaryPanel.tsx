@@ -90,6 +90,7 @@ export function BestiaryPanel({ srd, send, getMonster }: BestiaryPanelProps) {
           monster={addingMonster}
           send={send}
           onClose={() => setAddingMonster(null)}
+          getMonster={getMonster}
         />
       ) : null}
 
