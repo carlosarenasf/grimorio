@@ -64,6 +64,13 @@ export interface InventoryItem {
   equipped: boolean; // visual tag; does NOT affect calculations (tracking only)
 }
 
+export interface CharacterTrait {
+  id: string;
+  name: string;
+  description: string;
+  source: 'species' | 'class';
+}
+
 export interface CharacterSheet {
   id: CharacterId;
   campaignId: CampaignId;
@@ -75,7 +82,7 @@ export interface CharacterSheet {
   level: number; // 1–20
   scores: Record<AbilityKey, number>; // 3–20
   // Derived values are COMPUTED by the server (not persisted as truth):
-  //   mod(score) = floor((score-10)/2); profBonus = ceil(level/4)+1; etc.
+  //   mod(score) = floor((score-10)/2); profBonus = ceil(level/4)+2; etc.
   maxHp: number;
   currentHp: number;
   armorClass: number;
@@ -87,6 +94,8 @@ export interface CharacterSheet {
   notes: string; // traits, personality, bonds…
   /** Chosen spell ids/names (for casters); shown on the sheet and player view. */
   spells?: string[];
+  /** Resolved racial + class traits (populated by getCharacter from the SRD). */
+  traits?: CharacterTrait[];
   visibility: Visibility; // typically 'owner' (HP is projected public in combat)
 }
 
