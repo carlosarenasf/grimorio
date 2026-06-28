@@ -42,6 +42,8 @@ const CHARACTER_STATUS: Record<import('../../application/character/index.js').Ch
   Forbidden: 403,
   NotCampaignMember: 403,
   IllegalPointBuy: 400,
+  MaxLevel: 400,
+  InvalidAsi: 400,
 };
 
 /** Map a thrown error to an HTTP status code; 500 for anything unrecognised. */

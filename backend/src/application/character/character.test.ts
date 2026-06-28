@@ -4,7 +4,7 @@ import type { InMemoryRepos } from '../../testing/index.js';
 import { createCampaign , addMember } from '../../domain/campaign/index.js';
 import { newUserId } from '../../domain/ids.js';
 import type { CampaignId, UserId } from '../../domain/ids.js';
-import { createCharacter, updateCharacter } from './index.js';
+import { createCharacter, updateCharacter, levelUpCharacter } from './index.js';
 
 describe('application/character', () => {
   let repos: InMemoryRepos;
@@ -235,5 +235,191 @@ describe('application/character', () => {
       { characters: repos.characters, campaigns: repos.campaigns },
     );
     expect(updated.scores.con).toBe(17);
+  });
+
+  test('a player can level up their own character with fixed HP', async () => {
+    const sheet = await createCharacter(
+      {
+        campaignId,
+        ownerId: playerAId,
+        name: 'Lyra',
+        species: 'Elfo',
+        className: 'Explorador',
+        background: 'Forastero',
+        level: 1,
+        method: 'buy',
+        scores: { str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 },
+      },
+      { characters: repos.characters, campaigns: repos.campaigns, rng },
+    );
+
+    const result = await levelUpCharacter(
+      { characterId: sheet.id, actorId: playerAId, hpMethod: 'fixed' },
+      { characters: repos.characters, campaigns: repos.campaigns, rng },
+    );
+
+    expect(result.sheet.level).toBe(2);
+    expect(result.hpGained).toBeGreaterThan(0);
+    expect(result.asiApplied).toBe(false);
+
+    const persisted = await repos.characters.findById(sheet.id);
+    expect(persisted?.level).toBe(2);
+  });
+
+  test('a player can level up with rolled HP', async () => {
+    const sheet = await createCharacter(
+      {
+        campaignId,
+        ownerId: playerAId,
+        name: 'Lyra',
+        species: 'Elfo',
+        className: 'Explorador',
+        background: 'Forastero',
+        level: 1,
+        method: 'buy',
+        scores: { str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 },
+      },
+      { characters: repos.characters, campaigns: repos.campaigns, rng },
+    );
+
+    const result = await levelUpCharacter(
+      { characterId: sheet.id, actorId: playerAId, hpMethod: 'roll' },
+      { characters: repos.characters, campaigns: repos.campaigns, rng },
+    );
+
+    expect(result.sheet.level).toBe(2);
+    expect(result.hpGained).toBeGreaterThan(0);
+  });
+
+  test('a player can level up with ASI at level 4', async () => {
+    const sheet = await createCharacter(
+      {
+        campaignId,
+        ownerId: playerAId,
+        name: 'Lyra',
+        species: 'Elfo',
+        className: 'Explorador',
+        background: 'Forastero',
+        level: 3,
+        method: 'buy',
+        scores: { str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 },
+      },
+      { characters: repos.characters, campaigns: repos.campaigns, rng },
+    );
+
+    const result = await levelUpCharacter(
+      {
+        characterId: sheet.id,
+        actorId: playerAId,
+        hpMethod: 'fixed',
+        asi: { type: 'single', ability: 'str' },
+      },
+      { characters: repos.characters, campaigns: repos.campaigns, rng },
+    );
+
+    expect(result.sheet.level).toBe(4);
+    expect(result.sheet.scores.str).toBe(17);
+    expect(result.asiApplied).toBe(true);
+  });
+
+  test('leveling up another player character is Forbidden', async () => {
+    const sheet = await createCharacter(
+      {
+        campaignId,
+        ownerId: playerAId,
+        name: 'Lyra',
+        species: 'Elfo',
+        className: 'Explorador',
+        background: 'Forastero',
+        level: 1,
+        method: 'buy',
+        scores: { str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 },
+      },
+      { characters: repos.characters, campaigns: repos.campaigns, rng },
+    );
+
+    await expect(
+      levelUpCharacter(
+        { characterId: sheet.id, actorId: playerBId, hpMethod: 'fixed' },
+        { characters: repos.characters, campaigns: repos.campaigns, rng },
+      ),
+    ).rejects.toMatchObject({ code: 'Forbidden' });
+  });
+
+  test('the dm can level up any character in their campaign', async () => {
+    const sheet = await createCharacter(
+      {
+        campaignId,
+        ownerId: playerAId,
+        name: 'Lyra',
+        species: 'Elfo',
+        className: 'Explorador',
+        background: 'Forastero',
+        level: 1,
+        method: 'buy',
+        scores: { str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 },
+      },
+      { characters: repos.characters, campaigns: repos.campaigns, rng },
+    );
+
+    const result = await levelUpCharacter(
+      { characterId: sheet.id, actorId: dmId, hpMethod: 'fixed' },
+      { characters: repos.characters, campaigns: repos.campaigns, rng },
+    );
+
+    expect(result.sheet.level).toBe(2);
+  });
+
+  test('leveling past 20 is rejected with MaxLevel', async () => {
+    const sheet = await createCharacter(
+      {
+        campaignId,
+        ownerId: playerAId,
+        name: 'Lyra',
+        species: 'Elfo',
+        className: 'Explorador',
+        background: 'Forastero',
+        level: 20,
+        method: 'buy',
+        scores: { str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 },
+      },
+      { characters: repos.characters, campaigns: repos.campaigns, rng },
+    );
+
+    await expect(
+      levelUpCharacter(
+        { characterId: sheet.id, actorId: playerAId, hpMethod: 'fixed' },
+        { characters: repos.characters, campaigns: repos.campaigns, rng },
+      ),
+    ).rejects.toMatchObject({ code: 'MaxLevel' });
+  });
+
+  test('ASI at a non-ASI level is rejected with InvalidAsi', async () => {
+    const sheet = await createCharacter(
+      {
+        campaignId,
+        ownerId: playerAId,
+        name: 'Lyra',
+        species: 'Elfo',
+        className: 'Explorador',
+        background: 'Forastero',
+        level: 2,
+        method: 'buy',
+        scores: { str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 },
+      },
+      { characters: repos.characters, campaigns: repos.campaigns, rng },
+    );
+
+    await expect(
+      levelUpCharacter(
+        {
+          characterId: sheet.id,
+          actorId: playerAId,
+          hpMethod: 'fixed',
+          asi: { type: 'single', ability: 'str' },
+        },
+        { characters: repos.characters, campaigns: repos.campaigns, rng },
+      ),
+    ).rejects.toMatchObject({ code: 'InvalidAsi' });
   });
 });

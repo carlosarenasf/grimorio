@@ -133,6 +133,25 @@ export const UpdateCharacterSchema = z.object({
   patch: CharacterCorePatch,
 });
 
+export const LevelUpCharacterSchema = z.object({
+  type: z.literal('LevelUpCharacter'),
+  characterId: z.string().min(1),
+  hpMethod: z.enum(['fixed', 'roll']),
+  asi: z
+    .discriminatedUnion('type', [
+      z.object({
+        type: z.literal('single'),
+        ability: z.enum(['str', 'dex', 'con', 'int', 'wis', 'cha']),
+      }),
+      z.object({
+        type: z.literal('double'),
+        ability1: z.enum(['str', 'dex', 'con', 'int', 'wis', 'cha']),
+        ability2: z.enum(['str', 'dex', 'con', 'int', 'wis', 'cha']),
+      }),
+    ])
+    .optional(),
+});
+
 // ---------- Live session commands (WS) ----------
 
 export const StartCombatSchema = z.object({
@@ -251,6 +270,7 @@ export const CommandSchema = z.discriminatedUnion('type', [
   JoinCampaignSchema,
   CreateCharacterSchema,
   UpdateCharacterSchema,
+  LevelUpCharacterSchema,
   StartCombatSchema,
   AddCombatantFromBestiarySchema,
   AddManualCombatantSchema,
@@ -284,6 +304,7 @@ export type InviteToCampaignCommand = z.infer<typeof InviteToCampaignSchema>;
 export type JoinCampaignCommand = z.infer<typeof JoinCampaignSchema>;
 export type CreateCharacterCommand = z.infer<typeof CreateCharacterSchema>;
 export type UpdateCharacterCommand = z.infer<typeof UpdateCharacterSchema>;
+export type LevelUpCharacterCommand = z.infer<typeof LevelUpCharacterSchema>;
 export type StartCombatCommand = z.infer<typeof StartCombatSchema>;
 export type AddCombatantFromBestiaryCommand = z.infer<typeof AddCombatantFromBestiarySchema>;
 export type AddManualCombatantCommand = z.infer<typeof AddManualCombatantSchema>;

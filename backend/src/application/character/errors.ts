@@ -11,7 +11,9 @@ export type CharacterErrorCode =
   | 'NotCampaignMember'
   | 'Forbidden'
   | 'NotFound'
-  | 'IllegalPointBuy';
+  | 'IllegalPointBuy'
+  | 'MaxLevel'
+  | 'InvalidAsi';
 
 export class CharacterError extends Error {
   readonly code: CharacterErrorCode;

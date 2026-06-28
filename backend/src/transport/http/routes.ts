@@ -9,6 +9,7 @@ import { z } from 'zod';
 import {
   CreateCampaignSchema,
   CreateCharacterSchema,
+  LevelUpCharacterSchema,
   LoginSchema,
   RegisterSchema,
   UpdateCharacterSchema,
@@ -23,6 +24,7 @@ import {
 import {
   createCharacter,
   updateCharacter,
+  levelUpCharacter,
   getCharacter,
 } from '../../application/character/index.js';
 import { getOrCreateLiveTable } from '../../application/livetable/index.js';
@@ -259,6 +261,35 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
           deps,
         );
         reply.send(character);
+      } catch (err) {
+        handleError(err, reply);
+      }
+    },
+  );
+
+  app.post(
+    '/characters/:id/levelup',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { id } = req.params as { id: string };
+      const body = typeof req.body === 'object' && req.body !== null ? req.body : {};
+      const cmd = parseBody(
+        LevelUpCharacterSchema,
+        withType({ characterId: id, ...body }, 'LevelUpCharacter'),
+        reply,
+      );
+      if (!cmd) return;
+      try {
+        const result = await levelUpCharacter(
+          {
+            characterId: id as CharacterId,
+            actorId: req.principal!.userId as UserId,
+            hpMethod: cmd.hpMethod,
+            asi: cmd.asi,
+          },
+          deps,
+        );
+        reply.send(result);
       } catch (err) {
         handleError(err, reply);
       }
