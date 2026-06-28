@@ -60,4 +60,19 @@ describe('InMemoryCharacterRepository', () => {
     const repo = new InMemoryCharacterRepository();
     expect(await repo.listByCampaign(newCampaignId())).toEqual([]);
   });
+
+  it('deleteByCampaign removes all characters for that campaign', async () => {
+    const repo = new InMemoryCharacterRepository();
+    const campaignId = newCampaignId();
+    const other = newCampaignId();
+
+    await repo.save(makeCharacter({ campaignId }));
+    await repo.save(makeCharacter({ campaignId }));
+    await repo.save(makeCharacter({ campaignId: other }));
+
+    await repo.deleteByCampaign(campaignId);
+
+    expect(await repo.listByCampaign(campaignId)).toEqual([]);
+    expect(await repo.listByCampaign(other)).toHaveLength(1);
+  });
 });

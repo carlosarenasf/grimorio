@@ -21,4 +21,10 @@ export class InMemoryLiveTableRepository implements LiveTableRepository {
     }
     return null;
   }
+
+  async deleteByCampaign(campaignId: CampaignId): Promise<void> {
+    for (const [id, table] of this.byId.entries()) {
+      if (table.campaignId === campaignId) this.byId.delete(id);
+    }
+  }
 }

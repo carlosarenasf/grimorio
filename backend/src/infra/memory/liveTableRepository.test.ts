@@ -57,4 +57,20 @@ describe('InMemoryLiveTableRepository', () => {
 
     expect(await repo.findById(table.id)).toEqual(updated);
   });
+
+  it('deleteByCampaign removes the table for that campaign', async () => {
+    const repo = new InMemoryLiveTableRepository();
+    const campaignId = newCampaignId();
+    const table = makeLiveTable({ campaignId });
+    await repo.save(table);
+
+    await repo.deleteByCampaign(campaignId);
+
+    expect(await repo.findByCampaignId(campaignId)).toBeNull();
+  });
+
+  it('deleteByCampaign is a no-op when no table exists for the campaign', async () => {
+    const repo = new InMemoryLiveTableRepository();
+    await repo.deleteByCampaign(newCampaignId());
+  });
 });

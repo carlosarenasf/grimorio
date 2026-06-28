@@ -29,4 +29,8 @@ export class PostgresLiveTableRepository implements LiveTableRepository {
     `;
     return toSnapshot(rows[0]);
   }
+
+  async deleteByCampaign(campaignId: CampaignId): Promise<void> {
+    await this.sql`DELETE FROM live_tables WHERE campaign_id = ${campaignId}`;
+  }
 }

@@ -29,4 +29,8 @@ export class PostgresCharacterRepository implements CharacterRepository {
     `;
     return toSnapshots(rows);
   }
+
+  async deleteByCampaign(campaignId: CampaignId): Promise<void> {
+    await this.sql`DELETE FROM characters WHERE campaign_id = ${campaignId}`;
+  }
 }

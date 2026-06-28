@@ -46,4 +46,8 @@ export class PostgresCampaignRepository implements CampaignRepository {
     `;
     return toSnapshots(rows);
   }
+
+  async delete(id: CampaignId): Promise<void> {
+    await this.sql`DELETE FROM campaigns WHERE id = ${id}`;
+  }
 }

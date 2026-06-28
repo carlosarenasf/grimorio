@@ -31,4 +31,8 @@ export class InMemoryCampaignRepository implements CampaignRepository {
     }
     return result;
   }
+
+  async delete(id: CampaignId): Promise<void> {
+    this.byId.delete(id);
+  }
 }

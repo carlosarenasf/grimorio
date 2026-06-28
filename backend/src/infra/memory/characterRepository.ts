@@ -22,4 +22,10 @@ export class InMemoryCharacterRepository implements CharacterRepository {
     }
     return result;
   }
+
+  async deleteByCampaign(campaignId: CampaignId): Promise<void> {
+    for (const [id, character] of this.byId.entries()) {
+      if (character.campaignId === campaignId) this.byId.delete(id);
+    }
+  }
 }

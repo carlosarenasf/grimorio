@@ -92,4 +92,19 @@ describe('InMemoryCampaignRepository', () => {
     expect(result).toHaveLength(2);
     expect(result).toEqual(expect.arrayContaining([campaignA, campaignB]));
   });
+
+  it('delete removes the campaign by id', async () => {
+    const repo = new InMemoryCampaignRepository();
+    const campaign = makeCampaign();
+    await repo.save(campaign);
+
+    await repo.delete(campaign.id);
+
+    expect(await repo.findById(campaign.id)).toBeNull();
+  });
+
+  it('delete is a no-op when the id does not exist', async () => {
+    const repo = new InMemoryCampaignRepository();
+    await repo.delete(newCampaignId());
+  });
 });
