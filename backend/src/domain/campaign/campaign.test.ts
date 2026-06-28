@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addMember, createCampaign, generateJoinCode, regenerateInvite } from './index.js';
+import { addMember, canDeleteCampaign, createCampaign, generateJoinCode, regenerateInvite } from './index.js';
 import { newUserId } from '../ids.js';
 import type { Rng } from '../ports.js';
 
@@ -99,5 +99,27 @@ describe('regenerateInvite', () => {
     const campaign = createCampaign(ownerId, 'Name', 'Tagline', fakeRng(0, 1, 2));
     const updated = regenerateInvite(campaign, fakeRng(5, 6, 7));
     expect(updated.joinCode).not.toBe(campaign.joinCode);
+  });
+});
+
+describe('canDeleteCampaign', () => {
+  it('returns true for the owner', () => {
+    const ownerId = newUserId();
+    const campaign = createCampaign(ownerId, 'Name', 'Tagline', fakeRng(0, 1, 2));
+    expect(canDeleteCampaign(campaign, ownerId)).toBe(true);
+  });
+
+  it('returns false for a non-owner player', () => {
+    const ownerId = newUserId();
+    const playerId = newUserId();
+    const campaign = createCampaign(ownerId, 'Name', 'Tagline', fakeRng(0, 1, 2));
+    const withPlayer = addMember(campaign, playerId, 'player');
+    expect(canDeleteCampaign(withPlayer, playerId)).toBe(false);
+  });
+
+  it('returns false for an unrelated user', () => {
+    const ownerId = newUserId();
+    const campaign = createCampaign(ownerId, 'Name', 'Tagline', fakeRng(0, 1, 2));
+    expect(canDeleteCampaign(campaign, newUserId())).toBe(false);
   });
 });

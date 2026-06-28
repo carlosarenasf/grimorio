@@ -47,3 +47,8 @@ export function regenerateInvite(campaign: Campaign, rng: Rng): Campaign {
     joinCode: generateJoinCode(rng),
   };
 }
+
+/** Whether the given user is the campaign owner (the only one allowed to delete it). */
+export function canDeleteCampaign(campaign: Campaign, userId: UserId): boolean {
+  return campaign.ownerId === userId;
+}
