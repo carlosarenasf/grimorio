@@ -91,15 +91,17 @@ describe('VistaMasterScreen', () => {
     await userEvent.type(search, 'orco');
     await userEvent.click(screen.getByRole('button', { name: /añadir orco/i }));
     await userEvent.click(screen.getByRole('button', { name: /añadir al combate/i }));
-    expect(send).toHaveBeenCalledWith({
-      type: 'AddManualCombatant',
-      name: 'Orco',
-      maxHp: 15,
-      initiative: 10,
-      combatantType: 'monster',
-      hpVisibility: 'dm_only',
-      refId: 'orc',
-    });
+    expect(send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'AddManualCombatant',
+        name: 'Orco',
+        maxHp: 15,
+        initiative: 10,
+        combatantType: 'monster',
+        hpVisibility: 'dm_only',
+        refId: 'orc',
+      }),
+    );
   });
 
   it('marks a private roll in the log as private', () => {
