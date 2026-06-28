@@ -4,7 +4,7 @@ import '../../design/components.css';
 import { InitiativeRail } from '../../design';
 import type { InitiativeToken } from '../../design';
 import { getActiveCombatant } from '../../net';
-import type { MasterSnapshot, Send, SrdSource } from './types';
+import type { MasterSnapshot, Monster, Send, SrdSource } from './types';
 import { SessionBar } from './SessionBar';
 import { CombatantsPanel } from './CombatantsPanel';
 import { PlayersPanel } from './PlayersPanel';
@@ -16,6 +16,7 @@ import { HistoryPanel } from './HistoryPanel';
 import { DmNotesPanel } from './DmNotesPanel';
 import { ActionBar } from './ActionBar';
 import { CharacterSheetModal } from './CharacterSheetModal';
+import { MonsterSheetModal } from './MonsterSheetModal';
 import type { ApiClient, CampaignDTO, SpellDTO } from '../../net/http';
 import './vista-master.css';
 
@@ -67,11 +68,24 @@ export function VistaMasterScreen({
   campaign,
 }: VistaMasterScreenProps) {
   const [sheetCharacterId, setSheetCharacterId] = useState<string | null>(null);
+  const [viewingMonster, setViewingMonster] = useState<Monster | null>(null);
   const seatedCharacterIds = snapshot.combatants
     .filter((c) => c.type === 'pc' && c.characterId)
     .map((c) => c.characterId as string);
   const active = getActiveCombatant(snapshot);
   const activeId = active?.id ?? null;
+
+  async function handleViewMonsterSheet(refId: string) {
+    if (!api?.getMonster) return;
+    try {
+      const monster = await api.getMonster(refId);
+      if (monster) {
+        setViewingMonster(monster);
+      }
+    } catch {
+      // Silently fail - monster sheet won't open
+    }
+  }
 
   // The HP controls target the active combatant by default, but the master can
   // re-target any combatant by selecting it in the Combatientes panel.
@@ -102,6 +116,7 @@ export function VistaMasterScreen({
             }
             onRemove={(id) => send({ type: 'RemoveCombatant', combatantId: id })}
             onViewSheet={api ? (cid) => setSheetCharacterId(cid) : undefined}
+            onViewMonsterSheet={api?.getMonster ? handleViewMonsterSheet : undefined}
           />
           <PlayersPanel
             characters={campaignCharacters}
@@ -147,6 +162,13 @@ export function VistaMasterScreen({
           api={api}
           spellsById={spellsById}
           onClose={() => setSheetCharacterId(null)}
+        />
+      ) : null}
+
+      {viewingMonster ? (
+        <MonsterSheetModal
+          monster={viewingMonster}
+          onClose={() => setViewingMonster(null)}
         />
       ) : null}
     </div>

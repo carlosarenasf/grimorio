@@ -14,6 +14,8 @@ export interface CombatantsPanelProps {
   onRemove: (id: string) => void;
   /** Open a PC's character sheet (given its characterId). */
   onViewSheet?: (characterId: string) => void;
+  /** Open a monster's sheet (given its refId). */
+  onViewMonsterSheet?: (refId: string) => void;
 }
 
 /**
@@ -29,6 +31,7 @@ export function CombatantsPanel({
   onHeal,
   onRemove,
   onViewSheet,
+  onViewMonsterSheet,
 }: CombatantsPanelProps) {
   const { combatants } = snapshot;
   const [amount, setAmount] = useState('1');
@@ -102,6 +105,17 @@ export function CombatantsPanel({
                     aria-label={`Ver la ficha de ${c.name}`}
                     title="Ver ficha"
                     onClick={() => onViewSheet(c.characterId as string)}
+                  >
+                    📜
+                  </button>
+                ) : null}
+                {onViewMonsterSheet && c.type === 'monster' && c.refId ? (
+                  <button
+                    type="button"
+                    className="vm-hpbtn vm-hpbtn--sheet"
+                    aria-label={`Ver la ficha de ${c.name}`}
+                    title="Ver ficha"
+                    onClick={() => onViewMonsterSheet(c.refId as string)}
                   >
                     📜
                   </button>
