@@ -18,6 +18,7 @@ export interface AttackDef {
   bonus: number | null;
   /** Damage notation, e.g. "1d8+4". */
   damage: string | null;
+  damageType?: string;
 }
 
 /** An inventory line (equipped gear or backpack item) — local tracking only. */
@@ -27,6 +28,24 @@ export interface InventoryItem {
   note: string;
   qty: number;
   equipped: boolean;
+}
+
+export type TraitSource = 'species' | 'class' | 'background' | 'other';
+
+export interface CharacterTrait {
+  id: string;
+  name: string;
+  description: string;
+  source: TraitSource;
+}
+
+export interface SpellEntry {
+  id: string;
+  name: string;
+  level: number;
+  school: string;
+  description: string;
+  damage?: string | null;
 }
 
 /**
@@ -40,6 +59,10 @@ export interface YouCharacter {
   combatantId: string | null;
   characterId: string;
   name: string;
+  species: string;
+  className: string;
+  background: string;
+  level: number;
   scores: AbilityScores;
   maxHp: number;
   currentHp: number;
@@ -52,6 +75,13 @@ export interface YouCharacter {
   attacks: AttackDef[];
   inventory: InventoryItem[];
   gold: number;
+  notes: string;
+  /** Racial, class, and background traits. */
+  traits: CharacterTrait[];
+  /** Known/prepared spells (full data for display). */
+  spells: SpellEntry[];
+  /** Whether this character has spellcasting ability. */
+  hasSpellcasting: boolean;
 }
 
 export type { Command, PlayerSnapshot };

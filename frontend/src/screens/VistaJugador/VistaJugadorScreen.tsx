@@ -1,9 +1,12 @@
 import '../../design/tokens.css';
 import '../../design/components.css';
+import { useState } from 'react';
 import { getActiveCombatant } from '../../net';
+import type { SpellDTO } from '../../net/http';
 import { ActionBar } from './ActionBar';
 import { ActionEconomy } from './ActionEconomy';
 import { DicePanel } from './DicePanel';
+import { EditSheetModal } from './EditSheetModal';
 import { InventoryPanel } from './InventoryPanel';
 import { MonsterTargetsPanel } from './MonsterTargetsPanel';
 import { PublicLogPanel } from './PublicLogPanel';
@@ -11,6 +14,7 @@ import { PublicRailPanel } from './PublicRailPanel';
 import { RulesPanel } from './RulesPanel';
 import { SheetPanel } from './SheetPanel';
 import { TurnBanner } from './TurnBanner';
+import type { NewAttackData } from './AddAttackModal';
 import type { PlayerSnapshot, Send, YouCharacter } from './types';
 import './vista-jugador.css';
 
@@ -27,6 +31,13 @@ export interface VistaJugadorScreenProps {
   onAddItem?: (name: string) => void;
   onRemoveItem?: (id: string) => void;
   onAdjustItem?: (id: string, delta: number) => void;
+  onAddSpell?: (spell: SpellDTO) => void;
+  onRemoveSpell?: (spellId: string) => void;
+  onAddAttack?: (attack: NewAttackData) => void;
+  onRemoveAttack?: (attackId: string) => void;
+  fetchSpells?: (classId?: string) => Promise<SpellDTO[]>;
+  /** Saves a patch to the character sheet. */
+  onSaveSheet?: (patch: Record<string, unknown>) => Promise<void>;
 }
 
 /**
@@ -45,7 +56,14 @@ export function VistaJugadorScreen({
   onAddItem,
   onRemoveItem,
   onAdjustItem,
+  onAddSpell,
+  onRemoveSpell,
+  onAddAttack,
+  onRemoveAttack,
+  fetchSpells,
+  onSaveSheet,
 }: VistaJugadorScreenProps) {
+  const [editOpen, setEditOpen] = useState(false);
   const active = getActiveCombatant(snapshot);
   const isYourTurn =
     snapshot.combat.active && active !== null && active.id === you.combatantId;
@@ -64,7 +82,17 @@ export function VistaJugadorScreen({
 
       <div className="vj-screen__body">
         <main className="vj-screen__main">
-          <SheetPanel you={you} send={send} latestRoll={latestRoll} />
+          <SheetPanel
+            you={you}
+            send={send}
+            latestRoll={latestRoll}
+            onAddSpell={onAddSpell}
+            onRemoveSpell={onRemoveSpell}
+            onAddAttack={onAddAttack}
+            onRemoveAttack={onRemoveAttack}
+            fetchSpells={fetchSpells}
+            onEditSheet={onSaveSheet ? () => setEditOpen(true) : undefined}
+          />
           <ActionEconomy you={you} send={send} isYourTurn={isYourTurn} />
           <MonsterTargetsPanel snapshot={snapshot} send={send} />
           <InventoryPanel
@@ -87,6 +115,14 @@ export function VistaJugadorScreen({
       </div>
 
       <ActionBar send={send} isYourTurn={isYourTurn} />
+
+      {editOpen && onSaveSheet ? (
+        <EditSheetModal
+          you={you}
+          onSave={onSaveSheet}
+          onClose={() => setEditOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }

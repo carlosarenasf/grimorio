@@ -83,6 +83,10 @@ export function makeYouCharacter(overrides: Partial<YouCharacter> = {}): YouChar
     combatantId: 'pc-1',
     characterId: 'char-1',
     name: 'Lyra',
+    species: 'Elfa',
+    className: 'Mago',
+    background: 'Savia',
+    level: 3,
     scores: { str: 14, dex: 16, con: 13, int: 10, wis: 12, cha: 8 },
     maxHp: 30,
     currentHp: 24,
@@ -101,6 +105,18 @@ export function makeYouCharacter(overrides: Partial<YouCharacter> = {}): YouChar
       { id: 'inv-4', name: 'Poción de curación', note: '2d4+2 PV', qty: 2, equipped: false },
     ],
     gold: 35,
+    notes: 'Busco la fuente de la magia arcana.',
+    traits: [
+      { id: 'trait-1', name: 'Visión en oscuridad', description: 'Puedes ver en la oscuridad a 18m de distancia.', source: 'species' },
+      { id: 'trait-2', name: 'Suerte', description: 'Puedes repetir una tirada de 1 en un d20.', source: 'species' },
+      { id: 'trait-3', name: 'Ira', description: 'Ventaja en tiradas de daño cuerpo a cuerpo con Fuerza.', source: 'class' },
+      { id: 'trait-4', name: 'Sentido agudo', description: 'Competencia en Percepción.', source: 'background' },
+    ],
+    spells: [
+      { id: 'spell-1', name: 'Rayo de escarcha', level: 0, school: 'Evocación', description: 'Un rayo de hielo que causa 1d8 de daño.', damage: '1d8' },
+      { id: 'spell-2', name: 'Proyectil mágico', level: 1, school: 'Evocación', description: 'Tres dardos de fuerza que impactan automáticamente.', damage: '1d4+1' },
+    ],
+    hasSpellcasting: true,
     ...overrides,
   };
 }

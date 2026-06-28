@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { SheetPanel } from './SheetPanel';
 import { makeYouCharacter } from './fixture';
 
@@ -34,5 +35,23 @@ describe('SheetPanel', () => {
     render(<SheetPanel you={makeYouCharacter({ currentHp: 5, maxHp: 30 })} />);
     const hp = screen.getByLabelText(/pv actuales/i);
     expect(hp.className).toMatch(/damage/);
+  });
+
+  it('shows "Editar ficha" button when onEditSheet is provided', () => {
+    const onEditSheet = vi.fn();
+    render(<SheetPanel you={makeYouCharacter()} onEditSheet={onEditSheet} />);
+    expect(screen.getByRole('button', { name: /editar ficha/i })).toBeInTheDocument();
+  });
+
+  it('does not show "Editar ficha" button when onEditSheet is not provided', () => {
+    render(<SheetPanel you={makeYouCharacter()} />);
+    expect(screen.queryByRole('button', { name: /editar ficha/i })).not.toBeInTheDocument();
+  });
+
+  it('calls onEditSheet when "Editar ficha" is clicked', async () => {
+    const onEditSheet = vi.fn();
+    render(<SheetPanel you={makeYouCharacter()} onEditSheet={onEditSheet} />);
+    await userEvent.click(screen.getByRole('button', { name: /editar ficha/i }));
+    expect(onEditSheet).toHaveBeenCalledOnce();
   });
 });

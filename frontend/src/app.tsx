@@ -21,7 +21,7 @@ import { CrearPersonajeScreen } from './screens/CrearPersonaje/index.js';
 import { VistaMasterScreen } from './screens/VistaMaster/index.js';
 import type { MonsterSummary, SrdSource } from './screens/VistaMaster/index.js';
 import { VistaJugadorScreen } from './screens/VistaJugador/index.js';
-import type { YouCharacter } from './screens/VistaJugador/index.js';
+import type { NewAttackData, YouCharacter } from './screens/VistaJugador/index.js';
 import type { CampaignDTO, CharacterDTO, SpellDTO } from './net/http.js';
 import { Button } from './design/index.js';
 
@@ -52,29 +52,58 @@ function toYouCharacter(
     kind: a.kind,
     bonus: a.bonus,
     damage: a.damage,
+    damageType: a.damageType,
   }));
-  const spellAttacks = (sheet.spells ?? [])
+  const spellEntries = (sheet.spells ?? [])
     .map((id) => spellsById[id])
-    .filter((s): s is SpellDTO => Boolean(s))
-    .map((s) => ({
-      id: s.id,
-      name: s.name,
-      kind: 'spell' as const,
-      bonus: null,
-      damage: s.damage ?? null,
-    }));
-  
+    .filter((s): s is SpellDTO => Boolean(s));
+  const spellAttacks = spellEntries.map((s) => ({
+    id: s.id,
+    name: s.name,
+    kind: 'spell' as const,
+    bonus: null,
+    damage: s.damage ?? null,
+  }));
+
   // Use live HP from snapshot if available, otherwise fall back to sheet HP
   const ownCombatant = snapshot && combatantId
     ? snapshot.combatants.find((c) => c.id === combatantId)
     : null;
   const currentHp = ownCombatant?.currentHp ?? sheet.currentHp;
   const maxHp = ownCombatant?.maxHp ?? sheet.maxHp;
-  
+
+  // Build traits from species/class data if available on the sheet
+  const traits: YouCharacter['traits'] = [];
+  const rawTraits = (sheet as Record<string, unknown>).traits;
+  if (Array.isArray(rawTraits)) {
+    for (const t of rawTraits) {
+      if (t && typeof t === 'object') {
+        const trait = t as Record<string, unknown>;
+        traits.push({
+          id: String(trait.id ?? `trait-${traits.length}`),
+          name: String(trait.name ?? ''),
+          description: String(trait.description ?? ''),
+          source: (trait.source as YouCharacter['traits'][number]['source']) ?? 'other',
+        });
+      }
+    }
+  }
+
+  // Determine spellcasting from class data
+  const hasSpellcasting = Boolean(
+    (sheet as Record<string, unknown>).hasSpellcasting ||
+    spellEntries.length > 0 ||
+    (sheet.spells && sheet.spells.length > 0),
+  );
+
   return {
     combatantId,
     characterId: sheet.id,
     name: sheet.name,
+    species: sheet.species,
+    className: sheet.className,
+    background: sheet.background,
+    level: sheet.level,
     scores: sheet.scores,
     maxHp,
     currentHp,
@@ -85,6 +114,17 @@ function toYouCharacter(
     attacks: [unarmed, ...weaponAttacks, ...spellAttacks],
     inventory: sheet.inventory ?? [],
     gold: sheet.gold,
+    notes: sheet.notes,
+    traits,
+    spells: spellEntries.map((s) => ({
+      id: s.id,
+      name: s.name,
+      level: s.level,
+      school: s.school,
+      description: s.description,
+      damage: s.damage ?? null,
+    })),
+    hasSpellcasting,
   };
 }
 
@@ -451,6 +491,40 @@ function TableView(props: {
       ),
     });
 
+  const addSpell = (spell: SpellDTO) => {
+    if (!sheet) return;
+    const currentSpells = sheet.spells ?? [];
+    if (currentSpells.includes(spell.id)) return;
+    void patchSheet({ spells: [...currentSpells, spell.id] });
+  };
+
+  const removeSpell = (spellId: string) => {
+    if (!sheet) return;
+    void patchSheet({ spells: (sheet.spells ?? []).filter((id) => id !== spellId) });
+  };
+
+  const addAttack = (attack: NewAttackData) => {
+    if (!sheet) return;
+    const newAttack = {
+      id: `atk_${Date.now()}`,
+      name: attack.name,
+      kind: attack.kind,
+      bonus: attack.bonus,
+      damage: attack.damage,
+      damageType: attack.damageType,
+    };
+    void patchSheet({ attacks: [...(sheet.attacks ?? []), newAttack] });
+  };
+
+  const removeAttack = (attackId: string) => {
+    if (!sheet) return;
+    void patchSheet({ attacks: (sheet.attacks ?? []).filter((a) => a.id !== attackId) });
+  };
+
+  const fetchSpellsForClass = async (classId?: string): Promise<SpellDTO[]> => {
+    return api.getSpells(classId);
+  };
+
   const send = (command: Command) => connection.send(command);
 
   if (!snapshot) {
@@ -523,6 +597,14 @@ function TableView(props: {
       onAddItem={addItem}
       onRemoveItem={removeItem}
       onAdjustItem={adjustItem}
+      onAddSpell={addSpell}
+      onRemoveSpell={removeSpell}
+      onAddAttack={addAttack}
+      onRemoveAttack={removeAttack}
+      fetchSpells={fetchSpellsForClass}
+      onSaveSheet={async (patch) => {
+        await patchSheet(patch);
+      }}
     />
   );
 }

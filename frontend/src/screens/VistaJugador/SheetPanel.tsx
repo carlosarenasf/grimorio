@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import { Button, DiceModal, Panel, StatNumber } from '../../design';
 import type { DiceRollView } from '../../design';
+import type { SpellDTO } from '../../net/http';
 import { ABILITY_LABELS, ABILITY_ORDER, abilityMod, allModifiers } from './derived';
 import { SKILLS } from './skills';
+import { TraitsPanel } from './TraitsPanel';
+import { AddSpellModal } from './AddSpellModal';
+import { AddAttackModal } from './AddAttackModal';
+import type { NewAttackData } from './AddAttackModal';
 import type { Send, YouCharacter } from './types';
 
 export interface SheetPanelProps {
@@ -11,6 +16,18 @@ export interface SheetPanelProps {
   send?: Send;
   /** Latest public roll from the snapshot — drives the dice animation. */
   latestRoll?: DiceRollView | null;
+  /** Callback to add a spell to the character sheet. */
+  onAddSpell?: (spell: SpellDTO) => void;
+  /** Callback to remove a spell from the character sheet. */
+  onRemoveSpell?: (spellId: string) => void;
+  /** Callback to add a custom attack to the character sheet. */
+  onAddAttack?: (attack: NewAttackData) => void;
+  /** Callback to remove an attack from the character sheet. */
+  onRemoveAttack?: (attackId: string) => void;
+  /** Fetch spells from the SRD for the add-spell modal. */
+  fetchSpells?: (classId?: string) => Promise<SpellDTO[]>;
+  /** Opens the edit-sheet modal. */
+  onEditSheet?: () => void;
 }
 
 /**
@@ -18,7 +35,17 @@ export interface SheetPanelProps {
  * and the CA/Vel/Comp/Init quartet. Read-only here — HP changes arrive via the
  * server snapshot, this panel only renders the viewer's own character.
  */
-export function SheetPanel({ you, send, latestRoll }: SheetPanelProps) {
+export function SheetPanel({
+  you,
+  send,
+  latestRoll,
+  onAddSpell,
+  onRemoveSpell,
+  onAddAttack,
+  onRemoveAttack,
+  fetchSpells,
+  onEditSheet,
+}: SheetPanelProps) {
   const mods = allModifiers(you.scores);
   const hpRatio = you.maxHp > 0 ? you.currentHp / you.maxHp : 1;
   const hpRole = hpRatio <= 0.25 ? 'damage' : undefined;
@@ -28,6 +55,10 @@ export function SheetPanel({ you, send, latestRoll }: SheetPanelProps) {
   const [skillModalOpen, setSkillModalOpen] = useState(false);
   const [skillModifier, setSkillModifier] = useState(0);
   const [skillsExpanded, setSkillsExpanded] = useState(false);
+  const [spellsExpanded, setSpellsExpanded] = useState(false);
+  const [attacksExpanded, setAttacksExpanded] = useState(false);
+  const [addSpellOpen, setAddSpellOpen] = useState(false);
+  const [addAttackOpen, setAddAttackOpen] = useState(false);
 
   function rollSkill(modifier: number) {
     setSkillModifier(modifier);
@@ -41,7 +72,18 @@ export function SheetPanel({ you, send, latestRoll }: SheetPanelProps) {
   }
 
   return (
-    <Panel eyebrow="Tu ficha" title={you.name}>
+    <>
+    <Panel
+      eyebrow="Tu ficha"
+      title={you.name}
+      actions={
+        onEditSheet ? (
+          <Button type="button" variant="secondary" size="sm" onClick={onEditSheet}>
+            Editar ficha
+          </Button>
+        ) : undefined
+      }
+    >
       <div className="vj-sheet">
         <div className="vj-sheet__hp">
           <StatNumber
@@ -186,7 +228,138 @@ export function SheetPanel({ you, send, latestRoll }: SheetPanelProps) {
             </dd>
           </div>
         </dl>
+
+        {you.spells.length > 0 || you.hasSpellcasting ? (
+          <div className="vj-sheet__spells">
+            <div className="vj-sheet__section-header">
+              <h3 className="eyebrow vj-sheet__section-title">Conjuros</h3>
+              {onAddSpell && you.hasSpellcasting ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setAddSpellOpen(true)}
+                >
+                  + Añadir conjuro
+                </Button>
+              ) : null}
+            </div>
+            {you.spells.length > 0 ? (
+              <button
+                type="button"
+                className="vj-sheet__skills-header"
+                onClick={() => setSpellsExpanded(!spellsExpanded)}
+                aria-expanded={spellsExpanded}
+              >
+                <span className="vj-sheet__skills-toggle">{spellsExpanded ? '▼' : '▶'}</span>
+                <span className="eyebrow">{you.spells.length} conjuro{you.spells.length !== 1 ? 's' : ''}</span>
+              </button>
+            ) : (
+              <p className="vj-empty">No tienes conjuros preparados.</p>
+            )}
+            {spellsExpanded && you.spells.length > 0 ? (
+              <ul className="vj-sheet__spell-list" aria-label="Conjuros">
+                {you.spells.map((spell) => (
+                  <li key={spell.id} className="vj-sheet__spell-row">
+                    <div className="vj-sheet__spell-info">
+                      <span className="vj-sheet__spell-name">{spell.name}</span>
+                      <span className="vj-sheet__spell-meta">
+                        {spell.level === 0 ? 'Truco' : `Nivel ${spell.level}`} · {spell.school}
+                        {spell.damage ? ` · ${spell.damage}` : ''}
+                      </span>
+                    </div>
+                    {onRemoveSpell ? (
+                      <button
+                        type="button"
+                        className="vj-sheet__remove-btn"
+                        aria-label={`Quitar ${spell.name}`}
+                        onClick={() => onRemoveSpell(spell.id)}
+                      >
+                        ✕
+                      </button>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
+
+        <div className="vj-sheet__attacks">
+          <div className="vj-sheet__section-header">
+            <h3 className="eyebrow vj-sheet__section-title">Ataques</h3>
+            {onAddAttack ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setAddAttackOpen(true)}
+              >
+                + Añadir ataque
+              </Button>
+            ) : null}
+          </div>
+          {you.attacks.length > 0 ? (
+            <button
+              type="button"
+              className="vj-sheet__skills-header"
+              onClick={() => setAttacksExpanded(!attacksExpanded)}
+              aria-expanded={attacksExpanded}
+            >
+              <span className="vj-sheet__skills-toggle">{attacksExpanded ? '▼' : '▶'}</span>
+              <span className="eyebrow">{you.attacks.length} ataque{you.attacks.length !== 1 ? 's' : ''}</span>
+            </button>
+          ) : (
+            <p className="vj-empty">No tienes ataques.</p>
+          )}
+          {attacksExpanded && you.attacks.length > 0 ? (
+            <ul className="vj-sheet__attack-list" aria-label="Ataques">
+              {you.attacks.map((attack) => (
+                <li key={attack.id} className="vj-sheet__attack-row">
+                  <div className="vj-sheet__attack-info">
+                    <span className="vj-sheet__attack-name">{attack.name}</span>
+                    <span className="vj-sheet__attack-meta tabular-nums">
+                      {attack.bonus !== null ? `+${attack.bonus}` : '—'}
+                      {attack.damage ? ` · ${attack.damage}` : ''}
+                    </span>
+                  </div>
+                  {onRemoveAttack && attack.id !== 'basic-unarmed' ? (
+                    <button
+                      type="button"
+                      className="vj-sheet__remove-btn"
+                      aria-label={`Quitar ${attack.name}`}
+                      onClick={() => onRemoveAttack(attack.id)}
+                    >
+                      ✕
+                    </button>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+
+        {onAddSpell && fetchSpells ? (
+          <AddSpellModal
+            open={addSpellOpen}
+            onClose={() => setAddSpellOpen(false)}
+            onAdd={(spell) => onAddSpell(spell)}
+            fetchSpells={fetchSpells}
+            className={you.className}
+            existingSpellIds={you.spells.map((s) => s.id)}
+          />
+        ) : null}
+
+        {onAddAttack ? (
+          <AddAttackModal
+            open={addAttackOpen}
+            onClose={() => setAddAttackOpen(false)}
+            onAdd={(attack) => onAddAttack(attack)}
+          />
+        ) : null}
       </div>
     </Panel>
+    {you.traits.length > 0 ? <TraitsPanel traits={you.traits} /> : null}
+    </>
   );
 }
