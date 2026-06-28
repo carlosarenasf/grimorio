@@ -272,11 +272,12 @@
   bottom: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 16px;
   padding: 12px 20px;
-  background: var(--ink-surface);
+  background: var(--ink-surface, #1e1b2a);
   border-top: 1px solid var(--hairline, rgba(232, 226, 208, 0.12));
+  z-index: 10;
 }
 .vm-action-bar__group {
   display: flex;

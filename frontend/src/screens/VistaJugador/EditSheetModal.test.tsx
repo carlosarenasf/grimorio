@@ -58,7 +58,7 @@ describe('EditSheetModal', () => {
     await userEvent.clear(characterNameField);
     await userEvent.type(characterNameField, 'Lyra Editada');
 
-    await userEvent.click(screen.getByRole('button', { name: /guardar cambios/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^guardar$/i }));
 
     expect(onSave).toHaveBeenCalledOnce();
     const patch = onSave.mock.calls[0][0];
@@ -73,7 +73,7 @@ describe('EditSheetModal', () => {
     const onClose = vi.fn();
     render(<EditSheetModal you={makeYouCharacter()} onSave={onSave} onClose={onClose} />);
 
-    await userEvent.click(screen.getByRole('button', { name: /guardar cambios/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^guardar$/i }));
 
     expect(onSave).toHaveBeenCalledOnce();
     expect(onClose).toHaveBeenCalledOnce();
@@ -84,7 +84,7 @@ describe('EditSheetModal', () => {
     const onClose = vi.fn();
     render(<EditSheetModal you={makeYouCharacter()} onSave={onSave} onClose={onClose} />);
 
-    await userEvent.click(screen.getByRole('button', { name: /guardar cambios/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^guardar$/i }));
 
     expect(screen.getByRole('alert')).toHaveTextContent(/no se pudo guardar/i);
     expect(onClose).not.toHaveBeenCalled();

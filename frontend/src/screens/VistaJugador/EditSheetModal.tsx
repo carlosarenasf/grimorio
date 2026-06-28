@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Field, Panel } from '../../design';
+import { Button, Field } from '../../design';
 import { ABILITY_LABELS, ABILITY_ORDER } from './derived';
 import type { AbilityKey, AttackDef, InventoryItem, YouCharacter } from './types';
 
@@ -13,10 +13,6 @@ function uid(): string {
   return `local_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-/**
- * Modal form to edit the player's own character sheet. Sends a PATCH to the
- * server on save. Uses the design system's Field and Button components.
- */
 export function EditSheetModal({ you, onSave, onClose }: EditSheetModalProps) {
   const [name, setName] = useState(you.name);
   const [species, setSpecies] = useState(you.species);
@@ -118,8 +114,8 @@ export function EditSheetModal({ you, onSave, onClose }: EditSheetModalProps) {
       >
         <header className="esm__head">
           <div>
-            <p className="eyebrow">Editar ficha</p>
-            <h2 className="font-display esm__title">{you.name}</h2>
+            <p className="esm__eyebrow">Editar ficha</p>
+            <h2 className="esm__title">{you.name}</h2>
           </div>
           <button
             type="button"
@@ -138,16 +134,18 @@ export function EditSheetModal({ you, onSave, onClose }: EditSheetModalProps) {
             </p>
           ) : null}
 
-          <Panel eyebrow="Identidad" title="Información básica">
+          <section className="esm__section">
+            <h3 className="esm__section-title">Identidad</h3>
             <div className="esm__grid">
               <Field label="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
               <Field label="Especie" value={species} onChange={(e) => setSpecies(e.target.value)} />
               <Field label="Clase" value={className} onChange={(e) => setClassName(e.target.value)} />
               <Field label="Trasfondo" value={background} onChange={(e) => setBackground(e.target.value)} />
             </div>
-          </Panel>
+          </section>
 
-          <Panel eyebrow="Características" title="Puntuaciones">
+          <section className="esm__section">
+            <h3 className="esm__section-title">Características</h3>
             <div className="esm__scores">
               {ABILITY_ORDER.map((key) => (
                 <Field
@@ -161,9 +159,10 @@ export function EditSheetModal({ you, onSave, onClose }: EditSheetModalProps) {
                 />
               ))}
             </div>
-          </Panel>
+          </section>
 
-          <Panel eyebrow="Vitalidad" title="Puntos de vida">
+          <section className="esm__section">
+            <h3 className="esm__section-title">Puntos de vida</h3>
             <Field
               label="PV actuales"
               type="number"
@@ -171,130 +170,141 @@ export function EditSheetModal({ you, onSave, onClose }: EditSheetModalProps) {
               max={you.maxHp}
               value={currentHp}
               onChange={(e) => setCurrentHp(Math.max(0, Number(e.target.value) || 0))}
-              hint={`Máximo: ${you.maxHp} PV (calculado por el servidor)`}
+              hint={`Máximo: ${you.maxHp} PV`}
             />
-          </Panel>
+          </section>
 
-          <Panel eyebrow="Ataques" title="Ataques y conjuros">
+          <section className="esm__section">
+            <h3 className="esm__section-title">Ataques</h3>
             <ul className="esm__attacks">
               {attacks.map((atk) => (
                 <li key={atk.id} className="esm__attack-row">
-                  <Field
-                    label="Nombre"
-                    value={atk.name}
-                    onChange={(e) => updateAttack(atk.id, 'name', e.target.value)}
-                  />
-                  <Field
-                    as="select"
-                    label="Tipo"
-                    value={atk.kind}
-                    onChange={(e) =>
-                      updateAttack(atk.id, 'kind', e.target.value)
-                    }
-                  >
-                    <option value="weapon">Arma</option>
-                    <option value="spell">Conjuro</option>
-                    <option value="save">Salvación</option>
-                  </Field>
-                  <Field
-                    label="Bonus"
-                    type="number"
-                    value={atk.bonus ?? ''}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      updateAttack(atk.id, 'bonus', v === '' ? null : Number(v));
-                    }}
-                  />
-                  <Field
-                    label="Daño"
-                    value={atk.damage ?? ''}
-                    onChange={(e) =>
-                      updateAttack(atk.id, 'damage', e.target.value || null)
-                    }
-                    placeholder="ej. 1d8+3"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <div className="esm__attack-fields">
+                    <Field
+                      label="Nombre"
+                      value={atk.name}
+                      onChange={(e) => updateAttack(atk.id, 'name', e.target.value)}
+                    />
+                    <div className="esm__attack-sub">
+                      <Field
+                        as="select"
+                        label="Tipo"
+                        value={atk.kind}
+                        onChange={(e) =>
+                          updateAttack(atk.id, 'kind', e.target.value)
+                        }
+                      >
+                        <option value="weapon">Arma</option>
+                        <option value="spell">Conjuro</option>
+                        <option value="save">Salvación</option>
+                      </Field>
+                      <Field
+                        label="Bonus"
+                        type="number"
+                        value={atk.bonus ?? ''}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          updateAttack(atk.id, 'bonus', v === '' ? null : Number(v));
+                        }}
+                      />
+                      <Field
+                        label="Daño"
+                        value={atk.damage ?? ''}
+                        onChange={(e) =>
+                          updateAttack(atk.id, 'damage', e.target.value || null)
+                        }
+                        placeholder="1d8+3"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="esm__remove-btn"
                     aria-label={`Quitar ${atk.name || 'ataque'}`}
                     onClick={() => removeAttack(atk.id)}
                   >
-                    Quitar
-                  </Button>
+                    ✕
+                  </button>
                 </li>
               ))}
             </ul>
             <Button variant="secondary" size="sm" onClick={addAttack}>
               + Añadir ataque
             </Button>
-          </Panel>
+          </section>
 
-          <Panel eyebrow="Equipo" title="Inventario">
+          <section className="esm__section">
+            <h3 className="esm__section-title">Inventario</h3>
             <ul className="esm__inventory">
               {inventory.map((item) => (
                 <li key={item.id} className="esm__inv-row">
-                  <Field
-                    label="Nombre"
-                    value={item.name}
-                    onChange={(e) =>
-                      updateInventoryItem(item.id, 'name', e.target.value)
-                    }
-                  />
-                  <Field
-                    label="Nota"
-                    value={item.note}
-                    onChange={(e) =>
-                      updateInventoryItem(item.id, 'note', e.target.value)
-                    }
-                  />
-                  <Field
-                    label="Cant."
-                    type="number"
-                    min={0}
-                    value={item.qty}
-                    onChange={(e) =>
-                      updateInventoryItem(
-                        item.id,
-                        'qty',
-                        Math.max(0, Number(e.target.value) || 0),
-                      )
-                    }
-                  />
-                  <label className="esm__equip">
-                    <input
-                      type="checkbox"
-                      checked={item.equipped}
+                  <div className="esm__inv-fields">
+                    <Field
+                      label="Nombre"
+                      value={item.name}
                       onChange={(e) =>
-                        updateInventoryItem(item.id, 'equipped', e.target.checked)
+                        updateInventoryItem(item.id, 'name', e.target.value)
                       }
                     />
-                    <span className="eyebrow">Equipado</span>
-                  </label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                    <div className="esm__inv-sub">
+                      <Field
+                        label="Nota"
+                        value={item.note}
+                        onChange={(e) =>
+                          updateInventoryItem(item.id, 'note', e.target.value)
+                        }
+                      />
+                      <Field
+                        label="Cant."
+                        type="number"
+                        min={0}
+                        value={item.qty}
+                        onChange={(e) =>
+                          updateInventoryItem(
+                            item.id,
+                            'qty',
+                            Math.max(0, Number(e.target.value) || 0),
+                          )
+                        }
+                      />
+                      <label className="esm__equip">
+                        <input
+                          type="checkbox"
+                          checked={item.equipped}
+                          onChange={(e) =>
+                            updateInventoryItem(item.id, 'equipped', e.target.checked)
+                          }
+                        />
+                        <span className="esm__equip-label">Equipado</span>
+                      </label>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="esm__remove-btn"
                     aria-label={`Quitar ${item.name || 'objeto'}`}
                     onClick={() => removeInventoryItem(item.id)}
                   >
-                    Quitar
-                  </Button>
+                    ✕
+                  </button>
                 </li>
               ))}
             </ul>
             <Button variant="secondary" size="sm" onClick={addInventoryItem}>
               + Añadir objeto
             </Button>
-          </Panel>
+          </section>
 
-          <Panel eyebrow="Notas" title="Notas del personaje">
+          <section className="esm__section">
+            <h3 className="esm__section-title">Notas</h3>
             <Field
               as="textarea"
               label="Notas"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={4}
+              rows={3}
             />
-          </Panel>
+          </section>
         </div>
 
         <footer className="esm__footer">
@@ -302,7 +312,7 @@ export function EditSheetModal({ you, onSave, onClose }: EditSheetModalProps) {
             Cancelar
           </Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
-            {saving ? 'Guardando…' : 'Guardar cambios'}
+            {saving ? 'Guardando…' : 'Guardar'}
           </Button>
         </footer>
       </div>

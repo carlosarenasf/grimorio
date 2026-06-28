@@ -84,11 +84,6 @@ export function VistaMasterScreen({
     ? snapshot.rollLog[snapshot.rollLog.length - 1]
     : null;
 
-  function focusDice() {
-    const input = diceRef.current?.querySelector('input');
-    if (input instanceof HTMLInputElement) input.focus();
-  }
-
   return (
     <div className="vm-screen">
       <SessionBar snapshot={snapshot} activeName={active?.name ?? null} campaign={campaign} />
@@ -144,9 +139,6 @@ export function VistaMasterScreen({
       <ActionBar
         snapshot={snapshot}
         send={send}
-        targetId={targetId}
-        amount={amount}
-        onFocusDice={focusDice}
       />
 
       {api && sheetCharacterId ? (
