@@ -5,3 +5,4 @@ export { PostgresUserRepository } from './userRepository.js';
 export { PostgresCampaignRepository } from './campaignRepository.js';
 export { PostgresCharacterRepository } from './characterRepository.js';
 export { PostgresLiveTableRepository } from './liveTableRepository.js';
+export { PostgresMapRepository } from './mapRepository.js';

@@ -6,7 +6,11 @@ import type { Sql } from 'postgres';
 const MIGRATIONS_DIR = path.join(fileURLToPath(import.meta.url), '..', 'migrations');
 
 /** Migration filenames applied in order, e.g. `001_init.sql`. Add new ones here in order. */
-const MIGRATION_FILES = ['001_init.sql', '002_fix_double_encoded_jsonb.sql'];
+const MIGRATION_FILES = [
+  '001_init.sql',
+  '002_fix_double_encoded_jsonb.sql',
+  '004_maps.sql',
+];
 
 /**
  * Run all migrations against `sql`, in order. Each file is idempotent
