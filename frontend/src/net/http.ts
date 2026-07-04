@@ -178,6 +178,51 @@ export interface WeaponDTO {
   ability: 'str' | 'dex' | 'finesse';
 }
 
+// ---------- Maps (DM map editor) ----------
+
+export interface MapLayerDTO {
+  id: string;
+  name: string;
+  visible: boolean;
+  elements: MapElementDTO[];
+}
+
+export interface MapElementDTO {
+  id: string;
+  tileId: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  layerId: string;
+}
+
+export interface MapDTO {
+  id: string;
+  campaignId: string;
+  name: string;
+  type: 'exterior' | 'interior';
+  environment: string;
+  width: number;
+  height: number;
+  gridSize: number;
+  layers: MapLayerDTO[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMapPayload {
+  name: string;
+  type: 'exterior' | 'interior';
+  environment: string;
+  width?: number;
+  height?: number;
+  gridSize?: number;
+}
+
+export type UpdateMapPayload = Partial<Omit<MapDTO, 'id' | 'campaignId' | 'createdAt' | 'updatedAt'>>;
+
 // ---------- ApiError ----------
 
 export class ApiError extends Error {
@@ -227,6 +272,12 @@ export interface ApiClient {
   getWeapons(): Promise<WeaponDTO[]>;
   /** Characters in a campaign (member-visible) — for the DM's seat controls. */
   listCampaignCharacters(campaignId: string): Promise<CharacterDTO[]>;
+  /** Maps in a campaign (DM map editor library). */
+  listMaps(campaignId: string): Promise<MapDTO[]>;
+  getMap(campaignId: string, mapId: string): Promise<MapDTO>;
+  createMap(campaignId: string, payload: CreateMapPayload): Promise<MapDTO>;
+  updateMap(campaignId: string, mapId: string, patch: UpdateMapPayload): Promise<MapDTO>;
+  deleteMap(campaignId: string, mapId: string): Promise<void>;
 }
 
 function defaultBaseUrl(): string {
@@ -390,6 +441,21 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
     },
     listCampaignCharacters(campaignId) {
       return request<CharacterDTO[]>('GET', `/campaigns/${campaignId}/characters`);
+    },
+    listMaps(campaignId) {
+      return request<MapDTO[]>('GET', `/campaigns/${campaignId}/maps`);
+    },
+    getMap(campaignId, mapId) {
+      return request<MapDTO>('GET', `/campaigns/${campaignId}/maps/${mapId}`);
+    },
+    createMap(campaignId, payload) {
+      return request<MapDTO>('POST', `/campaigns/${campaignId}/maps`, payload);
+    },
+    updateMap(campaignId, mapId, patch) {
+      return request<MapDTO>('PATCH', `/campaigns/${campaignId}/maps/${mapId}`, patch);
+    },
+    deleteMap(campaignId, mapId) {
+      return request<void>('DELETE', `/campaigns/${campaignId}/maps/${mapId}`);
     },
   };
 }

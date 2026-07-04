@@ -12,6 +12,11 @@ export type {
   CreateCampaignPayload,
   CreateCharacterPayload,
   UpdateCharacterPayload,
+  MapDTO,
+  MapLayerDTO,
+  MapElementDTO,
+  CreateMapPayload,
+  UpdateMapPayload,
 } from './http';
 
 export { createLiveConnection } from './ws';
