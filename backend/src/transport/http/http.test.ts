@@ -34,6 +34,7 @@ function buildApp(config: Config = makeConfig()): { app: FastifyInstance; deps: 
     campaigns: repos.campaigns,
     characters: repos.characters,
     tables: repos.liveTables,
+    maps: repos.maps,
     hasher: new FakeHasher(),
     clock: new FakeClock(),
     rng: new SeededRng(1),
@@ -484,6 +485,251 @@ describe('HTTP transport', () => {
       });
       expect(snapshotRes.statusCode).toBe(200);
       expect(snapshotRes.json().viewerRole).toBe('player');
+    });
+  });
+
+  describe('maps', () => {
+    async function registerAndCookie(app: FastifyInstance, email: string, displayName: string) {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/auth/register',
+        payload: { type: 'Register', email, password: 'password123', displayName },
+      });
+      const body = res.json();
+      const cookie = cookieFromResponse(res, config.cookieName)!;
+      return { userId: body.userId as string, cookie };
+    }
+
+    async function createCampaignAndInvitePlayer(
+      dm: { userId: string; cookie: string },
+      player: { userId: string; cookie: string },
+    ) {
+      const createCampaignRes = await app.inject({
+        method: 'POST',
+        url: '/campaigns',
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { type: 'CreateCampaign', name: 'Mazmorra', tagline: '' },
+      });
+      const campaign = createCampaignRes.json();
+      const inviteRes = await app.inject({
+        method: 'POST',
+        url: `/campaigns/${campaign.id}/invite`,
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { type: 'InviteToCampaign', campaignId: campaign.id },
+      });
+      const { joinCode } = inviteRes.json();
+      await app.inject({
+        method: 'POST',
+        url: `/join/${joinCode}`,
+        cookies: { [config.cookieName]: player.cookie },
+        payload: { type: 'JoinCampaign', joinCode },
+      });
+      return campaign;
+    }
+
+    it('DM creates a map, lists it, fetches it, updates it, deletes it', async () => {
+      const dm = await registerAndCookie(app, 'dm-map@example.com', 'MapDM');
+      const player = await registerAndCookie(app, 'player-map@example.com', 'MapPlayer');
+      const campaign = await createCampaignAndInvitePlayer(dm, player);
+
+      const createRes = await app.inject({
+        method: 'POST',
+        url: `/campaigns/${campaign.id}/maps`,
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: {
+          type: 'CreateMap',
+          campaignId: campaign.id,
+          name: 'Bosque',
+          mapType: 'exterior',
+          environment: 'bosque',
+          width: 20,
+          height: 15,
+        },
+      });
+      expect(createRes.statusCode).toBe(200);
+      const map = createRes.json();
+      expect(map.name).toBe('Bosque');
+      expect(map.layers.map((l: { name: string }) => l.name)).toEqual([
+        'Suelo',
+        'Objetos',
+        'Techo',
+      ]);
+
+      const listRes = await app.inject({
+        method: 'GET',
+        url: `/campaigns/${campaign.id}/maps`,
+        cookies: { [config.cookieName]: dm.cookie },
+      });
+      expect(listRes.statusCode).toBe(200);
+      expect(listRes.json().map((m: { id: string }) => m.id)).toEqual([map.id]);
+
+      // A joined player can also see the map (member read).
+      const playerListRes = await app.inject({
+        method: 'GET',
+        url: `/campaigns/${campaign.id}/maps`,
+        cookies: { [config.cookieName]: player.cookie },
+      });
+      expect(playerListRes.statusCode).toBe(200);
+
+      const getRes = await app.inject({
+        method: 'GET',
+        url: `/campaigns/${campaign.id}/maps/${map.id}`,
+        cookies: { [config.cookieName]: dm.cookie },
+      });
+      expect(getRes.statusCode).toBe(200);
+      expect(getRes.json().id).toBe(map.id);
+
+      const patchRes = await app.inject({
+        method: 'PATCH',
+        url: `/campaigns/${campaign.id}/maps/${map.id}`,
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { name: 'Renombrado', gridSize: 48 },
+      });
+      expect(patchRes.statusCode).toBe(200);
+      const patched = patchRes.json();
+      expect(patched.name).toBe('Renombrado');
+      expect(patched.gridSize).toBe(48);
+
+      const deleteRes = await app.inject({
+        method: 'DELETE',
+        url: `/campaigns/${campaign.id}/maps/${map.id}`,
+        cookies: { [config.cookieName]: dm.cookie },
+      });
+      expect(deleteRes.statusCode).toBe(204);
+
+      const after = await app.inject({
+        method: 'GET',
+        url: `/campaigns/${campaign.id}/maps/${map.id}`,
+        cookies: { [config.cookieName]: dm.cookie },
+      });
+      expect(after.statusCode).toBe(404);
+    });
+
+    it('a player cannot create, update, or delete a map (403)', async () => {
+      const dm = await registerAndCookie(app, 'dm-priv@example.com', 'PrivDM');
+      const player = await registerAndCookie(app, 'player-priv@example.com', 'PrivPlayer');
+      const campaign = await createCampaignAndInvitePlayer(dm, player);
+
+      const createRes = await app.inject({
+        method: 'POST',
+        url: `/campaigns/${campaign.id}/maps`,
+        cookies: { [config.cookieName]: player.cookie },
+        payload: {
+          type: 'CreateMap',
+          campaignId: campaign.id,
+          name: 'X',
+          mapType: 'exterior',
+          environment: 'bosque',
+          width: 10,
+          height: 10,
+        },
+      });
+      expect(createRes.statusCode).toBe(403);
+
+      // DM creates one for the player to attempt to edit.
+      const created = (
+        await app.inject({
+          method: 'POST',
+          url: `/campaigns/${campaign.id}/maps`,
+          cookies: { [config.cookieName]: dm.cookie },
+          payload: {
+            type: 'CreateMap',
+            campaignId: campaign.id,
+            name: 'X',
+            mapType: 'exterior',
+            environment: 'bosque',
+            width: 10,
+            height: 10,
+          },
+        })
+      ).json();
+
+      const patchRes = await app.inject({
+        method: 'PATCH',
+        url: `/campaigns/${campaign.id}/maps/${created.id}`,
+        cookies: { [config.cookieName]: player.cookie },
+        payload: { name: 'hacked' },
+      });
+      expect(patchRes.statusCode).toBe(403);
+
+      const deleteRes = await app.inject({
+        method: 'DELETE',
+        url: `/campaigns/${campaign.id}/maps/${created.id}`,
+        cookies: { [config.cookieName]: player.cookie },
+      });
+      expect(deleteRes.statusCode).toBe(403);
+    });
+
+    it('a stranger (non-member) cannot list or get maps (403)', async () => {
+      const dm = await registerAndCookie(app, 'dm-stranger@example.com', 'SntDM');
+      const stranger = await registerAndCookie(app, 'stranger-map@example.com', 'Snt');
+      const campaign = (
+        await app.inject({
+          method: 'POST',
+          url: '/campaigns',
+          cookies: { [config.cookieName]: dm.cookie },
+          payload: { type: 'CreateCampaign', name: 'M', tagline: '' },
+        })
+      ).json();
+
+      const created = (
+        await app.inject({
+          method: 'POST',
+          url: `/campaigns/${campaign.id}/maps`,
+          cookies: { [config.cookieName]: dm.cookie },
+          payload: {
+            type: 'CreateMap',
+            campaignId: campaign.id,
+            name: 'Real',
+            mapType: 'exterior',
+            environment: 'bosque',
+            width: 10,
+            height: 10,
+          },
+        })
+      ).json();
+
+      const listRes = await app.inject({
+        method: 'GET',
+        url: `/campaigns/${campaign.id}/maps`,
+        cookies: { [config.cookieName]: stranger.cookie },
+      });
+      expect(listRes.statusCode).toBe(403);
+
+      const getRes = await app.inject({
+        method: 'GET',
+        url: `/campaigns/${campaign.id}/maps/${created.id}`,
+        cookies: { [config.cookieName]: stranger.cookie },
+      });
+      expect(getRes.statusCode).toBe(403);
+    });
+
+    it('rejects a bad CreateMap body with 400', async () => {
+      const dm = await registerAndCookie(app, 'dm-bad@example.com', 'Bad');
+      const campaign = (
+        await app.inject({
+          method: 'POST',
+          url: '/campaigns',
+          cookies: { [config.cookieName]: dm.cookie },
+          payload: { type: 'CreateCampaign', name: 'M', tagline: '' },
+        })
+      ).json();
+
+      const res = await app.inject({
+        method: 'POST',
+        url: `/campaigns/${campaign.id}/maps`,
+        cookies: { [config.cookieName]: dm.cookie },
+        payload: { type: 'CreateMap', campaignId: campaign.id, name: '' },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('requires auth: listing maps without a cookie returns 401', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/campaigns/cmp_x/maps',
+      });
+      expect(res.statusCode).toBe(401);
     });
   });
 });

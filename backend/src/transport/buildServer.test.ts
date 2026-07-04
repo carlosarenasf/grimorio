@@ -39,6 +39,7 @@ function makeDeps(config: Config = makeConfig()): ServerDeps {
       campaigns: repos.campaigns,
       characters: repos.characters,
       tables: repos.liveTables,
+      maps: repos.maps,
       hasher: new FakeHasher(),
       clock,
       rng,
