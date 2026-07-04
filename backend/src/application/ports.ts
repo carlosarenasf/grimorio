@@ -15,7 +15,8 @@ import type {
   Role,
   User,
 } from '../domain/types.js';
-import type { CampaignId, CharacterId, LiveTableId, UserId } from '../domain/ids.js';
+import type { MapData } from '../domain/maps/mapData.js';
+import type { CampaignId, CharacterId, LiveTableId, MapId, UserId } from '../domain/ids.js';
 
 // ---------- Domain-owned primitives (re-exported for application/infra) ----------
 
@@ -62,6 +63,14 @@ export interface LiveTableRepository {
   /** The live table for a campaign (one room per campaign); used to rehydrate. */
   findByCampaignId(campaignId: CampaignId): Promise<LiveTable | null>;
   deleteByCampaign(campaignId: CampaignId): Promise<void>;
+}
+
+export interface MapRepository {
+  save(map: MapData): Promise<void>;
+  findById(id: MapId): Promise<MapData | null>;
+  /** Maps belonging to a campaign. */
+  listByCampaign(campaignId: CampaignId): Promise<MapData[]>;
+  delete(id: MapId): Promise<void>;
 }
 
 // ---------- Broadcaster ----------

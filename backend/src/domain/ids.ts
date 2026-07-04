@@ -12,6 +12,7 @@ export type CampaignId = Brand<string, 'CampaignId'>;
 export type CharacterId = Brand<string, 'CharacterId'>;
 export type CombatantId = Brand<string, 'CombatantId'>;
 export type LiveTableId = Brand<string, 'LiveTableId'>;
+export type MapId = Brand<string, 'MapId'>;
 
 /**
  * Generate a prefixed, collision-resistant id, e.g. `newId('usr') -> 'usr_V1Stg...'`.
@@ -26,3 +27,4 @@ export const newCampaignId = (): CampaignId => newId('cmp') as CampaignId;
 export const newCharacterId = (): CharacterId => newId('chr') as CharacterId;
 export const newCombatantId = (): CombatantId => newId('cbt') as CombatantId;
 export const newLiveTableId = (): LiveTableId => newId('tbl') as LiveTableId;
+export const newMapId = (): MapId => newId('map') as MapId;
