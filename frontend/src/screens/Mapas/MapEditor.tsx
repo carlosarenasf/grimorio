@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import type Konva from 'konva';
 import type { MapDTO, MapElementDTO, MapLayerDTO } from '../../net';
 import { TILES } from './tiles';
 import { MapToolbar } from './MapToolbar';
@@ -22,7 +23,7 @@ export function MapEditor({ map, onChange, onSave, onBack }: MapEditorProps) {
   const [draft, setDraft] = useState<MapDTO>(map);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [showGrid, setShowGrid] = useState(true);
-  const stageRef = useRef<any>(null);
+  const stageRef = useRef<Konva.Stage | null>(null);
   const initialJson = useRef(JSON.stringify(map));
 
   const dirty = JSON.stringify(draft) !== initialJson.current;

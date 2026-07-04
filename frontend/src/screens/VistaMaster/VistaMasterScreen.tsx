@@ -34,6 +34,8 @@ export interface VistaMasterScreenProps {
   spellsById?: Record<string, SpellDTO>;
   /** The campaign (with join code) — enables the SessionBar "Invitar" button. */
   campaign?: CampaignDTO;
+  /** Abre el módulo de mapas (DM only). */
+  onOpenMap?: () => void;
 }
 
 function toRailTokens(snapshot: MasterSnapshot): InitiativeToken[] {
@@ -66,6 +68,7 @@ export function VistaMasterScreen({
   api,
   spellsById = {},
   campaign,
+  onOpenMap,
 }: VistaMasterScreenProps) {
   const [sheetCharacterId, setSheetCharacterId] = useState<string | null>(null);
   const [viewingMonster, setViewingMonster] = useState<Monster | null>(null);
@@ -100,7 +103,7 @@ export function VistaMasterScreen({
 
   return (
     <div className="vm-screen">
-      <SessionBar snapshot={snapshot} activeName={active?.name ?? null} campaign={campaign} />
+      <SessionBar snapshot={snapshot} activeName={active?.name ?? null} campaign={campaign} onOpenMap={onOpenMap} />
 
       <div className="vm-grid">
         <aside className="vm-col vm-col--left" aria-label="Paneles izquierda">

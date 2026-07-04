@@ -9,6 +9,8 @@ export interface SessionBarProps {
   activeName: string | null;
   /** The campaign (with join code) — enables the "Invitar" button. */
   campaign?: CampaignDTO;
+  /** Abre el módulo de mapas; si está ausente el botón no se muestra. */
+  onOpenMap?: () => void;
 }
 
 /**
@@ -16,7 +18,7 @@ export interface SessionBarProps {
  * always-visible turn indicator ("Turno de X"), an Invitar button and the
  * "Vista de máster" badge.
  */
-export function SessionBar({ snapshot, activeName, campaign }: SessionBarProps) {
+export function SessionBar({ snapshot, activeName, campaign, onOpenMap }: SessionBarProps) {
   const { combat } = snapshot;
   const [inviteOpen, setInviteOpen] = useState(false);
   const origin =
@@ -43,6 +45,11 @@ export function SessionBar({ snapshot, activeName, campaign }: SessionBarProps) 
         )}
       </div>
       <div className="vm-session-bar__actions">
+        {onOpenMap ? (
+          <Button variant="secondary" size="sm" onClick={onOpenMap}>
+            🗺️ Mapas
+          </Button>
+        ) : null}
         {campaign ? (
           <Button variant="secondary" size="sm" onClick={() => setInviteOpen(true)}>
             🔗 Invitar

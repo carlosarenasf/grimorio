@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Group, Image as KonvaImage } from 'react-konva';
+import type Konva from 'konva';
 import useImage from 'use-image';
 import type { MapElementDTO } from '../../net';
 import { getTile, tileToDataURL } from './tiles';
@@ -20,7 +21,7 @@ export function DraggableTile({ element, gridSize, selected, onSelect, onDragEnd
   const tile = getTile(element.tileId);
   const dataUrl = tile ? tileToDataURL(tile) : '';
   const [image] = useImage(dataUrl, 'anonymous');
-  const groupRef = useRef<any>(null);
+  const groupRef = useRef<Konva.Group>(null);
 
   // Konva sometimes needs a redraw nudge when the image arrives async.
   useEffect(() => {
@@ -39,8 +40,8 @@ export function DraggableTile({ element, gridSize, selected, onSelect, onDragEnd
       draggable
       onClick={() => onSelect(element.id)}
       onTap={() => onSelect(element.id)}
-      onDragEnd={(e: any) => {
-        const node = e.target;
+      onDragEnd={(e) => {
+        const node = e.target as Konva.Group;
         const rawX = node.x();
         const rawY = node.y();
         const snappedX = Math.round(rawX / gridSize) * gridSize;

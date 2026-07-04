@@ -4,6 +4,7 @@ import type { ApiClient, CreateMapPayload, MapDTO } from '../../net';
 import { MapLibrary } from './MapLibrary';
 import { MapEditor } from './MapEditor';
 import { CreateMapModal } from './CreateMapModal';
+import './mapa-editor.css';
 
 export interface MapasScreenProps {
   api: ApiClient;
@@ -41,8 +42,7 @@ export function MapasScreen({ api, campaignId, onBack }: MapasScreenProps) {
 
   useEffect(() => {
     void reload();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [campaignId]);
+  }, [api, campaignId]);
 
   async function handleCreate(payload: CreateMapPayload) {
     const created = await api.createMap(campaignId, payload);

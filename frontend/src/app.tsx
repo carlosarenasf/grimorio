@@ -22,6 +22,7 @@ import { VistaMasterScreen } from './screens/VistaMaster/index.js';
 import type { MonsterSummary, SrdSource } from './screens/VistaMaster/index.js';
 import { VistaJugadorScreen } from './screens/VistaJugador/index.js';
 import type { NewAttackData, YouCharacter } from './screens/VistaJugador/index.js';
+import { MapasScreen } from './screens/Mapas/index.js';
 import type { CampaignDTO, CharacterDTO, SpellDTO } from './net/http.js';
 import { Button } from './design/index.js';
 
@@ -134,7 +135,8 @@ type View =
   | { name: 'auth' }
   | { name: 'campaigns' }
   | { name: 'character'; campaignId: string }
-  | { name: 'table'; campaignId: string };
+  | { name: 'table'; campaignId: string }
+  | { name: 'maps'; campaignId: string };
 
 /** Read an invite code from the URL: /unirse/CODE, /join/CODE, or ?join=CODE. */
 function parsePendingJoinCode(): string | null {
@@ -262,12 +264,23 @@ export function App() {
     );
   }
 
+  if (view.name === 'maps') {
+    return (
+      <MapasScreen
+        api={api}
+        campaignId={view.campaignId}
+        onBack={() => setView({ name: 'table', campaignId: view.campaignId })}
+      />
+    );
+  }
+
   return (
     <TableView
       api={api}
       campaignId={view.campaignId}
       onLeave={() => setView({ name: 'campaigns' })}
       onCreateCharacter={() => setView({ name: 'character', campaignId: view.campaignId })}
+      onOpenMap={() => setView({ name: 'maps', campaignId: view.campaignId })}
     />
   );
 }
@@ -277,6 +290,7 @@ function TableView(props: {
   campaignId: string;
   onLeave: () => void;
   onCreateCharacter: () => void;
+  onOpenMap: () => void;
 }) {
   const { api, campaignId } = props;
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
@@ -560,6 +574,7 @@ function TableView(props: {
         api={api}
         spellsById={spellsById}
         campaign={campaign ?? undefined}
+        onOpenMap={props.onOpenMap}
       />
     );
   }
