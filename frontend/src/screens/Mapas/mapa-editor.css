@@ -1,0 +1,427 @@
+/* Editor de mapas — estilos responsive con tokens de Grimorio. */
+
+.map-screen {
+  min-height: 100vh;
+  background: var(--void);
+  color: var(--parchment);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.map-screen__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.map-screen__title {
+  flex: 1;
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.map-screen__error {
+  color: var(--ember);
+  background: rgba(180, 69, 46, 0.12);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- Biblioteca ---------- */
+
+.map-library__title {
+  margin: 0 0 var(--space-4);
+  font-size: 1.25rem;
+}
+
+.map-library__empty {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.map-library__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.map-card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-card__thumb {
+  background: var(--raised);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-3);
+}
+
+.map-card__info {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.map-card__name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.map-card__meta {
+  margin: 0;
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.map-card__badge {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--raised);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+.map-card__badge--exterior {
+  color: var(--sage);
+}
+
+.map-card__badge--interior {
+  color: var(--arcane);
+}
+
+.map-card__actions {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--hairline);
+}
+
+.map-card__open {
+  background: none;
+  border: none;
+  color: var(--parchment);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.map-card__delete {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.map-card__delete:hover {
+  color: var(--ember);
+}
+
+/* ---------- Modal crear ---------- */
+
+.map-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 18, 28, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.map-modal {
+  background: var(--surface);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  min-width: 320px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.map-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+/* ---------- Editor (3 columnas) ---------- */
+
+.map-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--void);
+}
+
+.map-topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface);
+}
+
+.map-topbar__title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.map-topbar__name {
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  color: var(--parchment);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  padding: var(--space-1) var(--space-2);
+}
+
+.map-topbar__meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.map-topbar__dirty {
+  color: var(--arcane);
+}
+
+.map-topbar__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.map-editor__body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 240px 1fr 220px;
+  min-height: 0;
+}
+
+/* ---------- Toolbar (izquierda) ---------- */
+
+.map-toolbar {
+  background: var(--surface);
+  border-right: 1px solid var(--hairline);
+  padding: var(--space-3);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.map-toolbar__search {
+  background: var(--raised);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  color: var(--parchment);
+  padding: var(--space-2) var(--space-3);
+}
+
+.map-toolbar__category {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.map-toolbar__category-header {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--parchment);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.map-toolbar__chevron {
+  color: var(--muted);
+  width: var(--space-3);
+}
+
+.map-toolbar__category-name {
+  flex: 1;
+  text-align: left;
+  font-family: var(--font-display);
+}
+
+.map-toolbar__count {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.map-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.map-tile-item {
+  background: var(--raised);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  cursor: grab;
+  color: var(--parchment);
+}
+
+.map-tile-item:hover {
+  border-color: var(--arcane);
+}
+
+.map-tile-item__name {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.map-toolbar__empty {
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ---------- Canvas (centro) ---------- */
+
+.map-canvas-wrapper {
+  position: relative;
+  background: var(--void);
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--space-3);
+}
+
+.map-canvas-container {
+  background: var(--raised);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+}
+
+.map-canvas-gridtoggle {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.8rem;
+  display: flex;
+  gap: var(--space-1);
+  z-index: 10;
+}
+
+/* ---------- Panel de capas (derecha) ---------- */
+
+.map-layers-panel {
+  background: var(--surface);
+  border-left: 1px solid var(--hairline);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.map-layers-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.map-layers-panel__add {
+  background: none;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  color: var(--parchment);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: var(--space-1) var(--space-2);
+}
+
+.map-layers-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.map-layers-panel__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--raised);
+  border-radius: var(--radius-sm);
+}
+
+.map-layers-panel__toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.map-layers-panel__name {
+  flex: 1;
+}
+
+.map-layers-panel__delete {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.map-layers-panel__delete:hover {
+  color: var(--ember);
+}
+
+/* ---------- Responsive (móvil) ---------- */
+
+@media (max-width: 768px) {
+  .map-editor__body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  .map-toolbar,
+  .map-layers-panel {
+    border: none;
+    border-bottom: 1px solid var(--hairline);
+    max-height: 30vh;
+  }
+
+  .map-layers-panel {
+    border-bottom: none;
+    border-top: 1px solid var(--hairline);
+  }
+}
