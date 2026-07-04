@@ -157,6 +157,62 @@ export const LevelUpCharacterSchema = z.object({
     .optional(),
 });
 
+// ---------- Map commands (HTTP) ----------
+
+const MapTypeSchema = z.enum(['exterior', 'interior']);
+const MapEnvironmentSchema = z.enum([
+  'bosque',
+  'mina',
+  'dungeon',
+  'pantano',
+  'montaña',
+  'desierto',
+  'pueblo',
+  'castillo',
+  'casa',
+]);
+
+const MapElementSchema = z.object({
+  id: z.string().min(1),
+  tileId: z.string().min(1),
+  x: z.number().int(),
+  y: z.number().int(),
+  width: z.number().int().min(1),
+  height: z.number().int().min(1),
+  rotation: z.number().int(),
+  layerId: z.string().min(1),
+});
+
+const MapLayerSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  visible: z.boolean(),
+  elements: z.array(MapElementSchema),
+});
+
+export const CreateMapSchema = z.object({
+  type: z.literal('CreateMap'),
+  campaignId: z.string().min(1),
+  name: z.string().min(1),
+  mapType: MapTypeSchema,
+  environment: MapEnvironmentSchema,
+  width: z.number().int().min(1).max(100),
+  height: z.number().int().min(1).max(100),
+  gridSize: z.number().int().min(8).max(128).optional(),
+});
+
+export const UpdateMapSchema = z.object({
+  type: z.literal('UpdateMap'),
+  mapId: z.string().min(1),
+  name: z.string().min(1).optional(),
+  mapType: MapTypeSchema.optional(),
+  environment: MapEnvironmentSchema.optional(),
+  width: z.number().int().min(1).max(100).optional(),
+  height: z.number().int().min(1).max(100).optional(),
+  gridSize: z.number().int().min(8).max(128).optional(),
+  layers: z.array(MapLayerSchema).optional(),
+});
+
 // ---------- Live session commands (WS) ----------
 
 export const StartCombatSchema = z.object({
@@ -289,6 +345,8 @@ export const CommandSchema = z.discriminatedUnion('type', [
   CreateCharacterSchema,
   UpdateCharacterSchema,
   LevelUpCharacterSchema,
+  CreateMapSchema,
+  UpdateMapSchema,
   StartCombatSchema,
   AddCombatantFromBestiarySchema,
   AddManualCombatantSchema,
@@ -324,6 +382,8 @@ export type JoinCampaignCommand = z.infer<typeof JoinCampaignSchema>;
 export type CreateCharacterCommand = z.infer<typeof CreateCharacterSchema>;
 export type UpdateCharacterCommand = z.infer<typeof UpdateCharacterSchema>;
 export type LevelUpCharacterCommand = z.infer<typeof LevelUpCharacterSchema>;
+export type CreateMapCommand = z.infer<typeof CreateMapSchema>;
+export type UpdateMapCommand = z.infer<typeof UpdateMapSchema>;
 export type StartCombatCommand = z.infer<typeof StartCombatSchema>;
 export type AddCombatantFromBestiaryCommand = z.infer<typeof AddCombatantFromBestiarySchema>;
 export type AddManualCombatantCommand = z.infer<typeof AddManualCombatantSchema>;

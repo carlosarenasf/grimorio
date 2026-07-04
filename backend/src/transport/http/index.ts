@@ -8,6 +8,7 @@ import type {
   CampaignRepository,
   CharacterRepository,
   LiveTableRepository,
+  MapRepository,
   PasswordHasher,
   SrdProvider,
   UserRepository,
@@ -21,6 +22,7 @@ export interface HttpDeps {
   campaigns: CampaignRepository;
   characters: CharacterRepository;
   tables: LiveTableRepository;
+  maps: MapRepository;
   hasher: PasswordHasher;
   clock: Clock;
   rng: Rng;

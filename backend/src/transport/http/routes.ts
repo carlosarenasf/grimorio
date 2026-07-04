@@ -9,10 +9,12 @@ import { z } from 'zod';
 import {
   CreateCampaignSchema,
   CreateCharacterSchema,
+  CreateMapSchema,
   LevelUpCharacterSchema,
   LoginSchema,
   RegisterSchema,
   UpdateCharacterSchema,
+  UpdateMapSchema,
 } from '@grimorio/shared/commands';
 import { registerUser, login } from '../../application/auth/index.js';
 import {
@@ -23,6 +25,13 @@ import {
   listCampaignsForUser,
 } from '../../application/campaign/index.js';
 import {
+  createMap,
+  deleteMap,
+  getMap,
+  listMaps,
+  updateMap,
+} from '../../application/maps/index.js';
+import {
   createCharacter,
   updateCharacter,
   levelUpCharacter,
@@ -30,7 +39,7 @@ import {
 } from '../../application/character/index.js';
 import { getOrCreateLiveTable } from '../../application/livetable/index.js';
 import { projectLiveTable } from '../../domain/visibility/index.js';
-import type { CampaignId, CharacterId, UserId } from '../../domain/ids.js';
+import type { CampaignId, CharacterId, MapId, UserId } from '../../domain/ids.js';
 import type { HttpDeps } from './index.js';
 import { clearSessionCookie, requireSession, setSessionCookie } from './auth.js';
 import { signSession } from '../auth/session.js';
@@ -380,6 +389,125 @@ export function registerHttpRoutes(app: FastifyInstance, deps: HttpDeps): void {
   app.get('/srd/weapons', { preHandler: auth }, async (_req, reply) => {
     reply.send(deps.srd.weapons());
   });
+
+  // ---------- Maps ----------
+
+  app.get(
+    '/campaigns/:id/maps',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { id } = req.params as { id: string };
+      try {
+        const maps = await listMaps(
+          { campaignId: id as CampaignId, actorId: req.principal!.userId as UserId },
+          deps,
+        );
+        reply.send(maps);
+      } catch (err) {
+        handleError(err, reply);
+      }
+    },
+  );
+
+  app.post(
+    '/campaigns/:id/maps',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { id } = req.params as { id: string };
+      const cmd = parseBody(
+        CreateMapSchema,
+        withType({ ...((req.body ?? {}) as object), campaignId: id }, 'CreateMap'),
+        reply,
+      );
+      if (!cmd) return;
+      try {
+        const map = await createMap(
+          {
+            campaignId: id as CampaignId,
+            actorId: req.principal!.userId as UserId,
+            name: cmd.name,
+            type: cmd.mapType,
+            environment: cmd.environment,
+            width: cmd.width,
+            height: cmd.height,
+            gridSize: cmd.gridSize,
+          },
+          deps,
+        );
+        reply.send(map);
+      } catch (err) {
+        handleError(err, reply);
+      }
+    },
+  );
+
+  app.get(
+    '/campaigns/:id/maps/:mapId',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { mapId } = req.params as { mapId: string };
+      try {
+        const map = await getMap(
+          { mapId: mapId as MapId, actorId: req.principal!.userId as UserId },
+          deps,
+        );
+        reply.send(map);
+      } catch (err) {
+        handleError(err, reply);
+      }
+    },
+  );
+
+  app.patch(
+    '/campaigns/:id/maps/:mapId',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { mapId } = req.params as { mapId: string };
+      // REST: body IS the patch; mapId from URL.
+      const cmd = parseBody(
+        UpdateMapSchema,
+        withType({ ...((req.body ?? {}) as object), mapId }, 'UpdateMap'),
+        reply,
+      );
+      if (!cmd) return;
+      try {
+        const map = await updateMap(
+          {
+            mapId: mapId as MapId,
+            actorId: req.principal!.userId as UserId,
+            name: cmd.name,
+            type: cmd.mapType,
+            environment: cmd.environment,
+            width: cmd.width,
+            height: cmd.height,
+            gridSize: cmd.gridSize,
+            layers: cmd.layers,
+          },
+          deps,
+        );
+        reply.send(map);
+      } catch (err) {
+        handleError(err, reply);
+      }
+    },
+  );
+
+  app.delete(
+    '/campaigns/:id/maps/:mapId',
+    { preHandler: auth },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { mapId } = req.params as { mapId: string };
+      try {
+        await deleteMap(
+          { mapId: mapId as MapId, actorId: req.principal!.userId as UserId },
+          deps,
+        );
+        reply.code(204).send();
+      } catch (err) {
+        handleError(err, reply);
+      }
+    },
+  );
 
   // ---------- Live table snapshot ----------
 

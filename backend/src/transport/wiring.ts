@@ -9,6 +9,7 @@ import {
   InMemoryCampaignRepository,
   InMemoryCharacterRepository,
   InMemoryLiveTableRepository,
+  InMemoryMapRepository,
   InMemoryUserRepository,
   RealRng,
   SystemClock,
@@ -17,6 +18,7 @@ import {
   PostgresCampaignRepository,
   PostgresCharacterRepository,
   PostgresLiveTableRepository,
+  PostgresMapRepository,
   PostgresUserRepository,
   createSqlClient,
   migrate,
@@ -47,6 +49,7 @@ export async function buildDeps(config: Config): Promise<BuiltDeps> {
     campaigns: repos.campaigns,
     characters: repos.characters,
     tables: repos.tables,
+    maps: repos.maps,
     hasher,
     clock,
     rng,
@@ -68,6 +71,7 @@ interface Repos {
   campaigns: HttpDeps['campaigns'];
   characters: HttpDeps['characters'];
   tables: HttpDeps['tables'];
+  maps: HttpDeps['maps'];
 }
 
 function buildInMemoryRepos(): Repos {
@@ -76,6 +80,7 @@ function buildInMemoryRepos(): Repos {
     campaigns: new InMemoryCampaignRepository(),
     characters: new InMemoryCharacterRepository(),
     tables: new InMemoryLiveTableRepository(),
+    maps: new InMemoryMapRepository(),
   };
 }
 
@@ -87,5 +92,6 @@ async function buildPostgresRepos(databaseUrl: string): Promise<Repos> {
     campaigns: new PostgresCampaignRepository(sql),
     characters: new PostgresCharacterRepository(sql),
     tables: new PostgresLiveTableRepository(sql),
+    maps: new PostgresMapRepository(sql),
   };
 }
