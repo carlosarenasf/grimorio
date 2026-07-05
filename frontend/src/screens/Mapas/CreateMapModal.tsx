@@ -36,7 +36,7 @@ export function CreateMapModal({ onClose, onCreate }: CreateMapModalProps) {
     try {
       await onCreate({
         name: name.trim(),
-        type,
+        mapType: type,
         environment,
         width: 20,
         height: 15,

@@ -214,7 +214,12 @@ export interface MapDTO {
 
 export interface CreateMapPayload {
   name: string;
-  type: 'exterior' | 'interior';
+  /**
+   * Se llama `mapType` en el wire (no `type`) para no colisionar con el
+   * discriminante `type: 'CreateMap'` que el backend inyecta vía `withType`.
+   * El DTO de respuesta (`MapDTO.type`) sí usa `type` porque ya es el dominio.
+   */
+  mapType: 'exterior' | 'interior';
   environment: string;
   width?: number;
   height?: number;
