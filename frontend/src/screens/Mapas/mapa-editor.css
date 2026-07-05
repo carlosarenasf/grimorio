@@ -162,6 +162,12 @@
   gap: var(--space-3);
 }
 
+.map-modal__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-2);
+}
+
 /* ---------- Editor (3 columnas) ---------- */
 
 .map-editor {
@@ -209,6 +215,56 @@
 .map-topbar__actions {
   display: flex;
   gap: var(--space-2);
+}
+
+.map-topbar__tools {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.map-mode-btn {
+  background: var(--raised);
+  border: 1px solid var(--hairline);
+  color: var(--parchment);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 0.85rem;
+}
+
+.map-mode-btn:hover {
+  border-color: var(--arcane);
+}
+
+.map-mode-btn--active {
+  border-color: var(--arcane);
+  background: rgba(174, 142, 230, 0.16);
+  color: var(--arcane);
+}
+
+.map-mode-btn__label {
+  font-size: 0.78rem;
+}
+
+.map-topbar__size {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.map-topbar__size input {
+  width: 4.5rem;
+  background: var(--raised);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  color: var(--parchment);
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.85rem;
 }
 
 .map-editor__body {
@@ -295,6 +351,13 @@
   border-color: var(--arcane);
 }
 
+.map-tile-item--selected {
+  border-color: var(--arcane);
+  background: rgba(174, 142, 230, 0.18);
+  box-shadow: 0 0 0 2px var(--arcane) inset;
+  cursor: copy;
+}
+
 .map-tile-item__name {
   font-size: 0.7rem;
   color: var(--muted);
@@ -336,6 +399,30 @@
   display: flex;
   gap: var(--space-1);
   z-index: 10;
+}
+
+.map-canvas-hint {
+  position: absolute;
+  top: var(--space-3);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--arcane);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.8rem;
+  color: var(--parchment);
+  z-index: 10;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* Cursor cambia según el modo de edición */
+.map-canvas-container[data-paint-mode='paint'] {
+  cursor: crosshair;
+}
+
+.map-canvas-container[data-paint-mode='erase'] {
+  cursor: not-allowed;
 }
 
 /* ---------- Panel de capas (derecha) ---------- */

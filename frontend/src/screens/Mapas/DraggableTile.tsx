@@ -4,20 +4,36 @@ import type Konva from 'konva';
 import useImage from 'use-image';
 import type { MapElementDTO } from '../../net';
 import { getTile, tileToDataURL } from './tiles';
+import type { PaintMode } from './MapCanvas';
 
 export interface DraggableTileProps {
   element: MapElementDTO;
   gridSize: number;
   selected: boolean;
+  paintMode: PaintMode;
   onSelect: (id: string | null) => void;
   onDragEnd: (id: string, x: number, y: number) => void;
+  onErase: (elementId: string) => void;
 }
 
 /**
  * Wrapper de un tile en el canvas: `<Group draggable>` con un `<KonvaImage>`.
  * El snap-a-grid se aplica en `onDragEnd` (Math.round(x/gridSize)*gridSize).
+ *
+ * En modo `erase`, un click borra el elemento en lugar de seleccionarlo. En
+ * cualquier otro modo el click selecciona y cancela la propagación para que
+ * el handler del Stage no interprete el click como "fondo" (y deseleccione
+ * o pinte encima).
  */
-export function DraggableTile({ element, gridSize, selected, onSelect, onDragEnd }: DraggableTileProps) {
+export function DraggableTile({
+  element,
+  gridSize,
+  selected,
+  paintMode,
+  onSelect,
+  onDragEnd,
+  onErase,
+}: DraggableTileProps) {
   const tile = getTile(element.tileId);
   const dataUrl = tile ? tileToDataURL(tile) : '';
   const [image] = useImage(dataUrl, 'anonymous');
@@ -31,15 +47,31 @@ export function DraggableTile({ element, gridSize, selected, onSelect, onDragEnd
     }
   }, [image]);
 
+  const draggable = paintMode === 'select';
+
   return (
     <Group
       ref={groupRef}
       x={element.x}
       y={element.y}
       rotation={element.rotation}
-      draggable
-      onClick={() => onSelect(element.id)}
-      onTap={() => onSelect(element.id)}
+      draggable={draggable}
+      onClick={(e) => {
+        e.cancelBubble = true;
+        if (paintMode === 'erase') {
+          onErase(element.id);
+          return;
+        }
+        onSelect(element.id);
+      }}
+      onTap={(e) => {
+        e.cancelBubble = true;
+        if (paintMode === 'erase') {
+          onErase(element.id);
+          return;
+        }
+        onSelect(element.id);
+      }}
       onDragEnd={(e) => {
         const node = e.target as Konva.Group;
         const rawX = node.x();

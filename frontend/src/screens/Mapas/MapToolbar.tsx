@@ -3,6 +3,8 @@ import type { TileDef, TileCategory } from './tiles';
 
 export interface MapToolbarProps {
   tiles: TileDef[];
+  /** Tile actualmente seleccionado para pintar (resaltado). */
+  selectedTileId?: string | null;
   onSelectTile: (tile: TileDef) => void;
 }
 
@@ -13,7 +15,7 @@ export interface MapToolbarProps {
  * por nombre (ignorando mayúsculas) y, al estar activo, expande las categorías
  * que contengan coincidencias para que el resultado sea visible sin clicks extra.
  */
-export function MapToolbar({ tiles, onSelectTile }: MapToolbarProps) {
+export function MapToolbar({ tiles, selectedTileId, onSelectTile }: MapToolbarProps) {
   const [open, setOpen] = useState<Set<TileCategory>>(new Set());
   const [query, setQuery] = useState('');
 
@@ -63,27 +65,31 @@ export function MapToolbar({ tiles, onSelectTile }: MapToolbarProps) {
               </button>
               {isOpen && catTiles.length > 0 ? (
                 <div className="map-tile-grid">
-                  {catTiles.map((tile) => (
-                    <button
-                      key={tile.id}
-                      type="button"
-                      className="map-tile-item"
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, tile)}
-                      onClick={() => onSelectTile(tile)}
-                      title={tile.name}
-                      aria-label={tile.name}
-                    >
-                      <img
-                        src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(tile.svg)}`}
-                        alt={tile.name}
-                        width={32}
-                        height={32}
-                        aria-hidden={false}
-                      />
-                      <span className="map-tile-item__name">{tile.name}</span>
-                    </button>
-                  ))}
+                  {catTiles.map((tile) => {
+                    const isPicked = tile.id === selectedTileId;
+                    return (
+                      <button
+                        key={tile.id}
+                        type="button"
+                        className={`map-tile-item${isPicked ? ' map-tile-item--selected' : ''}`}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, tile)}
+                        onClick={() => onSelectTile(tile)}
+                        title={tile.name}
+                        aria-label={tile.name}
+                        aria-pressed={isPicked}
+                      >
+                        <img
+                          src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(tile.svg)}`}
+                          alt={tile.name}
+                          width={32}
+                          height={32}
+                          aria-hidden={false}
+                        />
+                        <span className="map-tile-item__name">{tile.name}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               ) : null}
             </section>

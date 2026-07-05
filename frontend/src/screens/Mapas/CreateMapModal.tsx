@@ -27,6 +27,9 @@ export function CreateMapModal({ onClose, onCreate }: CreateMapModalProps) {
   const [name, setName] = useState('');
   const [type, setType] = useState<'exterior' | 'interior'>('exterior');
   const [environment, setEnvironment] = useState<string>(ENVIRONMENTS[0]);
+  const [width, setWidth] = useState(20);
+  const [height, setHeight] = useState(15);
+  const [gridSize, setGridSize] = useState(32);
   const [busy, setBusy] = useState(false);
 
   async function submit(e: React.FormEvent) {
@@ -38,9 +41,9 @@ export function CreateMapModal({ onClose, onCreate }: CreateMapModalProps) {
         name: name.trim(),
         mapType: type,
         environment,
-        width: 20,
-        height: 15,
-        gridSize: 32,
+        width,
+        height,
+        gridSize,
       });
     } finally {
       setBusy(false);
@@ -63,6 +66,33 @@ export function CreateMapModal({ onClose, onCreate }: CreateMapModalProps) {
             </option>
           ))}
         </Field>
+        <div className="map-modal__row">
+          <Field
+            label="Ancho (celdas)"
+            type="number"
+            min={5}
+            max={100}
+            value={width}
+            onChange={(e) => setWidth(Math.max(5, Math.min(100, Number(e.target.value) || 20)))}
+          />
+          <Field
+            label="Alto (celdas)"
+            type="number"
+            min={5}
+            max={100}
+            value={height}
+            onChange={(e) => setHeight(Math.max(5, Math.min(100, Number(e.target.value) || 15)))}
+          />
+          <Field
+            label="Celda (px)"
+            type="number"
+            min={16}
+            max={128}
+            step={8}
+            value={gridSize}
+            onChange={(e) => setGridSize(Math.max(16, Math.min(128, Number(e.target.value) || 32)))}
+          />
+        </div>
         <div className="map-modal__actions">
           <Button variant="ghost" type="button" onClick={onClose} disabled={busy}>
             Cancelar

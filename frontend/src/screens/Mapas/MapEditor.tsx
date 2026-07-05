@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react';
 import type Konva from 'konva';
 import type { MapDTO, MapElementDTO, MapLayerDTO } from '../../net';
-import { TILES } from './tiles';
+import { TILES, type TileDef } from './tiles';
 import { MapToolbar } from './MapToolbar';
-import { MapCanvas } from './MapCanvas';
+import { MapCanvas, type PaintMode } from './MapCanvas';
 import { MapLayersPanel } from './MapLayersPanel';
 import { MapTopBar } from './MapTopBar';
 
@@ -18,10 +18,20 @@ export interface MapEditorProps {
  * Editor drag & drop de un mapa: 3 columnas (toolbar | canvas | capas) con
  * barra superior. Mantiene el estado local "sucio" comparando con el snapshot
  * serializado del mapa inicial; el padre decide cuándo persistir (onSave).
+ *
+ * Modos de edición (toolbar superior):
+ *  - **Seleccionar** (`select`): click selecciona elemento; arrastrar lo
+ *    mueve (snap a grid). Click en el fondo deselecciona.
+ *  - **Pintar** (`paint`): con un tile seleccionado en el catálogo, cada
+ *    click en el fondo suelta una copia en la celda (paint rápido). El
+ *    drag-and-drop desde el catálogo sigue funcionando siempre.
+ *  - **Borrar** (`erase`): click en un elemento lo elimina.
  */
 export function MapEditor({ map, onChange, onSave, onBack }: MapEditorProps) {
   const [draft, setDraft] = useState<MapDTO>(map);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [selectedTile, setSelectedTile] = useState<TileDef | null>(null);
+  const [paintMode, setPaintMode] = useState<PaintMode>('select');
   const [showGrid, setShowGrid] = useState(true);
   const stageRef = useRef<Konva.Stage | null>(null);
   const initialJson = useRef(JSON.stringify(map));
@@ -62,24 +72,43 @@ export function MapEditor({ map, onChange, onSave, onBack }: MapEditorProps) {
     });
   }
 
+  /** Drop del catálogo (HTML5 drag). Resuelve la layer destino (la primera
+   * visible, o la 0) y aplica snap-a-grid en la coordenada calculada por
+   * `MapCanvas` (que ahora usa `getBoundingClientRect` en lugar del
+   * `getRelativePointerPosition` de Konva, que devolvía 0 en drop). */
   function handleDropTile(tileId: string, x: number, y: number) {
     const layer = draft.layers.find((l) => l.visible);
     const targetLayerId = layer?.id ?? draft.layers[0]?.id;
     if (!targetLayerId) return;
+    addElement(tileId, targetLayerId, x, y);
+  }
+
+  /** Pintar mediante click (modo `paint`) sobre el fondo del canvas. */
+  function handlePaintAt(tileId: string, x: number, y: number) {
+    const layer = draft.layers.find((l) => l.visible);
+    const targetLayerId = layer?.id ?? draft.layers[0]?.id;
+    if (!targetLayerId) return;
+    addElement(tileId, targetLayerId, x, y);
+  }
+
+  function addElement(tileId: string, layerId: string, x: number, y: number) {
+    const tile = TILES.find((t) => t.id === tileId);
+    const width = tile?.width ?? draft.gridSize;
+    const height = tile?.height ?? draft.gridSize;
     const element: MapElementDTO = {
-      id: `el_${Date.now()}`,
+      id: `el_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       tileId,
       x,
       y,
-      width: 32,
-      height: 32,
+      width,
+      height,
       rotation: 0,
-      layerId: targetLayerId,
+      layerId,
     };
     patch({
       ...draft,
       layers: draft.layers.map((l) =>
-        l.id === targetLayerId ? { ...l, elements: [...l.elements, element] } : l,
+        l.id === layerId ? { ...l, elements: [...l.elements, element] } : l,
       ),
     });
   }
@@ -92,6 +121,42 @@ export function MapEditor({ map, onChange, onSave, onBack }: MapEditorProps) {
         elements: l.elements.map((e) => (e.id === id ? { ...e, x, y } : e)),
       })),
     });
+  }
+
+  function handleEraseElement(elementId: string) {
+    patch({
+      ...draft,
+      layers: draft.layers.map((l) => ({
+        ...l,
+        elements: l.elements.filter((e) => e.id !== elementId),
+      })),
+    });
+    if (selectedElementId === elementId) setSelectedElementId(null);
+  }
+
+  function handleSelectTile(tile: TileDef) {
+    // Click en el catálogo: alterna selección y entra en modo pintar.
+    // Clickar el mismo tile de nuevo deselecciona y vuelve a "seleccionar".
+    setSelectedTile((prev) => {
+      const wasSelected = prev?.id === tile.id;
+      if (wasSelected) {
+        setPaintMode('select');
+        return null;
+      }
+      setPaintMode('paint');
+      return tile;
+    });
+  }
+
+  function handleChangeMode(mode: PaintMode) {
+    setPaintMode(mode);
+    if (mode !== 'paint') setSelectedTile(null);
+  }
+
+  function handleChangeSize(width: number, height: number) {
+    const clampedW = Math.max(5, Math.min(100, width));
+    const clampedH = Math.max(5, Math.min(100, height));
+    patch({ ...draft, width: clampedW, height: clampedH });
   }
 
   function handleExportPNG() {
@@ -114,13 +179,20 @@ export function MapEditor({ map, onChange, onSave, onBack }: MapEditorProps) {
       <MapTopBar
         map={draft}
         dirty={dirty}
+        paintMode={paintMode}
         onBack={onBack}
         onSave={handleSave}
         onExportPNG={handleExportPNG}
         onRename={handleRename}
+        onChangeSize={handleChangeSize}
+        onChangeMode={handleChangeMode}
       />
       <div className="map-editor__body">
-        <MapToolbar tiles={TILES} onSelectTile={() => {}} />
+        <MapToolbar
+          tiles={TILES}
+          selectedTileId={selectedTile?.id ?? null}
+          onSelectTile={handleSelectTile}
+        />
         <div className="map-canvas-wrapper">
           <label className="map-canvas-gridtoggle">
             <input
@@ -130,13 +202,22 @@ export function MapEditor({ map, onChange, onSave, onBack }: MapEditorProps) {
             />
             Mostrar grid
           </label>
+          {selectedTile ? (
+            <div className="map-canvas-hint" role="status">
+              Pincel: <strong>{selectedTile.name}</strong> · click para pintar, drag sigue activo
+            </div>
+          ) : null}
           <MapCanvas
             map={{ ...draft, gridSize: showGrid ? draft.gridSize : draft.gridSize }}
             selectedElementId={selectedElementId}
+            selectedTileId={selectedTile?.id ?? null}
+            paintMode={paintMode}
             stageRef={stageRef}
             onSelectElement={setSelectedElementId}
             onDragEndElement={handleDragEndElement}
             onDropTile={handleDropTile}
+            onPaintAt={handlePaintAt}
+            onEraseElement={handleEraseElement}
           />
         </div>
         <MapLayersPanel

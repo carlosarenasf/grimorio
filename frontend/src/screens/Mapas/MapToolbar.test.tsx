@@ -73,4 +73,14 @@ describe('MapToolbar', () => {
 
     expect(onSelectTile).toHaveBeenCalledWith(sampleTiles[0]);
   });
+
+  it('el tile seleccionado se marca con aria-pressed y clase de activo', async () => {
+    const user = userEvent.setup();
+    render(<MapToolbar tiles={sampleTiles} selectedTileId="test_tree" onSelectTile={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: /bosque/i }));
+    const treeBtn = screen.getByRole('button', { name: 'Árbol' });
+    expect(treeBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(treeBtn.className).toMatch(/map-tile-item--selected/);
+  });
 });
