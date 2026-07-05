@@ -10,3 +10,4 @@ coverage/
 *.tsbuildinfo
 .vite/
 .turbo/
+opencode.json
