@@ -11,9 +11,12 @@
   },
   "dependencies": {
     "@grimorio/shared": "workspace:*",
+    "konva": "9.3.20",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "three": "^0.185.0"
+    "react-konva": "18.2.16",
+    "three": "^0.185.0",
+    "use-image": "1.1.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
@@ -23,6 +26,7 @@
     "@types/react-dom": "^18.3.5",
     "@types/three": "^0.185.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "canvas": "^3.2.3",
     "jsdom": "^25.0.1",
     "typescript": "^5.7.2",
     "vite": "^6.0.5",
