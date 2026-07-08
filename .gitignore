@@ -15,7 +15,9 @@ assets/
 .playwright-mcp/
 map-after-paint.png
 # 5e.tools raw JSON — fetched by scripts/fetch-5etools.mjs.
-# The generated index.ts under data/5etools/ IS committed.
+# The generated index.ts under data/5etools/ IS committed (2.6MB) so
+# Render can build the image without a fetch step. To update:
+#   node scripts/fetch-5etools.mjs && node scripts/build-5etools.mjs
 backend/src/domain/srd/data/5etools/bestiary/*.json
 backend/src/domain/srd/data/5etools/class/*.json
 backend/src/domain/srd/data/5etools/spells/*.json

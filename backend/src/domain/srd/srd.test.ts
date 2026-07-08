@@ -43,6 +43,15 @@ describe('StaticSrdProvider.getMonster', () => {
     expect(monster?.externalUrl).toMatch(/^https:\/\/5e\.tools\//);
   });
 
+  it('falls back to the suffixed id when the bare id is requested (legacy data)', () => {
+    // Combatants persisted before the 5e.tools migration store `refId: 'goblin'`.
+    // The provider transparently resolves that to `goblin-mm` (or whichever source
+    // the data picks) so old sessions keep working.
+    const viaBare = provider.getMonster('goblin');
+    expect(viaBare).not.toBeNull();
+    expect(viaBare?.id).toMatch(/^goblin-(mm|phb|xphb|xmm)$/);
+  });
+
   it('returns null for an unknown id', () => {
     expect(provider.getMonster('not-a-real-monster')).toBeNull();
   });

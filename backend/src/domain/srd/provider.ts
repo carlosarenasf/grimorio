@@ -73,6 +73,30 @@ function withExternal<T extends { id: string; externalUrl?: string }>(
   );
 }
 
+/**
+ * Best-effort monster id lookup with backward-compatibility aliases.
+ *
+ * Older characters and combatant rows store ids like `goblin`; the
+ * 5e.tools-backed data now uses `goblin-mm`, `goblin-phb`, etc. We try
+ * the exact id first, then a few common source suffixes (mm, phb, xphb,
+ * xmm), then a fuzzy "contains" match by stripping the longest suffix
+ * from the queried id. This makes old persisted ids resolve to the
+ * right monster without a DB migration.
+ */
+const MONSTER_ALIAS_SUFFIXES = ['', '-mm', '-phb', '-xphb', '-xmm', '-mpmm', '-wdmm'];
+
+function findMonster(id: string): Monster | undefined {
+  if (!id) return undefined;
+  for (const suffix of MONSTER_ALIAS_SUFFIXES) {
+    const found = BESTIARY.find((m) => m.id === id + suffix);
+    if (found) return found;
+  }
+  // Last resort: anything whose id starts with the queried id (handles
+  // cases like `young-red-dragon` matching `young-red-dragon-xphb`).
+  const prefix = id;
+  return BESTIARY.find((m) => m.id.startsWith(prefix + '-') || m.id === prefix);
+}
+
 export class StaticSrdProvider implements SrdProvider {
   searchMonsters(query: string): MonsterRef[] {
     const needle = query.trim().toLowerCase();
@@ -84,7 +108,7 @@ export class StaticSrdProvider implements SrdProvider {
   }
 
   getMonster(id: string): Monster | null {
-    const found = BESTIARY.find((monster) => monster.id === id);
+    const found = findMonster(id);
     if (!found) return null;
     return found.externalUrl ? found : { ...found, externalUrl: FIVE_ETOOLS.monster(found.id) };
   }
