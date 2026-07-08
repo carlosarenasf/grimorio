@@ -1,8 +1,10 @@
 /*
- * Official D&D 5e-style character sheet.
- * Parchment aesthetic with ornamental borders, serif typography,
- * and section frames inspired by the official character sheet.
+ * Official D&D 5e character sheet (Spanish SRD 5.2).
+ * Parchment background, serif typography, hexagonal stat boxes,
+ * and section frames matching the official sheet layout.
  */
+
+/* ===== Backdrop & modal (dark app shell) ===== */
 
 .os-backdrop {
   position: fixed;
@@ -18,7 +20,7 @@
 }
 
 .os-modal {
-  width: min(900px, 100%);
+  width: min(920px, 100%);
   background: var(--surface, #1e1b2a);
   border: 1px solid var(--hairline2, rgba(232, 226, 208, 0.18));
   border-radius: 16px;
@@ -70,495 +72,839 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* ===== Sheet Container ===== */
+/* ===== Sheet (parchment page) ===== */
 
 .os-sheet {
-  --os-parchment: #f4edd3;
-  --os-parchment-dark: #e8dfc4;
-  --os-ink: #2c1810;
-  --os-ink-light: #5c4033;
-  --os-red: #8b1a1a;
-  --os-gold: #b8860b;
-  --os-border: #8b7355;
-  --os-border-light: #a0896c;
+  --paper: #f4edd3;
+  --paper-dk: #e8dfc4;
+  --ink: #2c1810;
+  --ink-lt: #5c4033;
+  --red: #8b1a1a;
+  --gold: #b8860b;
+  --border: #8b7355;
+  --border-lt: #a0896c;
 
-  background: var(--os-parchment);
-  color: var(--os-ink);
+  background: var(--paper);
+  color: var(--ink);
   font-family: 'Spectral', Georgia, serif;
   padding: 24px;
-  min-height: 100%;
   background-image:
     radial-gradient(ellipse at 20% 30%, rgba(139, 115, 85, 0.08) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 70%, rgba(139, 115, 85, 0.06) 0%, transparent 50%);
 }
 
-/* ===== Header Section ===== */
+/* ===== Page (A4-ish) ===== */
+
+.os-page {
+  position: relative;
+}
+
+.os-page--break {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 2px dashed var(--border);
+}
+
+/* ===== Header row ===== */
 
 .os-header {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--os-border);
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
 }
 
 .os-header__name {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.os-header__name-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--os-ink-light);
-}
-
-.os-header__name-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--os-red);
-  line-height: 1.1;
-  border-bottom: 1px solid var(--os-border-light);
-  padding-bottom: 4px;
+  grid-column: 1;
 }
 
 .os-header__field {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .os-header__label {
-  font-size: 9px;
+  font-size: 7px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--os-ink-light);
+  letter-spacing: 0.06em;
+  color: var(--ink-lt);
 }
 
 .os-header__value {
-  font-size: 14px;
-  font-weight: 500;
-  border-bottom: 1px solid var(--os-border-light);
-  padding-bottom: 2px;
-  min-height: 20px;
-}
-
-/* ===== Main Layout ===== */
-
-.os-main {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.os-left-col,
-.os-right-col {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* ===== Section Box ===== */
-
-.os-section {
-  border: 2px solid var(--os-border);
-  border-radius: 4px;
-  background: linear-gradient(180deg, var(--os-parchment) 0%, var(--os-parchment-dark) 100%);
-  overflow: hidden;
-}
-
-.os-section__header {
-  background: var(--os-border);
-  color: var(--os-parchment);
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.os-section__body {
-  padding: 12px;
-}
-
-/* ===== Ability Scores ===== */
-
-.os-abilities {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.os-ability {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px;
-  background: var(--os-parchment-dark);
-  border: 1px solid var(--os-border-light);
-  border-radius: 4px;
-}
-
-.os-ability__name {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--os-ink-light);
-  width: 80px;
-  flex-shrink: 0;
-}
-
-.os-ability__score {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--os-ink);
-  width: 40px;
-  text-align: center;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.os-ability__mod {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: 2px solid var(--os-border);
-  border-radius: 50%;
-  background: var(--os-parchment);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--os-red);
-  font-family: 'JetBrains Mono', monospace;
-  margin-left: auto;
-}
-
-/* ===== Stats Grid (AC, Initiative, Speed) ===== */
-
-.os-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.os-stat-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 8px;
-  border: 2px solid var(--os-border);
-  border-radius: 4px;
-  background: var(--os-parchment);
-  text-align: center;
-}
-
-.os-stat-box__value {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--os-red);
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.os-stat-box__label {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--os-ink-light);
-  margin-top: 2px;
-}
-
-/* ===== HP Section ===== */
-
-.os-hp {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-}
-
-.os-hp__box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 8px;
-  border: 2px solid var(--os-border);
-  border-radius: 4px;
-  background: var(--os-parchment);
-  text-align: center;
-}
-
-.os-hp__box--current {
-  border-color: var(--os-red);
-  background: linear-gradient(180deg, var(--os-parchment) 0%, rgba(139, 26, 26, 0.05) 100%);
-}
-
-.os-hp__value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--os-red);
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.os-hp__label {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--os-ink-light);
-  margin-top: 2px;
-}
-
-/* ===== Saving Throws & Skills ===== */
-
-.os-proficiencies {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.os-prof-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
   font-size: 13px;
-  border-bottom: 1px solid var(--os-border-light);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border-lt);
+  padding: 2px 4px;
+  min-height: 22px;
 }
 
-.os-prof-row:last-child {
-  border-bottom: none;
+.os-header__value--name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--red);
+  border-bottom: 1px solid var(--border);
+  padding: 2px 4px 4px;
 }
 
-.os-prof-dot {
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--os-border);
-  border-radius: 50%;
-  flex-shrink: 0;
+.os-header__value--blank {
+  border-bottom: 1px solid var(--border-lt);
 }
 
-.os-prof-dot--filled {
-  background: var(--os-red);
-  border-color: var(--os-red);
+/* ===== Three-column body ===== */
+
+.os-body {
+  display: grid;
+  grid-template-columns: 160px 200px 1fr;
+  gap: 10px;
+  align-items: start;
 }
 
-.os-prof-name {
+.os-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ===== Block (framed section) ===== */
+
+.os-block {
+  border: 1.5px solid var(--border);
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+}
+
+.os-block--grow {
   flex: 1;
 }
 
-.os-prof-mod {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 600;
-  font-size: 12px;
-  min-width: 28px;
-  text-align: right;
+.os-block--flex {
+  flex: 1;
 }
 
-/* ===== Attacks Section ===== */
-
-.os-attacks-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.os-attacks-table th {
-  background: var(--os-border);
-  color: var(--os-parchment);
-  padding: 6px 8px;
-  text-align: left;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 600;
-}
-
-.os-attacks-table td {
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--os-border-light);
-}
-
-.os-attacks-table tr:last-child td {
-  border-bottom: none;
-}
-
-/* ===== Equipment Section ===== */
-
-.os-equipment-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-}
-
-.os-equipment-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
-  border-bottom: 1px dotted var(--os-border-light);
-}
-
-.os-equipment-item:last-child {
-  border-bottom: none;
-}
-
-.os-equipment-qty {
-  color: var(--os-ink-light);
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.os-gold {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 2px solid var(--os-border);
-  font-weight: 600;
-}
-
-.os-gold__icon {
-  color: var(--os-gold);
-}
-
-/* ===== Features & Traits ===== */
-
-.os-features-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 12px;
-}
-
-.os-feature {
-  padding: 8px;
-  background: var(--os-parchment-dark);
-  border: 1px solid var(--os-border-light);
-  border-radius: 4px;
-}
-
-.os-feature__name {
+.os-block__title {
+  background: rgba(139, 115, 85, 0.15);
+  color: var(--ink);
+  padding: 3px 8px;
+  font-size: 8px;
   font-weight: 700;
-  color: var(--os-red);
-  margin-bottom: 2px;
-}
-
-.os-feature__source {
-  font-size: 10px;
   text-transform: uppercase;
-  color: var(--os-ink-light);
-  margin-bottom: 4px;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border-lt);
 }
 
-.os-feature__desc {
-  color: var(--os-ink);
+.os-block__body {
+  padding: 6px 8px;
+}
+
+.os-block__body--text {
+  font-size: 10px;
   line-height: 1.4;
+  min-height: 40px;
+  flex: 1;
 }
 
-/* ===== Spells Section ===== */
-
-.os-spells-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-}
-
-.os-spell {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
-  border-bottom: 1px dotted var(--os-border-light);
-}
-
-.os-spell:last-child {
-  border-bottom: none;
-}
-
-.os-spell__name {
-  font-weight: 600;
-}
-
-.os-spell__meta {
-  color: var(--os-ink-light);
-  font-size: 11px;
-}
-
-/* ===== Notes Section ===== */
-
-.os-notes {
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--os-ink);
-  white-space: pre-wrap;
-  min-height: 60px;
-}
-
-/* ===== Proficiency Bonus ===== */
+/* ===== Proficiency bonus (circle) ===== */
 
 .os-prof-bonus {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  padding: 10px;
-  background: var(--os-parchment-dark);
-  border: 2px solid var(--os-border);
-  border-radius: 4px;
-  font-size: 14px;
+  padding: 4px;
+}
+
+.os-prof-bonus__box {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  background: var(--paper-dk);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .os-prof-bonus__value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--red);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.os-prof-bonus__label {
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-lt);
+  line-height: 1.2;
+}
+
+/* ===== Check rows (saving throws & skills) ===== */
+
+.os-check-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 4px;
+  font-size: 9px;
+  border-bottom: 1px dotted var(--border-lt);
+}
+
+.os-check-row:last-child {
+  border-bottom: none;
+}
+
+.os-bubble {
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: transparent;
+}
+
+.os-bubble--filled {
+  background: var(--red);
+  border-color: var(--red);
+}
+
+.os-check-row__label {
+  flex: 1;
+  font-size: 9px;
+}
+
+.os-check-row--skill .os-check-row__label {
+  font-size: 8.5px;
+}
+
+.os-check-row__abbr {
+  color: var(--ink-lt);
+  font-size: 8px;
+}
+
+.os-check-row__mod {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 9px;
+  min-width: 24px;
+  text-align: right;
+}
+
+/* ===== Inspiration ===== */
+
+.os-inspiration {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.os-inspiration__label {
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-lt);
+}
+
+/* ===== Combat row (AC / Init / Speed) ===== */
+
+.os-combat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.os-hex {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px 6px;
+  border: 2px solid var(--border);
+  background: var(--paper-dk);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  min-height: 56px;
+  text-align: center;
+}
+
+.os-hex__value {
   font-size: 20px;
   font-weight: 700;
-  color: var(--os-red);
+  color: var(--red);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
+}
+
+.os-hex__label {
+  font-size: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-lt);
+  margin-top: 2px;
+  line-height: 1.1;
+}
+
+.os-diamond {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px 6px;
+  border: 2px solid var(--border);
+  background: var(--paper-dk);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  min-height: 56px;
+  text-align: center;
+}
+
+.os-diamond__value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--red);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
+}
+
+.os-diamond__label {
+  font-size: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-lt);
+  margin-top: 2px;
+  line-height: 1.1;
+}
+
+/* ===== HP boxes ===== */
+
+.os-hp-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.os-hp-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  background: var(--paper);
+  padding: 4px 8px;
+  text-align: center;
+  width: 100%;
+}
+
+.os-hp-box--small {
+  min-height: 36px;
+}
+
+.os-hp-box--current {
+  min-height: 56px;
+  border-color: var(--red);
+  background: linear-gradient(180deg, var(--paper) 0%, rgba(139, 26, 26, 0.04) 100%);
+  margin-bottom: 6px;
+}
+
+.os-hp-box__label {
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-lt);
+}
+
+.os-hp-box__value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.2;
+}
+
+.os-hp-box__value--big {
+  font-size: 28px;
+  color: var(--red);
+}
+
+.os-hp-box__value--blank {
+  color: var(--border-lt);
+}
+
+/* ===== Death saves ===== */
+
+.os-death-saves {
+  border: 1.5px solid var(--border);
+  background: var(--paper);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.os-death-saves__title {
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-lt);
+  text-align: center;
+  border-bottom: 1px solid var(--border-lt);
+  padding-bottom: 3px;
+  margin-bottom: 2px;
+}
+
+.os-death-saves__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.os-death-saves__label {
+  font-size: 8px;
+  text-transform: uppercase;
+  color: var(--ink-lt);
+  width: 48px;
+}
+
+.os-death-circle {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ===== Passive perception ===== */
+
+.os-passive {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--paper-dk);
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.os-passive__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--red);
+  font-family: 'JetBrains Mono', monospace;
+  width: 36px;
+  text-align: center;
+}
+
+.os-passive__label {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-lt);
+}
+
+/* ===== Text lines ===== */
+
+.os-text-line {
+  margin: 0;
+  padding: 1px 0;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.os-text-line--empty {
+  color: var(--border-lt);
+}
+
+.os-text-cat {
+  font-weight: 700;
+  color: var(--ink-lt);
+  text-transform: uppercase;
+  font-size: 9px;
+}
+
+/* ===== Attacks table ===== */
+
+.os-attacks {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+
+.os-attacks th {
+  background: rgba(139, 115, 85, 0.15);
+  color: var(--ink);
+  padding: 3px 6px;
+  text-align: left;
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border-lt);
+}
+
+.os-attacks td {
+  padding: 3px 6px;
+  border-bottom: 1px dotted var(--border-lt);
+}
+
+.os-attacks tr:last-child td {
+  border-bottom: none;
+}
+
+.os-attacks__bonus {
+  width: 50px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.os-attacks__empty {
+  text-align: center;
+  color: var(--border-lt);
+}
+
+/* ===== Equipment ===== */
+
+.os-equip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.os-equip-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 1px 0;
+  font-size: 10px;
+  border-bottom: 1px dotted var(--border-lt);
+}
+
+.os-equip-item:last-child {
+  border-bottom: none;
+}
+
+.os-equip-qty {
+  color: var(--ink-lt);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+}
+
+.os-equip-sep {
+  height: 1px;
+  background: var(--border-lt);
+  margin: 3px 0;
+}
+
+.os-money {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+.os-money__coin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid var(--border-lt);
+  padding: 2px 0;
+}
+
+.os-money__label {
+  font-size: 7px;
+  text-transform: uppercase;
+  color: var(--ink-lt);
+}
+
+.os-money__value {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--ink);
+}
+
+/* ===== Traits ===== */
+
+.os-trait {
+  font-size: 10px;
+  padding: 1px 0;
+  line-height: 1.4;
+}
+
+.os-trait__name {
+  font-weight: 700;
+  color: var(--red);
+}
+
+.os-trait__desc {
+  color: var(--ink);
+}
+
+/* ===== Footer ===== */
+
+.os-footer {
+  margin-top: 10px;
+  border-top: 2px solid var(--border);
+  padding-top: 8px;
+}
+
+.os-footer__top {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.os-footer__bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.os-footer-block {
+  border: 1.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.os-footer-block--wide {
+  /* inherits from grid */
+}
+
+.os-footer-block__title {
+  background: rgba(139, 115, 85, 0.15);
+  padding: 3px 8px;
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border-lt);
+}
+
+.os-footer-block__body--text {
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 10px;
+  line-height: 1.4;
+  flex: 1;
+}
+
+/* ===== Ability score hexagons ===== */
+
+.os-abilities {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+  border: 1.5px solid var(--border);
+}
+
+.os-ability-hex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 2px;
+  background: var(--paper-dk);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  text-align: center;
+}
+
+.os-ability-hex__shape {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.os-ability-hex__name {
+  font-size: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-lt);
+}
+
+.os-ability-hex__score {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
+}
+
+.os-ability-hex__mod {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--red);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ===== Spell page ===== */
+
+.os-spell-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+}
+
+.os-spell-header__name {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.os-spell-cells {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.os-spell-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  padding: 4px;
+  text-align: center;
+}
+
+.os-spell-cell__label {
+  font-size: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-lt);
+  line-height: 1.1;
+}
+
+.os-spell-cell__value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 2px;
+}
+
+.os-spell-cell__value--blank {
+  color: var(--border-lt);
+}
+
+/* ===== Spell list ===== */
+
+.os-spell-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.os-spell-list--compact {
+  gap: 2px 6px;
+}
+
+.os-spell-item {
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.os-spell-item::after {
+  content: '·';
+  margin-left: 6px;
+  color: var(--border-lt);
+}
+
+.os-spell-item:last-child::after {
+  content: '';
+}
+
+/* ===== Spell table ===== */
+
+.os-spell-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+
+.os-spell-table th {
+  background: rgba(139, 115, 85, 0.15);
+  padding: 3px 6px;
+  text-align: left;
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border-lt);
+}
+
+.os-spell-table td {
+  padding: 3px 6px;
+  border-bottom: 1px dotted var(--border-lt);
+  vertical-align: top;
+}
+
+.os-spell-table tr:last-child td {
+  border-bottom: none;
+}
+
+.os-spell-table__level {
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  width: 40px;
+  text-align: center;
+}
+
+.os-spell-table__slots {
+  width: 80px;
+  text-align: center;
   font-family: 'JetBrains Mono', monospace;
 }
 
 /* ===== Responsive ===== */
 
-@media (max-width: 768px) {
+@media (max-width: 760px) {
   .os-sheet {
-    padding: 16px;
-  }
-
-  .os-main {
-    grid-template-columns: 1fr;
+    padding: 14px;
   }
 
   .os-header {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
   }
 
   .os-header__name {
     grid-column: 1 / -1;
   }
 
+  .os-body {
+    grid-template-columns: 1fr;
+  }
+
+  .os-col--left,
+  .os-col--center {
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 10px;
+  }
+
+  .os-footer__top {
+    grid-template-columns: 1fr;
+  }
+
+  .os-footer__bottom {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .os-abilities {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    grid-column: 1 / -1;
   }
 
-  .os-ability {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .os-ability__name {
-    width: auto;
-  }
-
-  .os-ability__mod {
-    margin-left: 0;
+  .os-spell-cells {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
-/* ===== Print Styles ===== */
+/* ===== Print ===== */
 
 @media print {
   .os-backdrop {
@@ -587,6 +933,13 @@
 
   .os-sheet {
     padding: 0;
+  }
+
+  .os-page--break {
+    page-break-before: always;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
   }
 
   @page {
