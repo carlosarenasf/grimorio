@@ -14,4 +14,9 @@ opencode.json
 assets/
 .playwright-mcp/
 map-after-paint.png
-scripts/
+# 5e.tools raw JSON — fetched by scripts/fetch-5etools.mjs.
+# The generated index.ts under data/5etools/ IS committed.
+backend/src/domain/srd/data/5etools/bestiary/*.json
+backend/src/domain/srd/data/5etools/class/*.json
+backend/src/domain/srd/data/5etools/spells/*.json
+backend/src/domain/srd/data/5etools/races.json

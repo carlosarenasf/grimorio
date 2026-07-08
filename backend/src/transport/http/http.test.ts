@@ -400,7 +400,7 @@ describe('HTTP transport', () => {
       expect(res.statusCode).toBe(200);
       const list = res.json();
       expect(Array.isArray(list)).toBe(true);
-      expect(list.some((m: { id: string }) => m.id === 'goblin')).toBe(true);
+      expect(list.some((m: { id: string }) => m.id === 'goblin-mm')).toBe(true);
     });
 
     it('GET /srd/monsters requires auth', async () => {

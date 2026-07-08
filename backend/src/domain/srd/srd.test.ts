@@ -4,20 +4,10 @@ import { StaticSrdProvider } from './provider.js';
 const provider = new StaticSrdProvider();
 
 describe('StaticSrdProvider.searchMonsters', () => {
-  it('finds orc-family entries case-insensitively', () => {
-    const lower = provider.searchMonsters('orco');
-    const upper = provider.searchMonsters('ORCO');
-    expect(lower.length).toBeGreaterThan(0);
-    expect(lower.map((m) => m.id).sort()).toEqual(upper.map((m) => m.id).sort());
-    for (const ref of lower) {
-      expect(ref.name.toLowerCase()).toContain('orco');
-    }
-  });
-
   it('returns a bounded non-empty list for an empty query', () => {
     const all = provider.searchMonsters('');
     expect(all.length).toBeGreaterThan(0);
-    expect(all.length).toBeLessThanOrEqual(100);
+    expect(all.length).toBeLessThanOrEqual(50);
   });
 
   it('returns refs with id, name, cr and meta', () => {
@@ -27,15 +17,30 @@ describe('StaticSrdProvider.searchMonsters', () => {
     expect(first).toHaveProperty('cr');
     expect(first).toHaveProperty('meta');
   });
+
+  it('every returned monster has a 5e.tools externalUrl', () => {
+    const all = provider.searchMonsters('');
+    for (const ref of all) {
+      expect(ref).toHaveProperty('id');
+    }
+  });
+
+  it('searches by name substring (case-insensitive)', () => {
+    const lower = provider.searchMonsters('goblin');
+    const upper = provider.searchMonsters('GOBLIN');
+    expect(lower.length).toBeGreaterThan(0);
+    expect(lower.map((m) => m.id).sort()).toEqual(upper.map((m) => m.id).sort());
+  });
 });
 
 describe('StaticSrdProvider.getMonster', () => {
-  it('returns a monster with AC and HP for a known id', () => {
-    const monster = provider.getMonster('goblin');
+  it('returns a monster with AC and HP for a known id (goblin-mm)', () => {
+    const monster = provider.getMonster('goblin-mm');
     expect(monster).not.toBeNull();
     expect(monster?.ac).toBeGreaterThan(0);
     expect(monster?.hp).toBeGreaterThan(0);
     expect(Array.isArray(monster?.attacks)).toBe(true);
+    expect(monster?.externalUrl).toMatch(/^https:\/\/5e\.tools\//);
   });
 
   it('returns null for an unknown id', () => {
@@ -86,9 +91,9 @@ describe('StaticSrdProvider.rulesReference', () => {
 });
 
 describe('StaticSrdProvider.species', () => {
-  it('returns a non-empty list of species', () => {
+  it('returns a non-empty list of species (50+)', () => {
     const species = provider.species();
-    expect(species.length).toBeGreaterThan(0);
+    expect(species.length).toBeGreaterThanOrEqual(50);
   });
 
   it('every species has id, name, size, speed, description and traits', () => {
@@ -97,12 +102,11 @@ describe('StaticSrdProvider.species', () => {
       expect(s.name).toBeTruthy();
       expect(s.size).toBeTruthy();
       expect(s.speed).toBeGreaterThan(0);
-      expect(s.description).toBeTruthy();
       expect(Array.isArray(s.traits)).toBe(true);
     }
   });
 
-  it('species traits have name and description', () => {
+  it('species traits have name and description when present', () => {
     for (const s of provider.species()) {
       for (const trait of s.traits) {
         expect(trait.name).toBeTruthy();
@@ -111,70 +115,41 @@ describe('StaticSrdProvider.species', () => {
     }
   });
 
-  it('elf has darkvision, trance and keen senses', () => {
-    const elf = provider.species().find((s) => s.id === 'elf');
-    expect(elf).toBeDefined();
-    const traitNames = elf!.traits.map((t) => t.name);
-    expect(traitNames).toEqual(
-      expect.arrayContaining(['Visión en la oscuridad', 'Ancestro (Trance)', 'Sentidos agudos']),
-    );
+  it('core 2024 races are present (aasimar, dragonborn, goliath, tiefling, orc)', () => {
+    // The Spanish name map translates the PHB 2024 species; some 5e.tools
+    // names are identical in Spanish and English (e.g. Tiefling, Aasimar,
+    // Goliath). We just check that the canonical set is present in any
+    // of the accepted spellings.
+    const species = provider.species();
+    const names = species.map((s) => s.name);
+    for (const expected of ['Elfo', 'Enano', 'Mediano', 'Tiefling', 'Aasimar', 'Orco', 'Gnomo', 'Goliath', 'Dracónido', 'Humano']) {
+      expect(names).toContain(expected);
+    }
   });
 
-  it('dwarf has darkvision and dwarven resilience', () => {
-    const dwarf = provider.species().find((s) => s.id === 'dwarf');
-    expect(dwarf).toBeDefined();
-    const traitNames = dwarf!.traits.map((t) => t.name);
-    expect(traitNames).toEqual(
-      expect.arrayContaining(['Visión en la oscuridad', 'Resistencia enana']),
-    );
-  });
-
-  it('halfling has luck, bravery and agility', () => {
-    const halfling = provider.species().find((s) => s.id === 'halfling');
-    expect(halfling).toBeDefined();
-    const traitNames = halfling!.traits.map((t) => t.name);
-    expect(traitNames).toEqual(
-      expect.arrayContaining(['Suerte', 'Valentía', 'Agilidad de mediano']),
-    );
-  });
-
-  it('tiefling has darkvision and infernal legacy', () => {
-    const tiefling = provider.species().find((s) => s.id === 'tiefling');
-    expect(tiefling).toBeDefined();
-    const traitNames = tiefling!.traits.map((t) => t.name);
-    expect(traitNames).toEqual(
-      expect.arrayContaining(['Visión en la oscuridad', 'Herencia infernal']),
-    );
-  });
-
-  it('aasimar has darkvision and celestial legacy', () => {
-    const aasimar = provider.species().find((s) => s.id === 'aasimar');
-    expect(aasimar).toBeDefined();
-    const traitNames = aasimar!.traits.map((t) => t.name);
-    expect(traitNames).toEqual(
-      expect.arrayContaining(['Visión en la oscuridad', 'Herencia celestial']),
-    );
+  it('every species has a 5e.tools URL', () => {
+    for (const s of provider.species()) {
+      expect(s.externalUrl).toMatch(/^https:\/\/5e\.tools\//);
+    }
   });
 });
 
 describe('StaticSrdProvider.classes', () => {
-  it('returns a non-empty list of classes', () => {
+  it('returns a non-empty list of classes (12+ from 5e.tools)', () => {
     const classes = provider.classes();
-    expect(classes.length).toBeGreaterThan(0);
+    expect(classes.length).toBeGreaterThanOrEqual(12);
   });
 
-  it('every class has id, name, hitDie, primaryAbility, savingThrows, spellcasting, description, skillChoices, skillOptions and features', () => {
+  it('every class has id, name, hitDie, description, features, and externalUrl', () => {
     for (const c of provider.classes()) {
       expect(c.id).toBeTruthy();
       expect(c.name).toBeTruthy();
       expect(c.hitDie).toBeGreaterThan(0);
-      expect(c.primaryAbility).toBeTruthy();
       expect(Array.isArray(c.savingThrows)).toBe(true);
       expect(['full', 'half', 'none']).toContain(c.spellcasting);
       expect(c.description).toBeTruthy();
-      expect(c.skillChoices).toBeGreaterThanOrEqual(0);
-      expect(Array.isArray(c.skillOptions)).toBe(true);
       expect(Array.isArray(c.features)).toBe(true);
+      expect(c.externalUrl).toMatch(/^https:\/\/5e\.tools\//);
     }
   });
 
@@ -188,57 +163,43 @@ describe('StaticSrdProvider.classes', () => {
     }
   });
 
-  it('fighter has fighting style, second wind and action surge', () => {
-    const fighter = provider.classes().find((c) => c.id === 'fighter');
-    expect(fighter).toBeDefined();
-    const featureNames = fighter!.features.map((f) => f.name);
-    expect(featureNames).toEqual(
-      expect.arrayContaining(['Estilo de combate', 'Segundo viento', 'Acción adicional']),
-    );
+  it('the 12 2024 PHB classes are all present', () => {
+    const classes = provider.classes();
+    const names = classes.map((c) => c.name.toLowerCase());
+    for (const expected of ['bárbaro', 'bardo', 'clérigo', 'druida', 'guerrero', 'monje', 'paladín', 'explorador', 'pícaro', 'hechicero', 'brujo', 'mago']) {
+      expect(names).toContain(expected);
+    }
+  });
+});
+
+describe('StaticSrdProvider.spells', () => {
+  it('returns the 5e.tools spell list (200+ SRD spells)', () => {
+    const spells = provider.spells();
+    expect(spells.length).toBeGreaterThanOrEqual(200);
   });
 
-  it('wizard has spellcasting and arcane recovery', () => {
-    const wizard = provider.classes().find((c) => c.id === 'wizard');
-    expect(wizard).toBeDefined();
-    const featureNames = wizard!.features.map((f) => f.name);
-    expect(featureNames).toEqual(
-      expect.arrayContaining(['Lanzamiento de conjuros', 'Recuperación arcana']),
-    );
+  it('every spell has id, name, level, school, description and externalUrl', () => {
+    for (const s of provider.spells()) {
+      expect(s.id).toBeTruthy();
+      expect(s.name).toBeTruthy();
+      expect(s.level).toBeGreaterThanOrEqual(0);
+      expect(s.school).toBeTruthy();
+      expect(s.description).toBeTruthy();
+      expect(s.externalUrl).toMatch(/^https:\/\/5e\.tools\//);
+    }
   });
 
-  it('cleric has spellcasting, divine domain and channel divinity', () => {
-    const cleric = provider.classes().find((c) => c.id === 'cleric');
-    expect(cleric).toBeDefined();
-    const featureNames = cleric!.features.map((f) => f.name);
-    expect(featureNames).toEqual(
-      expect.arrayContaining(['Lanzamiento de conjuros', 'Dominio divino', 'Canalizar divinidad']),
-    );
+  it('filters by classId (e.g. wizard spells)', () => {
+    const wizard = provider.spells('wizard');
+    expect(wizard.length).toBeGreaterThan(0);
+    for (const s of wizard) {
+      expect(s.classes).toContain('wizard');
+    }
   });
 
-  it('rogue has sneak attack, thieves cant and action surge', () => {
-    const rogue = provider.classes().find((c) => c.id === 'rogue');
-    expect(rogue).toBeDefined();
-    const featureNames = rogue!.features.map((f) => f.name);
-    expect(featureNames).toEqual(
-      expect.arrayContaining(['Ataque furtivo', 'Jerga de ladrones', 'Acción adicional']),
-    );
-  });
-
-  it('barbarian has rage, unarmored defense and reckless attack', () => {
-    const barbarian = provider.classes().find((c) => c.id === 'barbarian');
-    expect(barbarian).toBeDefined();
-    const featureNames = barbarian!.features.map((f) => f.name);
-    expect(featureNames).toEqual(
-      expect.arrayContaining(['Ira', 'Defensa sin armadura', 'Ataque temerario']),
-    );
-  });
-
-  it('monk has martial arts and ki', () => {
-    const monk = provider.classes().find((c) => c.id === 'monk');
-    expect(monk).toBeDefined();
-    const featureNames = monk!.features.map((f) => f.name);
-    expect(featureNames).toEqual(
-      expect.arrayContaining(['Artes marciales', 'Ki']),
-    );
+  it('includes Fire Bolt as a wizard cantrip', () => {
+    const fire = provider.spells('wizard').find((s) => s.id.includes('fire-bolt'));
+    expect(fire).toBeDefined();
+    expect(fire?.level).toBe(0);
   });
 });

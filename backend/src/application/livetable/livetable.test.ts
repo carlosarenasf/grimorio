@@ -39,7 +39,7 @@ const pc: Combatant = {
 /** Hidden monster combatant — players only see a derived status label. */
 const monster: Combatant = {
   id: 'cbt_mon' as Combatant['id'],
-  refId: 'goblin',
+  refId: 'goblin-mm',
   type: 'monster',
   name: 'Goblin',
   initiative: 12,
@@ -155,11 +155,11 @@ describe('AddCombatantFromBestiary', () => {
     const table = makeTable({ combatants: [pc] });
     const { table: next } = dispatchLiveCommand(
       table,
-      { type: 'AddCombatantFromBestiary', monsterId: 'goblin', hpVisibility: 'dm_only' } as Command,
+      { type: 'AddCombatantFromBestiary', monsterId: 'goblin-mm', hpVisibility: 'dm_only' } as Command,
       dm,
       makeDeps(),
     );
-    const added = next.combatants.find((c) => c.refId === 'goblin');
+    const added = next.combatants.find((c) => c.refId === 'goblin-mm');
     expect(added).toBeDefined();
     expect(added?.type).toBe('monster');
     expect(added?.hpVisibility).toBe('dm_only');
@@ -185,7 +185,7 @@ describe('AddCombatantFromBestiary', () => {
     expect(() =>
       dispatchLiveCommand(
         table,
-        { type: 'AddCombatantFromBestiary', monsterId: 'goblin', hpVisibility: 'dm_only' } as Command,
+        { type: 'AddCombatantFromBestiary', monsterId: 'goblin-mm', hpVisibility: 'dm_only' } as Command,
         player,
         makeDeps(),
       ),
@@ -546,13 +546,13 @@ describe('AddCombatantFromBestiary — multiple monsters', () => {
     const empty = makeTable({ combatants: [], combat: { active: false, round: 0, order: [], currentTurnIndex: 0 } });
     const first = dispatchLiveCommand(
       empty,
-      { type: 'AddCombatantFromBestiary', monsterId: 'goblin', hpVisibility: 'dm_only' } as Command,
+      { type: 'AddCombatantFromBestiary', monsterId: 'goblin-mm', hpVisibility: 'dm_only' } as Command,
       dm,
       makeDeps(),
     );
     const second = dispatchLiveCommand(
       first.table,
-      { type: 'AddCombatantFromBestiary', monsterId: 'goblin', hpVisibility: 'dm_only' } as Command,
+      { type: 'AddCombatantFromBestiary', monsterId: 'goblin-mm', hpVisibility: 'dm_only' } as Command,
       dm,
       makeDeps(),
     );

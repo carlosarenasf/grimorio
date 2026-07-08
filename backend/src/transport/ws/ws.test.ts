@@ -34,7 +34,7 @@ const pc: Combatant = {
 /** Hidden monster — players only ever see a derived status label. */
 const monster: Combatant = {
   id: 'cbt_mon' as Combatant['id'],
-  refId: 'goblin',
+  refId: 'goblin-mm',
   type: 'monster',
   name: 'Goblin',
   initiative: 12,
