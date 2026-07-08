@@ -28,6 +28,8 @@ export interface SheetPanelProps {
   fetchSpells?: (classId?: string) => Promise<SpellDTO[]>;
   /** Opens the edit-sheet modal. */
   onEditSheet?: () => void;
+  /** Opens the official D&D-style sheet view. */
+  onOfficialSheet?: () => void;
 }
 
 /**
@@ -45,6 +47,7 @@ export function SheetPanel({
   onRemoveAttack,
   fetchSpells,
   onEditSheet,
+  onOfficialSheet,
 }: SheetPanelProps) {
   const mods = allModifiers(you.scores);
   const hpRatio = you.maxHp > 0 ? you.currentHp / you.maxHp : 1;
@@ -77,11 +80,18 @@ export function SheetPanel({
       eyebrow="Tu ficha"
       title={you.name}
       actions={
-        onEditSheet ? (
-          <Button type="button" variant="secondary" size="sm" onClick={onEditSheet}>
-            Editar ficha
-          </Button>
-        ) : undefined
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {onOfficialSheet ? (
+            <Button type="button" variant="secondary" size="sm" onClick={onOfficialSheet}>
+              Ficha oficial
+            </Button>
+          ) : null}
+          {onEditSheet ? (
+            <Button type="button" variant="secondary" size="sm" onClick={onEditSheet}>
+              Editar ficha
+            </Button>
+          ) : null}
+        </div>
       }
     >
       <div className="vj-sheet">

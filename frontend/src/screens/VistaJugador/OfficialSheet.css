@@ -1,0 +1,596 @@
+/*
+ * Official D&D 5e-style character sheet.
+ * Parchment aesthetic with ornamental borders, serif typography,
+ * and section frames inspired by the official character sheet.
+ */
+
+.os-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(10, 8, 16, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.os-modal {
+  width: min(900px, 100%);
+  background: var(--surface, #1e1b2a);
+  border: 1px solid var(--hairline2, rgba(232, 226, 208, 0.18));
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  margin: 20px 0;
+}
+
+.os-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--hairline, rgba(232, 226, 208, 0.1));
+  border-top: 3px solid var(--arcane, #c9a227);
+  border-radius: 16px 16px 0 0;
+  flex-shrink: 0;
+}
+
+.os-modal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.os-modal__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.os-modal__close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--hairline2, rgba(232, 226, 208, 0.18));
+  background: transparent;
+  color: var(--muted, rgba(232, 226, 208, 0.56));
+  cursor: pointer;
+  font-size: 16px;
+  flex: none;
+}
+
+.os-modal__body {
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== Sheet Container ===== */
+
+.os-sheet {
+  --os-parchment: #f4edd3;
+  --os-parchment-dark: #e8dfc4;
+  --os-ink: #2c1810;
+  --os-ink-light: #5c4033;
+  --os-red: #8b1a1a;
+  --os-gold: #b8860b;
+  --os-border: #8b7355;
+  --os-border-light: #a0896c;
+
+  background: var(--os-parchment);
+  color: var(--os-ink);
+  font-family: 'Spectral', Georgia, serif;
+  padding: 24px;
+  min-height: 100%;
+  background-image:
+    radial-gradient(ellipse at 20% 30%, rgba(139, 115, 85, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(139, 115, 85, 0.06) 0%, transparent 50%);
+}
+
+/* ===== Header Section ===== */
+
+.os-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--os-border);
+}
+
+.os-header__name {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.os-header__name-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--os-ink-light);
+}
+
+.os-header__name-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--os-red);
+  line-height: 1.1;
+  border-bottom: 1px solid var(--os-border-light);
+  padding-bottom: 4px;
+}
+
+.os-header__field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.os-header__label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--os-ink-light);
+}
+
+.os-header__value {
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 1px solid var(--os-border-light);
+  padding-bottom: 2px;
+  min-height: 20px;
+}
+
+/* ===== Main Layout ===== */
+
+.os-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.os-left-col,
+.os-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===== Section Box ===== */
+
+.os-section {
+  border: 2px solid var(--os-border);
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--os-parchment) 0%, var(--os-parchment-dark) 100%);
+  overflow: hidden;
+}
+
+.os-section__header {
+  background: var(--os-border);
+  color: var(--os-parchment);
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.os-section__body {
+  padding: 12px;
+}
+
+/* ===== Ability Scores ===== */
+
+.os-abilities {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.os-ability {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: var(--os-parchment-dark);
+  border: 1px solid var(--os-border-light);
+  border-radius: 4px;
+}
+
+.os-ability__name {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--os-ink-light);
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.os-ability__score {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--os-ink);
+  width: 40px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.os-ability__mod {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--os-border);
+  border-radius: 50%;
+  background: var(--os-parchment);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--os-red);
+  font-family: 'JetBrains Mono', monospace;
+  margin-left: auto;
+}
+
+/* ===== Stats Grid (AC, Initiative, Speed) ===== */
+
+.os-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.os-stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px;
+  border: 2px solid var(--os-border);
+  border-radius: 4px;
+  background: var(--os-parchment);
+  text-align: center;
+}
+
+.os-stat-box__value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--os-red);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.os-stat-box__label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--os-ink-light);
+  margin-top: 2px;
+}
+
+/* ===== HP Section ===== */
+
+.os-hp {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.os-hp__box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px;
+  border: 2px solid var(--os-border);
+  border-radius: 4px;
+  background: var(--os-parchment);
+  text-align: center;
+}
+
+.os-hp__box--current {
+  border-color: var(--os-red);
+  background: linear-gradient(180deg, var(--os-parchment) 0%, rgba(139, 26, 26, 0.05) 100%);
+}
+
+.os-hp__value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--os-red);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.os-hp__label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--os-ink-light);
+  margin-top: 2px;
+}
+
+/* ===== Saving Throws & Skills ===== */
+
+.os-proficiencies {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.os-prof-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--os-border-light);
+}
+
+.os-prof-row:last-child {
+  border-bottom: none;
+}
+
+.os-prof-dot {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--os-border);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.os-prof-dot--filled {
+  background: var(--os-red);
+  border-color: var(--os-red);
+}
+
+.os-prof-name {
+  flex: 1;
+}
+
+.os-prof-mod {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 12px;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ===== Attacks Section ===== */
+
+.os-attacks-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.os-attacks-table th {
+  background: var(--os-border);
+  color: var(--os-parchment);
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.os-attacks-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--os-border-light);
+}
+
+.os-attacks-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===== Equipment Section ===== */
+
+.os-equipment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.os-equipment-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px dotted var(--os-border-light);
+}
+
+.os-equipment-item:last-child {
+  border-bottom: none;
+}
+
+.os-equipment-qty {
+  color: var(--os-ink-light);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.os-gold {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 2px solid var(--os-border);
+  font-weight: 600;
+}
+
+.os-gold__icon {
+  color: var(--os-gold);
+}
+
+/* ===== Features & Traits ===== */
+
+.os-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.os-feature {
+  padding: 8px;
+  background: var(--os-parchment-dark);
+  border: 1px solid var(--os-border-light);
+  border-radius: 4px;
+}
+
+.os-feature__name {
+  font-weight: 700;
+  color: var(--os-red);
+  margin-bottom: 2px;
+}
+
+.os-feature__source {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--os-ink-light);
+  margin-bottom: 4px;
+}
+
+.os-feature__desc {
+  color: var(--os-ink);
+  line-height: 1.4;
+}
+
+/* ===== Spells Section ===== */
+
+.os-spells-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.os-spell {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px dotted var(--os-border-light);
+}
+
+.os-spell:last-child {
+  border-bottom: none;
+}
+
+.os-spell__name {
+  font-weight: 600;
+}
+
+.os-spell__meta {
+  color: var(--os-ink-light);
+  font-size: 11px;
+}
+
+/* ===== Notes Section ===== */
+
+.os-notes {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--os-ink);
+  white-space: pre-wrap;
+  min-height: 60px;
+}
+
+/* ===== Proficiency Bonus ===== */
+
+.os-prof-bonus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background: var(--os-parchment-dark);
+  border: 2px solid var(--os-border);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.os-prof-bonus__value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--os-red);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 768px) {
+  .os-sheet {
+    padding: 16px;
+  }
+
+  .os-main {
+    grid-template-columns: 1fr;
+  }
+
+  .os-header {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .os-header__name {
+    grid-column: 1 / -1;
+  }
+
+  .os-abilities {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .os-ability {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .os-ability__name {
+    width: auto;
+  }
+
+  .os-ability__mod {
+    margin-left: 0;
+  }
+}
+
+/* ===== Print Styles ===== */
+
+@media print {
+  .os-backdrop {
+    position: static;
+    background: none;
+    backdrop-filter: none;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .os-modal {
+    width: 100%;
+    margin: 0;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+  }
+
+  .os-modal__head {
+    display: none;
+  }
+
+  .os-modal__body {
+    overflow: visible;
+  }
+
+  .os-sheet {
+    padding: 0;
+  }
+
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+}

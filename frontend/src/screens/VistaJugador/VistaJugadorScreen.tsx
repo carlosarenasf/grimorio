@@ -9,6 +9,7 @@ import { DicePanel } from './DicePanel';
 import { EditSheetModal } from './EditSheetModal';
 import { InventoryPanel } from './InventoryPanel';
 import { MonsterTargetsPanel } from './MonsterTargetsPanel';
+import { OfficialSheet } from './OfficialSheet';
 import { PublicLogPanel } from './PublicLogPanel';
 import { PublicRailPanel } from './PublicRailPanel';
 import { RulesPanel } from './RulesPanel';
@@ -64,6 +65,7 @@ export function VistaJugadorScreen({
   onSaveSheet,
 }: VistaJugadorScreenProps) {
   const [editOpen, setEditOpen] = useState(false);
+  const [officialSheetOpen, setOfficialSheetOpen] = useState(false);
   const active = getActiveCombatant(snapshot);
   const isYourTurn =
     snapshot.combat.active && active !== null && active.id === you.combatantId;
@@ -92,6 +94,7 @@ export function VistaJugadorScreen({
             onRemoveAttack={onRemoveAttack}
             fetchSpells={fetchSpells}
             onEditSheet={onSaveSheet ? () => setEditOpen(true) : undefined}
+            onOfficialSheet={() => setOfficialSheetOpen(true)}
           />
           <ActionEconomy you={you} send={send} isYourTurn={isYourTurn} />
           <MonsterTargetsPanel snapshot={snapshot} send={send} />
@@ -121,6 +124,13 @@ export function VistaJugadorScreen({
           you={you}
           onSave={onSaveSheet}
           onClose={() => setEditOpen(false)}
+        />
+      ) : null}
+
+      {officialSheetOpen ? (
+        <OfficialSheet
+          you={you}
+          onClose={() => setOfficialSheetOpen(false)}
         />
       ) : null}
     </div>

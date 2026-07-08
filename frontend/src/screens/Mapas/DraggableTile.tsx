@@ -14,6 +14,7 @@ export interface DraggableTileProps {
   onSelect: (id: string | null) => void;
   onDragEnd: (id: string, x: number, y: number) => void;
   onErase: (elementId: string) => void;
+  resolveTileUrl?: (tileId: string) => string;
 }
 
 /**
@@ -24,7 +25,17 @@ export interface DraggableTileProps {
  * cualquier otro modo el click selecciona y cancela la propagación para que
  * el handler del Stage no interprete el click como "fondo" (y deseleccione
  * o pinte encima).
+ *
+ * Soporta tanto tiles SVG inline (catálogo local) como tiles de imagen FA
+ * (PNG servidos desde `/fa-assets/`). La resolución de la URL se delega en
+ * `resolveTileUrl` si se proporciona; en caso contrario se usa el catálogo
+ * SVG por defecto.
  */
+function resolveDefaultTileUrl(tileId: string): string {
+  const tile = getTile(tileId);
+  return tile ? tileToDataURL(tile) : '';
+}
+
 export function DraggableTile({
   element,
   gridSize,
@@ -33,10 +44,12 @@ export function DraggableTile({
   onSelect,
   onDragEnd,
   onErase,
+  resolveTileUrl,
 }: DraggableTileProps) {
-  const tile = getTile(element.tileId);
-  const dataUrl = tile ? tileToDataURL(tile) : '';
-  const [image] = useImage(dataUrl, 'anonymous');
+  const imageUrl = resolveTileUrl
+    ? resolveTileUrl(element.tileId)
+    : resolveDefaultTileUrl(element.tileId);
+  const [image] = useImage(imageUrl, 'anonymous');
   const groupRef = useRef<Konva.Group>(null);
 
   // Konva sometimes needs a redraw nudge when the image arrives async.

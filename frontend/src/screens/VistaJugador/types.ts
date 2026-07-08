@@ -82,6 +82,8 @@ export interface YouCharacter {
   spells: SpellEntry[];
   /** Whether this character has spellcasting ability. */
   hasSpellcasting: boolean;
+  /** List of proficient skill keys. */
+  proficientSkills: string[];
 }
 
 export type { Command, PlayerSnapshot };

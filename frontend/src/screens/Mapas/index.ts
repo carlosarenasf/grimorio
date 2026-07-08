@@ -11,7 +11,7 @@ export { MapToolbar } from './MapToolbar';
 export type { MapToolbarProps } from './MapToolbar';
 
 export { MapCanvas } from './MapCanvas';
-export type { MapCanvasProps } from './MapCanvas';
+export type { MapCanvasProps, PaintMode } from './MapCanvas';
 
 export { DraggableTile } from './DraggableTile';
 export type { DraggableTileProps } from './DraggableTile';
@@ -33,3 +33,17 @@ export {
   tileToDataURL,
 } from './tiles';
 export type { TileDef, TileCategory } from './tiles';
+
+export {
+  loadFACatalog,
+  findFATile,
+  isFATileId,
+  flattenFACatalog,
+} from './fa-tiles';
+export type {
+  FATileDef,
+  FACatalog,
+  FACategory,
+  FASubcategory,
+  FATileWithCategory,
+} from './fa-tiles';

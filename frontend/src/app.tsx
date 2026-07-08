@@ -126,6 +126,7 @@ function toYouCharacter(
       damage: s.damage ?? null,
     })),
     hasSpellcasting,
+    proficientSkills: sheet.proficientSkills ?? [],
   };
 }
 

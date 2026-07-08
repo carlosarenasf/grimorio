@@ -33,14 +33,14 @@ const sampleTiles: TileDef[] = [
 
 describe('MapToolbar', () => {
   it('muestra las categorías como cabeceras colapsables', () => {
-    render(<MapToolbar tiles={sampleTiles} onSelectTile={vi.fn()} />);
+    render(<MapToolbar tiles={sampleTiles} onSelectSvgTile={vi.fn()} onSelectFATile={vi.fn()} />);
     expect(screen.getByRole('button', { name: /bosque/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /dungeon/i })).toBeInTheDocument();
   });
 
   it('al clickar una categoría se expanden sus tiles', async () => {
     const user = userEvent.setup();
-    render(<MapToolbar tiles={sampleTiles} onSelectTile={vi.fn()} />);
+    render(<MapToolbar tiles={sampleTiles} onSelectSvgTile={vi.fn()} onSelectFATile={vi.fn()} />);
 
     // Inicialmente colapsado: los tiles no aparecen como draggable
     expect(screen.queryByRole('img', { name: 'Árbol' })).not.toBeInTheDocument();
@@ -55,7 +55,7 @@ describe('MapToolbar', () => {
 
   it('el buscador filtra tiles por nombre en todas las categorías', async () => {
     const user = userEvent.setup();
-    render(<MapToolbar tiles={sampleTiles} onSelectTile={vi.fn()} />);
+    render(<MapToolbar tiles={sampleTiles} onSelectSvgTile={vi.fn()} onSelectFATile={vi.fn()} />);
 
     await user.type(screen.getByPlaceholderText(/buscar tile/i), 'puer');
 
@@ -63,20 +63,20 @@ describe('MapToolbar', () => {
     expect(screen.queryByRole('img', { name: 'Árbol' })).not.toBeInTheDocument();
   });
 
-  it('al clickar un tile llama a onSelectTile con el tile', async () => {
+  it('al clickar un tile llama a onSelectSvgTile con el tile', async () => {
     const user = userEvent.setup();
-    const onSelectTile = vi.fn();
-    render(<MapToolbar tiles={sampleTiles} onSelectTile={onSelectTile} />);
+    const onSelectSvgTile = vi.fn();
+    render(<MapToolbar tiles={sampleTiles} onSelectSvgTile={onSelectSvgTile} onSelectFATile={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: /bosque/i }));
     await user.click(screen.getByRole('img', { name: 'Árbol' }));
 
-    expect(onSelectTile).toHaveBeenCalledWith(sampleTiles[0]);
+    expect(onSelectSvgTile).toHaveBeenCalledWith(sampleTiles[0]);
   });
 
   it('el tile seleccionado se marca con aria-pressed y clase de activo', async () => {
     const user = userEvent.setup();
-    render(<MapToolbar tiles={sampleTiles} selectedTileId="test_tree" onSelectTile={vi.fn()} />);
+    render(<MapToolbar tiles={sampleTiles} selectedTileId="test_tree" onSelectSvgTile={vi.fn()} onSelectFATile={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: /bosque/i }));
     const treeBtn = screen.getByRole('button', { name: 'Árbol' });

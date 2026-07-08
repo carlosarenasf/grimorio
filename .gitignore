@@ -11,3 +11,7 @@ coverage/
 .vite/
 .turbo/
 opencode.json
+assets/
+.playwright-mcp/
+map-after-paint.png
+scripts/

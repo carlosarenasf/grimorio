@@ -117,6 +117,7 @@ export function makeYouCharacter(overrides: Partial<YouCharacter> = {}): YouChar
       { id: 'spell-2', name: 'Proyectil mágico', level: 1, school: 'Evocación', description: 'Tres dardos de fuerza que impactan automáticamente.', damage: '1d4+1' },
     ],
     hasSpellcasting: true,
+    proficientSkills: ['arcana', 'history', 'perception'],
     ...overrides,
   };
 }

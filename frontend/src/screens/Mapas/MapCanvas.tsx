@@ -19,6 +19,7 @@ export interface MapCanvasProps {
   onDropTile: (tileId: string, x: number, y: number) => void;
   onPaintAt: (tileId: string, x: number, y: number) => void;
   onEraseElement: (elementId: string) => void;
+  resolveTileUrl?: (tileId: string) => string;
 }
 
 /** Cada entrada: [x1, y1, x2, y2] — los cuatro puntos de una `<Line>`. */
@@ -51,6 +52,7 @@ export function MapCanvas({
   onDropTile,
   onPaintAt,
   onEraseElement,
+  resolveTileUrl,
 }: MapCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -116,6 +118,7 @@ export function MapCanvas({
         onSelect={onSelectElement}
         onDragEnd={onDragEndElement}
         onErase={onEraseElement}
+        resolveTileUrl={resolveTileUrl}
       />
     ));
 

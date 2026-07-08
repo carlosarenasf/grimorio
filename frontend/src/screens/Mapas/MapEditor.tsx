@@ -1,11 +1,18 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type Konva from 'konva';
 import type { MapDTO, MapElementDTO, MapLayerDTO } from '../../net';
-import { TILES, type TileDef } from './tiles';
+import { TILES, getTile, tileToDataURL, type TileDef } from './tiles';
 import { MapToolbar } from './MapToolbar';
 import { MapCanvas, type PaintMode } from './MapCanvas';
 import { MapLayersPanel } from './MapLayersPanel';
 import { MapTopBar } from './MapTopBar';
+import {
+  loadFACatalog,
+  findFATile,
+  isFATileId,
+  type FACatalog,
+  type FATileDef,
+} from './fa-tiles';
 
 export interface MapEditorProps {
   map: MapDTO;
@@ -13,6 +20,11 @@ export interface MapEditorProps {
   onSave: () => void;
   onBack: () => void;
 }
+
+/** Tile seleccionado en el toolbar: puede ser SVG local o imagen FA. */
+type SelectedTile =
+  | { kind: 'svg'; def: TileDef }
+  | { kind: 'fa'; def: FATileDef };
 
 /**
  * Editor drag & drop de un mapa: 3 columnas (toolbar | canvas | capas) con
@@ -30,11 +42,16 @@ export interface MapEditorProps {
 export function MapEditor({ map, onChange, onSave, onBack }: MapEditorProps) {
   const [draft, setDraft] = useState<MapDTO>(map);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
-  const [selectedTile, setSelectedTile] = useState<TileDef | null>(null);
+  const [selectedTile, setSelectedTile] = useState<SelectedTile | null>(null);
   const [paintMode, setPaintMode] = useState<PaintMode>('select');
   const [showGrid, setShowGrid] = useState(true);
+  const [faCatalog, setFACatalog] = useState<FACatalog | null>(null);
   const stageRef = useRef<Konva.Stage | null>(null);
   const initialJson = useRef(JSON.stringify(map));
+
+  useEffect(() => {
+    loadFACatalog().then(setFACatalog).catch(() => {});
+  }, []);
 
   const dirty = JSON.stringify(draft) !== initialJson.current;
 
@@ -92,9 +109,21 @@ export function MapEditor({ map, onChange, onSave, onBack }: MapEditorProps) {
   }
 
   function addElement(tileId: string, layerId: string, x: number, y: number) {
-    const tile = TILES.find((t) => t.id === tileId);
-    const width = tile?.width ?? draft.gridSize;
-    const height = tile?.height ?? draft.gridSize;
+    let width = draft.gridSize;
+    let height = draft.gridSize;
+    if (isFATileId(tileId) && faCatalog) {
+      const faTile = findFATile(faCatalog, tileId);
+      if (faTile) {
+        width = faTile.gridW * draft.gridSize;
+        height = faTile.gridH * draft.gridSize;
+      }
+    } else {
+      const tile = getTile(tileId);
+      if (tile) {
+        width = tile.width;
+        height = tile.height;
+      }
+    }
     const element: MapElementDTO = {
       id: `el_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       tileId,
@@ -134,24 +163,53 @@ export function MapEditor({ map, onChange, onSave, onBack }: MapEditorProps) {
     if (selectedElementId === elementId) setSelectedElementId(null);
   }
 
-  function handleSelectTile(tile: TileDef) {
-    // Click en el catálogo: alterna selección y entra en modo pintar.
-    // Clickar el mismo tile de nuevo deselecciona y vuelve a "seleccionar".
+  function handleSelectSvgTile(tile: TileDef) {
     setSelectedTile((prev) => {
-      const wasSelected = prev?.id === tile.id;
+      const wasSelected = prev?.kind === 'svg' && prev.def.id === tile.id;
       if (wasSelected) {
         setPaintMode('select');
         return null;
       }
       setPaintMode('paint');
-      return tile;
+      return { kind: 'svg', def: tile };
     });
   }
+
+  function handleSelectFATile(tile: FATileDef) {
+    setSelectedTile((prev) => {
+      const wasSelected = prev?.kind === 'fa' && prev.def.id === tile.id;
+      if (wasSelected) {
+        setPaintMode('select');
+        return null;
+      }
+      setPaintMode('paint');
+      return { kind: 'fa', def: tile };
+    });
+  }
+
+  const resolveTileUrl = useCallback(
+    (tileId: string): string => {
+      if (isFATileId(tileId) && faCatalog) {
+        const faTile = findFATile(faCatalog, tileId);
+        return faTile?.src ?? '';
+      }
+      const tile = getTile(tileId);
+      return tile ? tileToDataURL(tile) : '';
+    },
+    [faCatalog],
+  );
 
   function handleChangeMode(mode: PaintMode) {
     setPaintMode(mode);
     if (mode !== 'paint') setSelectedTile(null);
   }
+
+  const selectedTileName = selectedTile
+    ? selectedTile.kind === 'svg'
+      ? selectedTile.def.name
+      : selectedTile.def.name
+    : null;
+  const selectedTileId = selectedTile?.def.id ?? null;
 
   function handleChangeSize(width: number, height: number) {
     const clampedW = Math.max(5, Math.min(100, width));
@@ -190,8 +248,10 @@ export function MapEditor({ map, onChange, onSave, onBack }: MapEditorProps) {
       <div className="map-editor__body">
         <MapToolbar
           tiles={TILES}
-          selectedTileId={selectedTile?.id ?? null}
-          onSelectTile={handleSelectTile}
+          faCatalog={faCatalog}
+          selectedTileId={selectedTileId}
+          onSelectSvgTile={handleSelectSvgTile}
+          onSelectFATile={handleSelectFATile}
         />
         <div className="map-canvas-wrapper">
           <label className="map-canvas-gridtoggle">
@@ -202,15 +262,15 @@ export function MapEditor({ map, onChange, onSave, onBack }: MapEditorProps) {
             />
             Mostrar grid
           </label>
-          {selectedTile ? (
+          {selectedTileName ? (
             <div className="map-canvas-hint" role="status">
-              Pincel: <strong>{selectedTile.name}</strong> · click para pintar, drag sigue activo
+              Pincel: <strong>{selectedTileName}</strong> · click para pintar, drag sigue activo
             </div>
           ) : null}
           <MapCanvas
             map={{ ...draft, gridSize: showGrid ? draft.gridSize : draft.gridSize }}
             selectedElementId={selectedElementId}
-            selectedTileId={selectedTile?.id ?? null}
+            selectedTileId={selectedTileId}
             paintMode={paintMode}
             stageRef={stageRef}
             onSelectElement={setSelectedElementId}
@@ -218,6 +278,7 @@ export function MapEditor({ map, onChange, onSave, onBack }: MapEditorProps) {
             onDropTile={handleDropTile}
             onPaintAt={handlePaintAt}
             onEraseElement={handleEraseElement}
+            resolveTileUrl={resolveTileUrl}
           />
         </div>
         <MapLayersPanel
