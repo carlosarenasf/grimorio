@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Field, Panel } from '../../design';
 import type { Monster, MonsterSummary, Send, SrdSource } from './types';
+import { fiveETools } from '../../srd/links';
 import { AddMonsterModal } from './AddMonsterModal';
 import { MonsterSheetModal } from './MonsterSheetModal';
 
@@ -71,14 +72,26 @@ export function BestiaryPanel({ srd, send, getMonster }: BestiaryPanelProps) {
                       .join(' · ')}
                   </span>
                 </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  aria-label={`Añadir ${m.name} al combate`}
-                  onClick={() => setAddingMonster(m)}
-                >
-                  +
-                </Button>
+                <div className="vm-bestiary__actions">
+                  <a
+                    href={fiveETools.monster(m.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="vm-bestiary__external"
+                    aria-label={`Ver ${m.name} en 5e.tools`}
+                    title="Ver en 5e.tools"
+                  >
+                    ↗
+                  </a>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    aria-label={`Añadir ${m.name} al combate`}
+                    onClick={() => setAddingMonster(m)}
+                  >
+                    +
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>

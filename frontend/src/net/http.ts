@@ -130,6 +130,10 @@ export interface Monster {
   reactions?: Array<{ name: string; description: string }>;
   legendaryActions?: Array<{ name: string; description: string }>;
   attacks?: Array<{ name: string; bonus: number | null; damage: string | null; damageType: string }>;
+  /** URL to the monster's page on 5e.tools. */
+  externalUrl?: string;
+  /** Optional remote art URL (user-supplied, community/Creator-licensed). */
+  imageUrl?: string;
 }
 
 export interface SpeciesDTO {
@@ -139,6 +143,7 @@ export interface SpeciesDTO {
   speed: number;
   description: string;
   traits: Array<{ name: string; description: string }>;
+  externalUrl?: string;
 }
 export interface ClassDTO {
   id: string;
@@ -151,6 +156,11 @@ export interface ClassDTO {
   skillChoices: number;
   skillOptions: string[];
   features: Array<{ level: number; name: string; description: string }>;
+  externalUrl?: string;
+  /** Spell slot count per character level (1-20), indexed by slot level 1-9. */
+  spellSlots?: Record<number, [number, number, number, number, number, number, number, number, number]>;
+  /** Warlock pact magic: [count, slot level] per character level (1-20). */
+  warlockSpellSlots?: Record<number, [number, number]>;
 }
 export interface BackgroundDTO {
   id: string;
@@ -158,6 +168,7 @@ export interface BackgroundDTO {
   description: string;
   abilityOptions: string[];
   skills: string[];
+  externalUrl?: string;
 }
 export interface SpellDTO {
   id: string;
@@ -167,6 +178,7 @@ export interface SpellDTO {
   classes: string[];
   description: string;
   damage?: string | null;
+  externalUrl?: string;
 }
 export interface WeaponDTO {
   id: string;
@@ -176,6 +188,7 @@ export interface WeaponDTO {
   damageType: string;
   properties: string[];
   ability: 'str' | 'dex' | 'finesse';
+  externalUrl?: string;
 }
 
 // ---------- Maps (DM map editor) ----------

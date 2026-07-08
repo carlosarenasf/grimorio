@@ -13,6 +13,7 @@ import { CLASSES } from './data/classes.js';
 import { BACKGROUNDS } from './data/backgrounds.js';
 import { SPELLS } from './data/spells.js';
 import { WEAPONS } from './data/weapons.js';
+import { FIVE_ETOOLS } from './srdLinks.js';
 import type {
   BackgroundDef,
   ClassDef,
@@ -32,6 +33,16 @@ function toRef(monster: Monster): MonsterRef {
   return { id: monster.id, name: monster.name, cr: monster.cr, meta: monster.meta };
 }
 
+/** Inject a 5e.tools URL on any data record that doesn't already have one. */
+function withExternal<T extends { id: string; externalUrl?: string }>(
+  list: readonly T[],
+  build: (id: string) => string,
+): T[] {
+  return list.map((item) =>
+    item.externalUrl ? item : { ...item, externalUrl: build(item.id) },
+  );
+}
+
 export class StaticSrdProvider implements SrdProvider {
   searchMonsters(query: string): MonsterRef[] {
     const needle = query.trim().toLowerCase();
@@ -43,7 +54,9 @@ export class StaticSrdProvider implements SrdProvider {
   }
 
   getMonster(id: string): Monster | null {
-    return BESTIARY.find((monster) => monster.id === id) ?? null;
+    const found = BESTIARY.find((monster) => monster.id === id);
+    if (!found) return null;
+    return found.externalUrl ? found : { ...found, externalUrl: FIVE_ETOOLS.monster(found.id) };
   }
 
   conditions(): Condition[] {
@@ -55,23 +68,23 @@ export class StaticSrdProvider implements SrdProvider {
   }
 
   species(): SpeciesDef[] {
-    return SPECIES;
+    return withExternal(SPECIES, FIVE_ETOOLS.species);
   }
 
   classes(): ClassDef[] {
-    return CLASSES;
+    return withExternal(CLASSES, FIVE_ETOOLS.class);
   }
 
   backgrounds(): BackgroundDef[] {
-    return BACKGROUNDS;
+    return withExternal(BACKGROUNDS, FIVE_ETOOLS.background);
   }
 
   spells(classId?: string): SpellDef[] {
-    if (!classId) return SPELLS;
-    return SPELLS.filter((s) => s.classes.includes(classId));
+    const filtered = classId ? SPELLS.filter((s) => s.classes.includes(classId)) : SPELLS;
+    return withExternal(filtered, FIVE_ETOOLS.spell);
   }
 
   weapons(): WeaponDef[] {
-    return WEAPONS;
+    return withExternal(WEAPONS, FIVE_ETOOLS.weapon);
   }
 }

@@ -23,11 +23,52 @@ import type { MonsterSummary, SrdSource } from './screens/VistaMaster/index.js';
 import { VistaJugadorScreen } from './screens/VistaJugador/index.js';
 import type { NewAttackData, YouCharacter } from './screens/VistaJugador/index.js';
 import { MapasScreen } from './screens/Mapas/index.js';
-import type { CampaignDTO, CharacterDTO, SpellDTO } from './net/http.js';
+import type { CampaignDTO, CharacterDTO, ClassDTO, SpellDTO } from './net/http.js';
 import { Button } from './design/index.js';
 
 const abilityMod = (score: number) => Math.floor((score - 10) / 2);
 const profBonus = (level: number) => Math.ceil(level / 4) + 1;
+
+/**
+ * Compute the spell-slot table (level 0-9) for a character at a given class+level.
+ * Level 0 is "trucos" (not a slot — shown for completeness). Returns undefined
+ * if the class is not a caster or has no spell slot data.
+ */
+function computeSpellSlots(
+  classDef: ClassDTO | undefined,
+  characterLevel: number,
+): YouCharacter['spellSlots'] | undefined {
+  if (!classDef || classDef.spellcasting === 'none') return undefined;
+  const rows: YouCharacter['spellSlots'] = [];
+  // Row 0: cantrips (no slot, just an entry to mark the section).
+  rows.push({ level: 0, total: 0, expended: 0 });
+
+  if (classDef.spellcasting === 'full' && classDef.spellSlots) {
+    const full = classDef.spellSlots[Math.max(1, Math.min(20, characterLevel))];
+    if (full) {
+      for (let i = 0; i < full.length; i++) {
+        rows.push({ level: i + 1, total: full[i], expended: 0 });
+      }
+    }
+  } else if (classDef.spellcasting === 'half' && classDef.spellSlots) {
+    const half = classDef.spellSlots[Math.max(1, Math.min(20, characterLevel))];
+    if (half) {
+      for (let i = 0; i < half.length; i++) {
+        rows.push({ level: i + 1, total: half[i], expended: 0 });
+      }
+    }
+  } else if (classDef.spellcasting === 'full' && classDef.warlockSpellSlots) {
+    // Warlock pact magic.
+    const pact = classDef.warlockSpellSlots[Math.max(1, Math.min(20, characterLevel))];
+    if (pact) {
+      const [count, slotLevel] = pact;
+      for (let lvl = 1; lvl <= 5; lvl++) {
+        rows.push({ level: lvl, total: lvl === slotLevel ? count : 0, expended: 0 });
+      }
+    }
+  }
+  return rows;
+}
 
 /** Map the server's character sheet to the player screen's YouCharacter. */
 function toYouCharacter(
@@ -35,6 +76,7 @@ function toYouCharacter(
   combatantId: string | null,
   spellsById: Record<string, SpellDTO>,
   snapshot: Snapshot | null,
+  classDef: ClassDTO | undefined,
 ): YouCharacter {
   // Every character can make a basic unarmed strike.
   const strMod = abilityMod(sheet.scores.str);
@@ -127,6 +169,7 @@ function toYouCharacter(
     })),
     hasSpellcasting,
     proficientSkills: sheet.proficientSkills ?? [],
+    spellSlots: computeSpellSlots(classDef, sheet.level),
   };
 }
 
@@ -300,6 +343,7 @@ function TableView(props: {
   const [campaignCharacters, setCampaignCharacters] = useState<{ id: string; name: string }[]>([]);
   const [campaign, setCampaign] = useState<CampaignDTO | null>(null);
   const [spellsById, setSpellsById] = useState<Record<string, SpellDTO>>({});
+  const [classesByName, setClassesByName] = useState<Record<string, ClassDTO>>({});
   const [weaponCatalog, setWeaponCatalog] = useState<import('./net/http.js').WeaponDTO[]>([]);
   const [wsError, setWsError] = useState<string | null>(null);
   const connection = useMemo(() => {
@@ -330,6 +374,24 @@ function TableView(props: {
         const map: Record<string, SpellDTO> = {};
         for (const s of list) map[s.id] = s;
         setSpellsById(map);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [api]);
+
+  // Load the SRD class list once so we can compute the spell-slot table
+  // (per-level slots for the official sheet and any other UI that needs it).
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .getClasses()
+      .then((list) => {
+        if (cancelled) return;
+        const map: Record<string, ClassDTO> = {};
+        for (const c of list) map[c.name] = c;
+        setClassesByName(map);
       })
       .catch(() => {});
     return () => {
@@ -440,8 +502,8 @@ function TableView(props: {
         null)
       : null;
   const you = useMemo(
-    () => (sheet ? toYouCharacter(sheet, ownCombatantId, spellsById, snapshot) : null),
-    [sheet, ownCombatantId, spellsById, snapshot],
+    () => (sheet ? toYouCharacter(sheet, ownCombatantId, spellsById, snapshot, classesByName[sheet.className]) : null),
+    [sheet, ownCombatantId, spellsById, snapshot, classesByName],
   );
 
   // Persist an equip/inventory change to the character sheet.

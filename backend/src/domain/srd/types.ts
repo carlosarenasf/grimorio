@@ -59,6 +59,10 @@ export interface Monster extends MonsterRef {
   actions?: MonsterAction[];
   reactions?: MonsterAction[];
   legendaryActions?: MonsterAction[];
+  /** URL to the monster's page on 5e.tools. */
+  externalUrl?: string;
+  /** Optional remote art URL (user-supplied, community/Creator-licensed). */
+  imageUrl?: string;
 }
 
 export interface RuleSection {
@@ -83,6 +87,8 @@ export interface SpeciesDef {
   speed: number; // metres
   description: string;
   traits: SpeciesTrait[];
+  /** URL to the species page on 5e.tools. */
+  externalUrl?: string;
 }
 
 export interface ClassFeature {
@@ -102,6 +108,12 @@ export interface ClassDef {
   skillChoices: number;
   skillOptions: string[]; // skill keys
   features: ClassFeature[];
+  /** URL to the class page on 5e.tools. */
+  externalUrl?: string;
+  /** Spell slot count per character level (1-20), indexed by slot level 1-9. */
+  spellSlots?: Record<number, [number, number, number, number, number, number, number, number, number]>;
+  /** Warlock pact magic: [count, slot level] per character level (1-20). */
+  warlockSpellSlots?: Record<number, [number, number]>;
 }
 
 export interface BackgroundDef {
@@ -111,6 +123,7 @@ export interface BackgroundDef {
   /** The abilities this background can boost (2024: background grants ability scores). */
   abilityOptions: string[];
   skills: string[]; // skill keys granted
+  externalUrl?: string;
 }
 
 export interface SpellDef {
@@ -122,6 +135,8 @@ export interface SpellDef {
   description: string;
   /** Damage/heal dice notation when the spell rolls dice (e.g. "1d10"); null for utility. */
   damage?: string | null;
+  /** URL to the spell page on 5e.tools. */
+  externalUrl?: string;
 }
 
 export interface WeaponDef {
@@ -133,6 +148,7 @@ export interface WeaponDef {
   properties: string[]; // "Sutil", "A distancia", "Versátil (1d10)"…
   /** Attack/damage ability: str, dex, or finesse (best of str/dex). */
   ability: 'str' | 'dex' | 'finesse';
+  externalUrl?: string;
 }
 
 /** Curated SRD 5.2 data source (conditions, rules, bestiary, creation reference). */

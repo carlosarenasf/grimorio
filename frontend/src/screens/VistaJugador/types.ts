@@ -49,6 +49,17 @@ export interface SpellEntry {
 }
 
 /**
+ * One row of the spell-slot table for the viewer.
+ * `level` 0 means "trucos conocidos" (cantrip slot list, not a slot).
+ * `total` / `expended` are 0 for cantrips and any level the class can't cast at.
+ */
+export interface SpellSlotRow {
+  level: number; // 0 (trucos), 1..9
+  total: number;
+  expended: number;
+}
+
+/**
  * The viewer's own character, as needed to render TU FICHA + the action
  * economy. Not part of `PlayerSnapshot` (the wire snapshot only carries
  * combat-table state) — the container resolves it from the owned
@@ -84,6 +95,12 @@ export interface YouCharacter {
   hasSpellcasting: boolean;
   /** List of proficient skill keys. */
   proficientSkills: string[];
+  /**
+   * Spell-slot table for the character (1 row per level 0-9, 0 = cantrips).
+   * Filled in by the container from the SRD `spellSlots` for the class+level.
+   * Empty array means "no info available" (e.g. before SRD data loads).
+   */
+  spellSlots?: SpellSlotRow[];
 }
 
 export type { Command, PlayerSnapshot };

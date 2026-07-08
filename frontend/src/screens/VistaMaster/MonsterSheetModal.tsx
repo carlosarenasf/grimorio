@@ -35,21 +35,43 @@ export function MonsterSheetModal({ monster, onClose }: MonsterSheetModalProps) 
         onClick={(e) => e.stopPropagation()}
       >
         <header className="csm__head msm__head">
-          <div>
-            <p className="eyebrow">Ficha de monstruo</p>
-            <h2 className="font-display csm__title">{monster.name}</h2>
-            <p className="csm__sub">
-              {monster.meta} · VD {monster.cr}
-            </p>
+          <div className="msm__head-info">
+            {monster.imageUrl ? (
+              <img
+                src={monster.imageUrl}
+                alt={`Retrato de ${monster.name}`}
+                className="msm__portrait"
+              />
+            ) : null}
+            <div>
+              <p className="eyebrow">Ficha de monstruo</p>
+              <h2 className="font-display csm__title">{monster.name}</h2>
+              <p className="csm__sub">
+                {monster.meta} · VD {monster.cr}
+              </p>
+            </div>
           </div>
-          <button
-            type="button"
-            className="csm__close"
-            aria-label="Cerrar"
-            onClick={onClose}
-          >
-            ✕
-          </button>
+          <div className="msm__head-actions">
+            {monster.externalUrl ? (
+              <a
+                href={monster.externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="msm__external-link"
+                aria-label={`Ver ${monster.name} en 5e.tools`}
+              >
+                Ver en 5e.tools ↗
+              </a>
+            ) : null}
+            <button
+              type="button"
+              className="csm__close"
+              aria-label="Cerrar"
+              onClick={onClose}
+            >
+              ✕
+            </button>
+          </div>
         </header>
 
         <div className="csm__body msm__body">

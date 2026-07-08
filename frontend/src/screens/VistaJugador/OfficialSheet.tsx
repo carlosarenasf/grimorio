@@ -3,6 +3,7 @@ import { Button } from '../../design';
 import type { AbilityKey, YouCharacter } from './types';
 import { ABILITY_LABELS, ABILITY_ORDER, abilityMod } from './derived';
 import { SKILLS } from './skills';
+import { fiveETools } from '../../srd/links';
 import './OfficialSheet.css';
 
 const ABILITY_ABBR: Record<AbilityKey, string> = {
@@ -480,7 +481,19 @@ export function OfficialSheet({ you, onClose }: OfficialSheetProps) {
                   <div className="os-spell-cells">
                     <div className="os-spell-cell">
                       <span className="os-spell-cell__label">Clase lanzadora de conjuros</span>
-                      <span className="os-spell-cell__value">{you.className}</span>
+                      <span className="os-spell-cell__value">
+                        {you.className}
+                        {' '}
+                        <a
+                          href={fiveETools.class(you.className)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="os-spell-cell__link"
+                          aria-label={`Ver ${you.className} en 5e.tools`}
+                        >
+                          ↗
+                        </a>
+                      </span>
                     </div>
                     <div className="os-spell-cell">
                       <span className="os-spell-cell__label">Aptitud mágica</span>
@@ -504,7 +517,17 @@ export function OfficialSheet({ you, onClose }: OfficialSheetProps) {
                     {cantrips.length > 0 ? (
                       <div className="os-spell-list">
                         {cantrips.map(spell => (
-                          <span key={spell.id} className="os-spell-item">{spell.name}</span>
+                          <span key={spell.id} className="os-spell-item">
+                            <a
+                              href={fiveETools.spell(spell.id)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="os-spell-item__link"
+                              title={`Ver ${spell.name} en 5e.tools`}
+                            >
+                              {spell.name}
+                            </a>
+                          </span>
                         ))}
                       </div>
                     ) : (
@@ -514,9 +537,9 @@ export function OfficialSheet({ you, onClose }: OfficialSheetProps) {
                 </div>
 
                 {/* Spell slots table */}
-                {spellsByLevel.length > 0 && (
+                {(you.spellSlots && you.spellSlots.length > 1) || spellsByLevel.length > 0 ? (
                   <div className="os-block">
-                    <div className="os-block__title">Conjuros conocidos</div>
+                    <div className="os-block__title">Espacios de conjuro y conjuros conocidos</div>
                     <div className="os-block__body" style={{ padding: 0 }}>
                       <table className="os-spell-table">
                         <thead>
@@ -528,27 +551,47 @@ export function OfficialSheet({ you, onClose }: OfficialSheetProps) {
                           </tr>
                         </thead>
                         <tbody>
-                          {spellsByLevel.map(({ level, spells }) => (
-                            <tr key={level}>
-                              <td className="os-spell-table__level">{level}</td>
-                              <td className="os-spell-table__slots">—</td>
-                              <td className="os-spell-table__slots">—</td>
-                              <td>
-                                <div className="os-spell-list os-spell-list--compact">
-                                  {spells.map(spell => (
-                                    <span key={spell.id} className="os-spell-item">
-                                      {spell.name}
-                                    </span>
-                                  ))}
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
+                          {Array.from({ length: 9 }, (_, i) => {
+                            const lvl = i + 1;
+                            const row = you.spellSlots?.find(r => r.level === lvl);
+                            const total = row?.total ?? 0;
+                            const spellsForLevel = spellsByLevel.find(g => g.level === lvl)?.spells ?? [];
+                            // Skip rows with no slots AND no spells.
+                            if (total === 0 && spellsForLevel.length === 0) return null;
+                            return (
+                              <tr key={lvl}>
+                                <td className="os-spell-table__level">{lvl}</td>
+                                <td className="os-spell-table__slots">{total || '—'}</td>
+                                <td className="os-spell-table__slots">☐☐☐</td>
+                                <td>
+                                  {spellsForLevel.length > 0 ? (
+                                    <div className="os-spell-list os-spell-list--compact">
+                                      {spellsForLevel.map(spell => (
+                                        <span key={spell.id} className="os-spell-item">
+                                          <a
+                                            href={fiveETools.spell(spell.id)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="os-spell-item__link"
+                                            title={`Ver ${spell.name} en 5e.tools`}
+                                          >
+                                            {spell.name}
+                                          </a>
+                                        </span>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <span className="os-text-line--empty">—</span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
                   </div>
-                )}
+                ) : null}
 
               </div>
             )}

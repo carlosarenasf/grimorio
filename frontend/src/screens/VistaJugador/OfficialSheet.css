@@ -810,6 +810,17 @@
   white-space: nowrap;
 }
 
+.os-spell-item__link {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--border-lt);
+}
+
+.os-spell-item__link:hover {
+  color: var(--red);
+  border-bottom-color: var(--red);
+}
+
 .os-spell-item::after {
   content: '·';
   margin-left: 6px;
@@ -818,6 +829,17 @@
 
 .os-spell-item:last-child::after {
   content: '';
+}
+
+.os-spell-cell__link {
+  font-size: 10px;
+  color: var(--border-lt);
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.os-spell-cell__link:hover {
+  color: var(--red);
 }
 
 /* ===== Spell table ===== */

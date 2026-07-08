@@ -150,6 +150,14 @@ export interface Monster extends MonsterRef {
   actions?: MonsterAction[];
   reactions?: MonsterAction[];
   legendaryActions?: MonsterAction[];
+  /** URL to the monster's page on 5e.tools. */
+  externalUrl?: string;
+  /**
+   * Optional remote art URL for a token/portrait. SRD 5.2 does not include
+   * art; this is a user-supplied link to community/Creator-licensed art.
+   * The frontend renders it with CORS allowed; the backend does not proxy.
+   */
+  imageUrl?: string;
 }
 
 export interface RuleSection {
@@ -170,6 +178,8 @@ export interface SpeciesDef {
   speed: number;
   description: string;
   traits: SpeciesTrait[];
+  /** URL to the species page on 5e.tools (Spanish where available). */
+  externalUrl?: string;
 }
 
 export interface ClassFeature {
@@ -189,6 +199,19 @@ export interface ClassDef {
   skillChoices: number;
   skillOptions: string[];
   features: ClassFeature[];
+  /** URL to the class page on 5e.tools. */
+  externalUrl?: string;
+  /**
+   * Spell slot count per character level (1-20), indexed by slot level 1-9.
+   * Only meaningful for full / half casters. A 0 in a position means no
+   * slot at that level. The keys of the record are 1-20.
+   */
+  spellSlots?: Record<number, [number, number, number, number, number, number, number, number, number]>;
+  /**
+   * Warlock pact magic — short-rest based, with at most a few slots at the
+   * highest level. [count, slot level] per character level (1-20).
+   */
+  warlockSpellSlots?: Record<number, [number, number]>;
 }
 
 export interface BackgroundDef {
@@ -197,6 +220,7 @@ export interface BackgroundDef {
   description: string;
   abilityOptions: string[];
   skills: string[];
+  externalUrl?: string;
 }
 
 export interface SpellDef {
@@ -207,6 +231,8 @@ export interface SpellDef {
   classes: string[];
   description: string;
   damage?: string | null;
+  /** URL to the spell page on 5e.tools. */
+  externalUrl?: string;
 }
 
 export interface WeaponDef {
@@ -217,6 +243,7 @@ export interface WeaponDef {
   damageType: string;
   properties: string[];
   ability: 'str' | 'dex' | 'finesse';
+  externalUrl?: string;
 }
 
 /** Curated SRD 5.2 data source (conditions, rules, bestiary, creation reference). */

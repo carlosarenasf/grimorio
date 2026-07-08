@@ -46,6 +46,8 @@ export interface Monster {
   reactions?: Array<{ name: string; description: string }>;
   legendaryActions?: Array<{ name: string; description: string }>;
   attacks?: Array<{ name: string; bonus: number | null; damage: string | null; damageType: string }>;
+  externalUrl?: string;
+  imageUrl?: string;
 }
 
 /**
