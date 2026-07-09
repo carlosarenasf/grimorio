@@ -103,6 +103,8 @@ export interface MonsterRef {
   name: string;
   cr: string; // challenge rating, e.g. "1/4", "5"
   meta: string; // size/type line, e.g. "Humanoide Mediano"
+  /** 5e.tools URL — same as the full record's externalUrl. */
+  externalUrl?: string;
 }
 
 export interface MonsterAttack {

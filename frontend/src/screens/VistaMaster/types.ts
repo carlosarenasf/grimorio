@@ -14,6 +14,8 @@ export interface MonsterSummary {
   kind?: string;
   /** Suggested hit points, shown as a hint in the bestiary row. */
   hp?: number;
+  /** 5e.tools URL, when the SRD source provides one. */
+  externalUrl?: string;
 }
 
 /** Full monster stat block from the SRD. */

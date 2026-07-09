@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button, Field, Panel } from '../../design';
 import type { Monster, MonsterSummary, Send, SrdSource } from './types';
-import { fiveETools } from '../../srd/links';
+import { fiveEToolsSearch } from '../../srd/links';
 import { AddMonsterModal } from './AddMonsterModal';
 import { MonsterSheetModal } from './MonsterSheetModal';
 
@@ -74,7 +74,7 @@ export function BestiaryPanel({ srd, send, getMonster }: BestiaryPanelProps) {
                 </div>
                 <div className="vm-bestiary__actions">
                   <a
-                    href={fiveETools.monster(m.id)}
+                    href={m.externalUrl ?? fiveEToolsSearch(m.name)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="vm-bestiary__external"

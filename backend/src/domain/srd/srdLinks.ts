@@ -3,41 +3,56 @@
  *
  * 5e.tools hosts the SRD 5.2 + a curated bestiary; we link to their
  * pages for "read more" depth without fetching or redistributing their
- * data. The URL format is `<base>#<kind>%20<id-slug>`, where the id
- * matches the 5etools source slug (e.g. `goblin`, `mage-armor`, `drow`).
+ * data. The URL format is `<base>/<page>.html#<name>_<source>`, where
+ * the name is lowercased (spaces preserved) and the source is lowercase.
+ * URL-encoding handles the spaces and the underscore is left alone.
  *
- * If a data entry in `backend/src/domain/srd/data/*.ts` already carries
- * an `externalUrl`, that wins — these builders are the fallback.
+ * Verified examples (manually opened in a browser, they land on the
+ * right record):
+ *   - Abominable Yeti (XMM)  → #abominable%20yeti_xmm
+ *   - Fire Bolt (PHB)         → #fire%20bolt_phb
+ *   - Goblin (MM)             → #goblin_mm
+ *   - Elf (PHB)               → #elf_phb
+ *
+ * The `build-5etools.mjs` script writes the URL directly onto each
+ * record (`m.externalUrl`, `s.externalUrl`, etc.) using the original
+ * `name` + `source` from the 5etools JSON. This module is a fallback for
+ * the data files (`bestiary.ts`, `spells.ts`, ...) that still predate
+ * the migration.
  */
 const BASE = 'https://5e.tools';
 
-function slugify(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/['’`]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+export function fiveEToolsUrl(page: string, name: string, source: string): string {
+  const slug = `${name.toLowerCase()}_${source.toLowerCase()}`;
+  return `${BASE}/${page}.html#${encodeURIComponent(slug)}`;
+}
+
+/**
+ * Variants of the builder that accept just a name (no source). The source
+ * is omitted from the URL — 5e.tools falls back to its default source
+ * picker, which usually works for canonical PHB/MM records.
+ */
+function pageUrl(page: string, name: string): string {
+  return `${BASE}/${page}.html#${encodeURIComponent(name.toLowerCase())}`;
 }
 
 export const FIVE_ETOOLS = {
-  monster(id: string): string {
-    return `${BASE}/bestiary.html#monster%20${encodeURIComponent(slugify(id))}`;
+  monster(name: string, source?: string): string {
+    return source ? fiveEToolsUrl('bestiary', name, source) : pageUrl('bestiary', name);
   },
-  spell(id: string): string {
-    return `${BASE}/spells.html#spell%20${encodeURIComponent(slugify(id))}`;
+  spell(name: string, source?: string): string {
+    return source ? fiveEToolsUrl('spells', name, source) : pageUrl('spells', name);
   },
-  species(id: string): string {
-    return `${BASE}/races.html#race%20${encodeURIComponent(slugify(id))}`;
+  species(name: string, source?: string): string {
+    return source ? fiveEToolsUrl('races', name, source) : pageUrl('races', name);
   },
-  class(id: string): string {
-    return `${BASE}/classes.html#class%20${encodeURIComponent(slugify(id))}`;
+  class(name: string, source?: string): string {
+    return source ? fiveEToolsUrl('classes', name, source) : pageUrl('classes', name);
   },
-  background(id: string): string {
-    return `${BASE}/backgrounds.html#background%20${encodeURIComponent(slugify(id))}`;
+  background(name: string, source?: string): string {
+    return source ? fiveEToolsUrl('backgrounds', name, source) : pageUrl('backgrounds', name);
   },
-  weapon(id: string): string {
-    return `${BASE}/items.html#item%20${encodeURIComponent(slugify(id))}`;
+  weapon(name: string, source?: string): string {
+    return source ? fiveEToolsUrl('items', name, source) : pageUrl('items', name);
   },
 };

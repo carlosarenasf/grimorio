@@ -98,6 +98,8 @@ export interface MonsterRefDTO {
   name: string;
   cr: string;
   meta: string;
+  /** 5e.tools URL — same as the one the backend embeds in the full record. */
+  externalUrl?: string;
 }
 
 /** Full monster stat block from the SRD. */

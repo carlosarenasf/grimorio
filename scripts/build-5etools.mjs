@@ -144,14 +144,28 @@ function mapAttackFromAction(action) {
   };
 }
 
-function bestiarySlug(m) {
-  // 5e.tools uses `<name>` as the hash, and appends `|<source-lowercase>` if the
-  // name isn't unique. We always include the source for stability.
-  return `${m.name}|${(m.source ?? 'MM').toLowerCase()}`;
+function bestiaryId(m) {
+  return `${slugifyId(m.name)}-${(m.source ?? 'MM').toLowerCase()}`;
+}
+
+/** Stable id used internally — `<slug>-<source-lowercase>`. */
+function slugifyId(s) {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/['’`]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function bestiaryUrl(m) {
-  return `https://5e.tools/bestiary.html#${encodeURIComponent(bestiarySlug(m))}`;
+  // 5e.tools hash format: `#<name>_<source>` (URL-encoded). Spaces stay
+  // as spaces (→ %20); underscores separate name and source. Verified
+  // manually that `abominable yeti` + `XMM` → `#abominable%20yeti_xmm`
+  // opens the right record.
+  const slug = `${m.name.toLowerCase()}_${(m.source ?? 'MM').toLowerCase()}`;
+  return `https://5e.tools/bestiary.html#${encodeURIComponent(slug)}`;
 }
 
 function mapMonster(m) {
@@ -174,7 +188,7 @@ function mapMonster(m) {
   const hp = mapHp(m.hp);
   const speed = mapSpeed(m.speed);
   return {
-    id: bestiarySlug(m).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
+    id: bestiaryId(m),
     name: m.name,
     cr: mapCr(m.cr),
     meta: `${SIZE_ES[m.size?.[0]] ?? m.size?.[0] ?? 'Mediano'} ${mapType(m.type)}`.trim(),
@@ -204,11 +218,13 @@ const CLASS_NAME_TO_ID = {
   Warlock: 'warlock', Wizard: 'wizard', Artificer: 'artificer',
 };
 
-function spellSlug(s) {
-  return `${s.name}|${(s.source ?? 'XPHB').toLowerCase()}`;
+function spellId(s) {
+  return `${slugifyId(s.name)}-${(s.source ?? 'XPHB').toLowerCase()}`;
 }
 function spellUrl(s) {
-  return `https://5e.tools/spells.html#${encodeURIComponent(spellSlug(s))}`;
+  // 5e.tools hash format: `#<name>_<source>`, URL-encoded.
+  const slug = `${s.name.toLowerCase()}_${(s.source ?? 'XPHB').toLowerCase()}`;
+  return `https://5e.tools/spells.html#${encodeURIComponent(slug)}`;
 }
 function mapSpell(s) {
   const classes = [];
@@ -219,12 +235,10 @@ function mapSpell(s) {
       if (id) classes.push(id);
     }
   }
-  // `otherSources` and `fromVariantSet` skipped — only the primary class list.
-  const id = spellSlug(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   const text = [flattenEntries(s.entries), flattenEntries(s.entriesHigherLevel)].filter(Boolean).join(' ');
   const damage = extractFirstDice(text);
   return {
-    id,
+    id: spellId(s),
     name: s.name,
     level: s.level ?? 0,
     school: SCHOOL[s.school] ?? s.school,
@@ -236,18 +250,17 @@ function mapSpell(s) {
 }
 
 // ---------- Races mapping ----------
-function raceSlug(r) {
-  return `${r.name}|${(r.source ?? 'PHB').toLowerCase()}`;
+function raceId(r) {
+  return `${slugifyId(r.name)}-${(r.source ?? 'PHB').toLowerCase()}`;
 }
 function raceUrl(r) {
-  return `https://5e.tools/races.html#${encodeURIComponent(raceSlug(r))}`;
+  const slug = `${r.name.toLowerCase()}_${(r.source ?? 'PHB').toLowerCase()}`;
+  return `https://5e.tools/races.html#${encodeURIComponent(slug)}`;
 }
 function mapRace(r) {
   const speed = r.speed?.walk ?? 30;
-  const id = raceSlug(r).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   const size = Array.isArray(r.size) ? r.size[0] : (r.size ?? 'M');
   const entries = r.entries ?? [];
-  // Build a short description from non-trait entries.
   const description = entries
     .filter((e) => !e?.name)
     .map((e) => flattenEntries(e.entries ?? e))
@@ -257,7 +270,7 @@ function mapRace(r) {
     .filter((e) => e?.name && (Array.isArray(e.entries) || typeof e.entries === 'string'))
     .map((e) => ({ name: e.name, description: flattenEntries(e.entries) }));
   return {
-    id,
+    id: raceId(r),
     name: r.name,
     size: SIZE_ES[size] ?? 'Mediano',
     speed: SPEED_FEET_TO_M(speed),
@@ -268,14 +281,15 @@ function mapRace(r) {
 }
 
 // ---------- Classes mapping ----------
-function classSlug(c) {
-  return `${c.name}|${(c.source ?? 'PHB').toLowerCase()}`;
+function classId(c) {
+  return `${c.name.toLowerCase()}-${(c.source ?? 'PHB').toLowerCase()}`;
 }
 function classUrl(c) {
-  return `https://5e.tools/classes.html#${encodeURIComponent(classSlug(c))}`;
+  // 5e.tools hash format: `#<name>_<source>`, URL-encoded.
+  const slug = `${c.name.toLowerCase()}_${(c.source ?? 'PHB').toLowerCase()}`;
+  return `https://5e.tools/classes.html#${encodeURIComponent(slug)}`;
 }
 function mapClass(c) {
-  const id = c.name.toLowerCase();
   // 5etools class data has no top-level text description — we build a short
   // summary from the meta fields so the UI has something to show before the
   // user clicks through to 5e.tools.
@@ -303,7 +317,7 @@ function mapClass(c) {
     });
   }
   return {
-    id,
+    id: classId(c),
     name: c.name,
     hitDie: c.hd?.faces ?? 8,
     primaryAbility: c.spellcastingAbility ?? '—',
@@ -348,8 +362,8 @@ async function main() {
   // Sort by name+source so the dedup keeps the highest-priority source.
   bestiary.sort((a, b) => {
     if (a.name !== b.name) return a.name.localeCompare(b.name);
-    const ra = PRIORITY_RANK(a.id.split('-').pop());
-    const rb = PRIORITY_RANK(b.id.split('-').pop());
+    const ra = PRIORITY_RANK((a.id.split('-').pop() ?? '').toUpperCase());
+    const rb = PRIORITY_RANK((b.id.split('-').pop() ?? '').toUpperCase());
     return ra - rb;
   });
   const seen = new Set();

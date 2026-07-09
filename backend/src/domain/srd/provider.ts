@@ -60,7 +60,13 @@ const CLASSES: ClassDef[] = CLASSES_FT.map((c) => ({
 }));
 
 function toRef(monster: Monster): MonsterRef {
-  return { id: monster.id, name: monster.name, cr: monster.cr, meta: monster.meta };
+  return {
+    id: monster.id,
+    name: monster.name,
+    cr: monster.cr,
+    meta: monster.meta,
+    externalUrl: monster.externalUrl,
+  };
 }
 
 /** Inject a 5e.tools URL on any data record that doesn't already have one. */
@@ -110,7 +116,7 @@ export class StaticSrdProvider implements SrdProvider {
   getMonster(id: string): Monster | null {
     const found = findMonster(id);
     if (!found) return null;
-    return found.externalUrl ? found : { ...found, externalUrl: FIVE_ETOOLS.monster(found.id) };
+    return found;
   }
 
   conditions(): Condition[] {

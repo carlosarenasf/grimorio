@@ -408,7 +408,13 @@ function TableView(props: {
       .searchMonsters('')
       .then((list) => {
         if (!cancelled) {
-          setMonsters(list.map((m) => ({ id: m.id, name: m.name, kind: m.meta, cr: m.cr })));
+          setMonsters(list.map((m) => ({
+            id: m.id,
+            name: m.name,
+            kind: m.meta,
+            cr: m.cr,
+            externalUrl: m.externalUrl,
+          })));
         }
       })
       .catch(() => {});

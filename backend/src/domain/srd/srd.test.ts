@@ -43,6 +43,17 @@ describe('StaticSrdProvider.getMonster', () => {
     expect(monster?.externalUrl).toMatch(/^https:\/\/5e\.tools\//);
   });
 
+  it('5e.tools URLs use the canonical name_<source> hash (verified by hand)', () => {
+    // Verified examples: opening the link in a browser lands on the right record.
+    // Format: `#<name lowercase>_<source lowercase>`, URL-encoded (spaces → %20).
+    expect(provider.getMonster('abominable-yeti-xmm')?.externalUrl)
+      .toBe('https://5e.tools/bestiary.html#abominable%20yeti_xmm');
+    expect(provider.getMonster('goblin-mm')?.externalUrl)
+      .toBe('https://5e.tools/bestiary.html#goblin_mm');
+    expect(provider.getMonster('young-red-dragon-xmm')?.externalUrl)
+      .toBe('https://5e.tools/bestiary.html#young%20red%20dragon_xmm');
+  });
+
   it('falls back to the suffixed id when the bare id is requested (legacy data)', () => {
     // Combatants persisted before the 5e.tools migration store `refId: 'goblin'`.
     // The provider transparently resolves that to `goblin-mm` (or whichever source
